@@ -1,0 +1,317 @@
+/* Each theme references a real object or movement. Tokens only, plus a few signature rules. */
+
+/* 1 ── Braun ET66 · Rams/Lubs 1987: paper body, round black keys, yellow = */
+[data-theme="braun"] {
+  --bg: #e9e4dc; --device: #efebe4; --device-solid: #efebe4; --device-border: #d8d1c6;
+  --device-shadow: 0 1px 0 #fff inset, 0 30px 60px -20px rgba(60,48,30,.35);
+  --bg-art: radial-gradient(rgba(43,43,43,.16) 0.8px, transparent 1px) 0 0 / 14px 14px;
+}
+[data-theme="braun"] .display { background-image: linear-gradient(180deg, rgba(255,255,255,.25), transparent 40%); }
+
+/* 2 ── Cyber HUD · Blade Runner 2049: chamfers, yellow + cyan only, scanlines */
+[data-theme="cyber"] {
+  color-scheme: dark;
+  --bg: #07080a; --device: transparent; --device-solid: #0c0e11; --device-border: #1f242b;
+  --text: #d7e3ea; --muted: #6b7a85; --surface: #101317; --surface-2: #171b21; --border: #242a32;
+  --display-bg: #0b0d10; --display-text: #e8f6ff; --display-muted: #5d6c76; --display-border: rgba(255,204,0,.35);
+  --key: #101317; --key-text: #d7e3ea; --key-op: #0f1a20; --key-op-text: #00f3ff; --key-fn: #0d1014; --key-fn-text: #8fa3b0;
+  --key-eq: #ffcc00; --key-eq-text: #07080a; --key-ac: #2a0d12; --key-ac-text: #ff2a4a;
+  --key-border: #242a32; --bw: 1px;
+  --accent: #ffcc00; --on-accent: #07080a; --danger: #ff2a4a;
+  --tok-num: #e8f6ff; --tok-op: #ffcc00; --tok-fn: #00f3ff; --tok-paren: #ff2a6d; --tok-const: #00f3ff;
+  --r-key: 0px; --r-card: 0px; --r-chip: 0px;
+  --shadow-key: none; --shadow-key-down: inset 0 0 0 1px #ffcc00; --shadow-card: 0 0 0 1px rgba(255,204,0,.08), 0 0 40px rgba(0,243,255,.05) inset;
+  --font-ui: 'Rajdhani', sans-serif; --font-display: 'JetBrains Mono', monospace; --font-key: 'Rajdhani', sans-serif;
+  --fs-key: 26px; --fw-key: 700; --ls-display: 0;
+  --overlay: repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,243,255,.045) 2px 3px);
+  --bg-art: linear-gradient(90deg, rgba(0,243,255,.05) 1px, transparent 1px) 0 0 / 48px 48px, linear-gradient(rgba(0,243,255,.05) 1px, transparent 1px) 0 0 / 48px 48px;
+}
+[data-theme="cyber"] .key, [data-theme="cyber"] .tabs, [data-theme="cyber"] .tab-ink, [data-theme="cyber"] .icon-btn {
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+}
+[data-theme="cyber"] .key[data-kind="eq"] { box-shadow: 0 0 22px rgba(255,204,0,.35); }
+[data-theme="cyber"] .display::before, [data-theme="cyber"] .display::after {
+  content: ''; position: absolute; width: 14px; height: 14px; border: 2px solid #ffcc00; pointer-events: none;
+}
+[data-theme="cyber"] .display::before { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+[data-theme="cyber"] .display::after { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+[data-theme="cyber"] .result, [data-theme="cyber"] .expr { text-shadow: 0 0 12px rgba(0,243,255,.25); }
+
+/* 3 ── Liquid Glass · Apple 2025: ONE blur layer (the device), capsule keys, generated backdrop */
+[data-theme="glass"] {
+  --bg: #f1c5a6; --device: rgba(255,255,255,.28); --device-solid: #f6e6da; --device-border: rgba(255,255,255,.6);
+  --device-shadow: 0 30px 80px -20px rgba(90,40,20,.35), inset 0 1px 0 rgba(255,255,255,.9);
+  --text: #14161a; --muted: #4f5560; --surface: rgba(255,255,255,.4); --surface-2: rgba(255,255,255,.6); --border: rgba(255,255,255,.65);
+  --display-bg: rgba(255,255,255,.38); --display-text: #14161a; --display-muted: #5a606b; --display-border: rgba(255,255,255,.7);
+  --key: rgba(255,255,255,.5); --key-text: #14161a; --key-op: rgba(255,255,255,.78); --key-op-text: #0a7cff;
+  --key-fn: rgba(255,255,255,.32); --key-fn-text: #22262d; --key-eq: #0a7cff; --key-eq-text: #fff; --key-ac: #ff453a; --key-ac-text: #fff;
+  --key-border: rgba(255,255,255,.75); --bw: 1px;
+  --accent: #0a7cff; --on-accent: #fff; --danger: #d70015;
+  --tok-op: #0a7cff; --tok-fn: #b0399b; --tok-paren: #8a8f99; --tok-const: #d9480f;
+  --r-key: 999px; --r-card: 28px; --r-device: 36px;
+  --shadow-key: inset 0 1px 0 rgba(255,255,255,.9), 0 6px 18px rgba(80,40,20,.12); --shadow-key-down: inset 0 2px 8px rgba(0,0,0,.12);
+  --shadow-card: inset 0 1px 0 rgba(255,255,255,.9);
+  --font-ui: -apple-system, 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-display: -apple-system, 'SF Pro Display', 'Segoe UI Variable Display', 'Segoe UI', system-ui, sans-serif;
+  --font-key: var(--font-display); --fw-key: 500; --fs-key: 27px; --ls-display: -0.03em;
+  --bg-art:
+    radial-gradient(40% 35% at 15% 20%, #ff9a6b 0%, transparent 70%),
+    radial-gradient(45% 40% at 85% 25%, #5cc8b8 0%, transparent 70%),
+    radial-gradient(50% 45% at 70% 85%, #ffd27a 0%, transparent 70%),
+    radial-gradient(40% 40% at 20% 85%, #ef6f6c 0%, transparent 70%), #f1c5a6;
+}
+[data-theme="glass"] .app { -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%); }
+@media (max-width: 559px) { [data-theme="glass"] .app { background: rgba(255,255,255,.18); } }
+
+/* 4 ── Clay & Moss · biophilic: clay keys, moss =, organic radii, slight tilt */
+[data-theme="clay"] {
+  --bg: #efe7dc; --device: #f3ece2; --device-solid: #f3ece2; --device-border: #dccdb9;
+  --device-shadow: 0 24px 60px -24px rgba(74,58,40,.45);
+  --text: #2e2a24; --muted: #7a7266; --surface: rgba(74,90,60,.07); --surface-2: rgba(74,90,60,.12); --border: #d5c6b2;
+  --display-bg: #e8ddcf; --display-text: #2e2a24; --display-muted: #847a6c; --display-border: #d2c1aa;
+  --key: #e3d6c6; --key-text: #2e2a24; --key-op: #c9b49c; --key-op-text: #2e2a24; --key-fn: #ddd0bf; --key-fn-text: #4a4337;
+  --key-eq: #4a5a3c; --key-eq-text: #f3ece2; --key-ac: #b5573b; --key-ac-text: #fff7ef;
+  --accent: #4a5a3c; --on-accent: #f3ece2; --danger: #a13d24;
+  --tok-op: #8a5a2b; --tok-fn: #4a5a3c; --tok-paren: #a07b56; --tok-const: #b5573b;
+  --r-key: 18px 22px 16px 20px; --r-card: 20px 24px 16px 26px;
+  --shadow-key: 0 2px 0 rgba(74,58,40,.18), 0 8px 18px -8px rgba(74,58,40,.35); --shadow-key-down: inset 0 2px 5px rgba(74,58,40,.25);
+  --shadow-card: inset 0 2px 8px rgba(74,58,40,.12);
+  --font-ui: 'Fraunces', Georgia, serif; --font-display: 'Fraunces', Georgia, serif; --font-key: 'Fraunces', Georgia, serif;
+  --fw-key: 600; --ls-display: -0.01em;
+  --overlay: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.2 0 0 0 0 0.16 0 0 0 0 0.1 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --bg-art: radial-gradient(60% 50% at 100% 0%, rgba(74,90,60,.18), transparent 70%), radial-gradient(50% 40% at 0% 100%, rgba(181,87,59,.14), transparent 70%);
+}
+[data-theme="clay"] .keypad { transform: rotate(-.4deg); }
+[data-theme="clay"] .key:nth-child(3n) { border-radius: 22px 16px 20px 18px; }
+
+/* 5 ── TE Field · Teenage Engineering: grey body, OLED screen, orange accent, engraved labels */
+[data-theme="te"] {
+  --bg: #cfcfcc; --device: #e4e4e1; --device-solid: #e4e4e1; --device-border: #c4c4c0; --r-device: 18px;
+  --device-shadow: 0 1px 0 #fff inset, 0 -1px 0 rgba(0,0,0,.08) inset, 0 30px 60px -28px rgba(0,0,0,.4);
+  --text: #1b1b1b; --muted: #6f6f6b; --surface: #d7d7d3; --surface-2: #cacac6; --border: #bdbdb8;
+  --display-bg: #0e0e0e; --display-text: #f4f4f2; --display-muted: #8a8a86; --display-border: #000;
+  --key: #f4f4f2; --key-text: #1b1b1b; --key-op: #2a2a2a; --key-op-text: #f4f4f2; --key-fn: #d2d2ce; --key-fn-text: #1b1b1b;
+  --key-eq: #ff4f00; --key-eq-text: #fff; --key-ac: #2a2a2a; --key-ac-text: #ff4f00;
+  --key-border: #c9c9c5; --bw: 1px;
+  --accent: #ff4f00; --on-accent: #fff; --danger: #ff4f00;
+  --tok-num: #f4f4f2; --tok-op: #ff4f00; --tok-fn: #6fd3ff; --tok-paren: #9a9a96; --tok-const: #ffd400;
+  --r-key: 8px; --r-card: 10px; --r-chip: 6px;
+  --shadow-key: 0 2px 0 #b9b9b5, 0 3px 6px rgba(0,0,0,.12); --shadow-key-down: 0 0 0 #b9b9b5;
+  --shadow-card: inset 0 0 0 4px #1a1a1a, inset 0 0 0 5px #2c2c2c;
+  --font-ui: 'Space Mono', monospace; --font-display: 'Space Mono', monospace; --font-key: 'Space Mono', monospace; --font-mono: 'Space Mono', monospace;
+  --fs-key: 22px; --fw-key: 700; --ls-display: -0.02em; --press-y: 2px;
+}
+[data-theme="te"] .key .alt, [data-theme="voyager"] .key .alt {
+  display: block; position: absolute; top: 5px; left: 7px; font: 700 8px/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; opacity: .55;
+}
+[data-theme="te"] .brand-name { text-transform: lowercase; letter-spacing: -.04em; }
+
+/* 6 ── Voyager · HP-12C 1981: brown-black body, brushed bezel, gold shift labels, LCD */
+[data-theme="voyager"] {
+  color-scheme: dark;
+  --bg: #17130f; --device: linear-gradient(180deg, #2b241d, #211c17); --device-solid: #241e18; --device-border: #3a3128;
+  --device-shadow: 0 30px 70px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
+  --text: #e9e3d6; --muted: #a3967f; --surface: rgba(255,255,255,.05); --surface-2: rgba(255,255,255,.09); --border: #3d342a;
+  --display-bg: linear-gradient(180deg, #c3c8ad, #b6bba0); --display-text: #1c2016; --display-muted: #565c49; --display-border: #8f8a7c;
+  --key: linear-gradient(180deg, #2c2722, #1a1714); --key-text: #f0ead9; --key-op: linear-gradient(180deg, #2c2722, #1a1714); --key-op-text: #f0ead9;
+  --key-fn: linear-gradient(180deg, #2c2722, #1a1714); --key-fn-text: #c8a35a;
+  --key-eq: linear-gradient(180deg, #d9b56b, #b08a42); --key-eq-text: #1a1714; --key-ac: linear-gradient(180deg, #5d8fd6, #3f6db0); --key-ac-text: #fff;
+  --key-border: #0b0a08; --bw: 1px;
+  --accent: #c8a35a; --on-accent: #1a1714; --danger: #8b1e10;
+  --tok-num: #1c2016; --tok-op: #4d3b10; --tok-fn: #23406b; --tok-paren: #5a5a46; --tok-const: #6b2a12;
+  --r-key: 7px; --r-card: 6px; --r-chip: 4px;
+  --shadow-key: inset 0 1px 0 rgba(255,255,255,.14), 0 3px 0 #0b0a08, 0 5px 10px rgba(0,0,0,.4); --shadow-key-down: inset 0 1px 0 rgba(255,255,255,.08), 0 0 0 #0b0a08;
+  --shadow-card: 0 0 0 5px #a39e8f, 0 0 0 6px #6b6659, inset 0 3px 8px rgba(0,0,0,.25);
+  --font-ui: 'IBM Plex Sans Condensed', sans-serif; --font-display: 'IBM Plex Sans Condensed', sans-serif; --font-key: 'IBM Plex Sans Condensed', sans-serif;
+  --fw-key: 700; --press-y: 3px; --press-scale: .98;
+}
+[data-theme="voyager"] .key .alt { color: #c8a35a; opacity: 1; top: auto; bottom: calc(100% + 1px); left: 0; right: 0; text-align: center; font-size: 8px; }
+[data-theme="voyager"] .keypad, [data-theme="voyager"] .sci > div { row-gap: calc(var(--gap) + 6px); }
+[data-theme="voyager"] .display { margin: 6px; }
+
+/* 7 ── Solar LCD · Casio SL-300: grey plastic, solar strip, seven-segment LCD with ghost segments */
+[data-theme="lcd"] {
+  --bg: #9fa3a8; --device: linear-gradient(180deg, #b9bcc0, #a9adb2); --device-solid: #b3b6ba; --device-border: #8d9197;
+  --device-shadow: 0 30px 60px -24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5);
+  --text: #1e2125; --muted: #4b5057; --surface: rgba(0,0,0,.06); --surface-2: rgba(0,0,0,.1); --border: rgba(0,0,0,.18);
+  --display-bg: linear-gradient(180deg, #c3cab0, #b5bc9f); --display-text: #1d2219; --display-muted: #59604f; --display-border: #6e736a;
+  --key: #3a3d42; --key-text: #f1f1f1; --key-op: #55595f; --key-op-text: #fff; --key-fn: #6d7177; --key-fn-text: #fff;
+  --key-eq: #2f3236; --key-eq-text: #fff; --key-ac: #d9472b; --key-ac-text: #fff;
+  --accent: #d9472b; --on-accent: #fff; --danger: #8e1c0a;
+  --tok-num: #1d2219; --tok-op: #1d2219; --tok-fn: #1d2219; --tok-paren: #1d2219; --tok-const: #1d2219;
+  --r-key: 10px; --r-card: 6px; --r-chip: 4px;
+  --shadow-key: 0 3px 0 #1d1f22, 0 6px 10px rgba(0,0,0,.25); --shadow-key-down: 0 0 0 #1d1f22; --press-y: 3px; --press-scale: .98;
+  --shadow-card: inset 0 3px 6px rgba(0,0,0,.25), 0 0 0 6px #7e8288, 0 0 0 7px #5e6268;
+  --font-ui: 'Archivo', sans-serif; --font-display: 'DSEG7', 'JetBrains Mono', monospace; --font-key: 'Archivo', sans-serif;
+  --fs-scale: .9; --ls-display: .02em;
+}
+[data-theme="lcd"] .display { margin: 8px 7px; font-style: italic; }
+[data-theme="lcd"] .lcd-ghost {
+  display: block; position: absolute; right: 18px; bottom: 12px; font: 700 calc(.9 * clamp(40px, 13vw, 64px)) / 1.2 'DSEG7', monospace;
+  color: #1d2219; opacity: .06; pointer-events: none; white-space: nowrap; overflow: hidden; max-width: calc(100% - 36px); direction: rtl;
+}
+[data-theme="lcd"] .display:not(.is-evaluated) .lcd-ghost { opacity: 0; }
+[data-theme="lcd"] .topbar::after {
+  content: ''; position: absolute; top: calc(env(safe-area-inset-top) + 14px); left: 50%; transform: translateX(-50%); width: 92px; height: 22px;
+  border-radius: 3px; background: repeating-linear-gradient(90deg, #3d2a22 0 22px, #2a1c17 22px 23px); box-shadow: inset 0 1px 3px rgba(0,0,0,.6);
+}
+@media (min-width: 560px) { [data-theme="lcd"] .topbar::after { top: 22px; } }
+[data-theme="lcd"] .topbar { position: relative; }
+
+/* 8 ── Phosphor · VT100: green glow, CRT scanlines, no fills */
+[data-theme="phosphor"] {
+  color-scheme: dark;
+  --bg: #020804; --device: transparent; --device-solid: #041008; --device-border: #0e3a1d;
+  --text: #39ff7a; --muted: #1f9a4b; --surface: rgba(57,255,122,.05); --surface-2: rgba(57,255,122,.1); --border: #11502a;
+  --display-bg: rgba(57,255,122,.03); --display-text: #39ff7a; --display-muted: #1f9a4b; --display-border: #11502a;
+  --key: transparent; --key-text: #39ff7a; --key-op: rgba(57,255,122,.06); --key-op-text: #39ff7a; --key-fn: transparent; --key-fn-text: #2bd665;
+  --key-eq: #39ff7a; --key-eq-text: #021a0a; --key-ac: transparent; --key-ac-text: #ffb000;
+  --key-border: #1a7a3e; --bw: 1px;
+  --accent: #39ff7a; --on-accent: #021a0a; --danger: #ffb000;
+  --tok-num: #39ff7a; --tok-op: #b6ffcf; --tok-fn: #ffb000; --tok-paren: #1f9a4b; --tok-const: #ffb000;
+  --r-key: 0; --r-card: 0; --r-chip: 0;
+  --shadow-key: 0 0 10px rgba(57,255,122,.12) inset; --shadow-key-down: 0 0 18px rgba(57,255,122,.5) inset; --shadow-card: 0 0 30px rgba(57,255,122,.08) inset;
+  --font-ui: 'VT323', monospace; --font-display: 'VT323', monospace; --font-key: 'VT323', monospace; --font-mono: 'VT323', monospace;
+  --fs-key: 32px; --fs-fn: 21px; --fw-key: 400; --fs-scale: 1.25; --ls-display: 0;
+  --overlay: repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 1px, transparent 1px 3px), radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,.6));
+  --bg-art: radial-gradient(ellipse at 50% 40%, #062a12, #020804 70%);
+}
+[data-theme="phosphor"] body, [data-theme="phosphor"] .key, [data-theme="phosphor"] .expr, [data-theme="phosphor"] .result { text-shadow: 0 0 6px rgba(57,255,122,.7); }
+[data-theme="phosphor"] .key[data-kind="ac"] { border-color: #6b4a00; text-shadow: 0 0 6px rgba(255,176,0,.7); }
+[data-theme="phosphor"] .key[data-kind="eq"] { text-shadow: none; box-shadow: 0 0 24px rgba(57,255,122,.45); }
+[data-theme="phosphor"] .fx-overlay { animation: flicker 6s infinite steps(1); }
+@keyframes flicker { 0%, 97% { opacity: 1; } 98% { opacity: .85; } }
+[data-theme="phosphor"] .brand-name::before { content: '> '; }
+[data-theme="phosphor"] .caret { width: .55em; height: 1em; vertical-align: -.15em; margin: 0; opacity: .8; }
+
+/* 9 ── Brutal · neo-brutalism: thick borders, hard offset shadows, loud fills */
+[data-theme="brutal"] {
+  --bg: #fffdf5; --device: transparent; --device-solid: #fffdf5; --device-border: #111;
+  --text: #111; --muted: #555; --surface: #fff; --surface-2: #f2efe4; --border: #111;
+  --display-bg: #fff; --display-text: #111; --display-muted: #666; --display-border: #111;
+  --key: #fff; --key-text: #111; --key-op: #ffde21; --key-op-text: #111; --key-fn: #c4f0c5; --key-fn-text: #111;
+  --key-eq: #ff5c39; --key-eq-text: #111; --key-ac: #8ae1ff; --key-ac-text: #111;
+  --key-border: #111; --bw: 3px;
+  --accent: #ff5c39; --on-accent: #111; --danger: #d6001c;
+  --tok-op: #d6001c; --tok-fn: #1a5cff; --tok-paren: #777; --tok-const: #8a2be2;
+  --r-key: 12px; --r-card: 14px; --r-chip: 10px;
+  --shadow-key: 4px 4px 0 #111; --shadow-key-down: 0 0 0 #111; --press-scale: 1; --press-y: 0px;
+  --shadow-card: 6px 6px 0 #111;
+  --font-ui: 'Space Grotesk', sans-serif; --font-display: 'Space Grotesk', sans-serif; --font-key: 'Space Grotesk', sans-serif;
+  --fw-key: 700; --fs-key: 26px; --ls-display: -0.03em;
+  --bg-art: linear-gradient(#111 2px, transparent 2px) 0 0 / 100% 64px;
+}
+[data-theme="brutal"] .bg-art { opacity: .04; }
+[data-theme="brutal"] .key.is-down { transform: translate(4px, 4px); }
+[data-theme="brutal"] .display { border-width: 3px; }
+[data-theme="brutal"] .tabs, [data-theme="brutal"] .icon-btn { border: 3px solid #111; box-shadow: 3px 3px 0 #111; }
+[data-theme="brutal"] .tab-ink { border-radius: 6px; }
+
+/* 10 ── Bauhaus · Dessau 1925: circles for digits, squares for operators, primaries */
+[data-theme="bauhaus"] {
+  --bg: #f1ece1; --device: transparent; --device-solid: #f1ece1; --device-border: transparent;
+  --text: #1d1d1b; --muted: #6b665c; --surface: rgba(29,29,27,.06); --surface-2: rgba(29,29,27,.1); --border: #1d1d1b;
+  --display-bg: #f8f4ea; --display-text: #1d1d1b; --display-muted: #77715f; --display-border: #1d1d1b;
+  --key: #1d1d1b; --key-text: #f1ece1; --key-op: #1f4e9c; --key-op-text: #f1ece1; --key-fn: #e8e1d2; --key-fn-text: #1d1d1b;
+  --key-eq: #d8342b; --key-eq-text: #f1ece1; --key-ac: #f2c230; --key-ac-text: #1d1d1b;
+  --accent: #d8342b; --on-accent: #f1ece1; --danger: #d8342b;
+  --tok-op: #1f4e9c; --tok-fn: #d8342b; --tok-paren: #b38f00; --tok-const: #d8342b;
+  --r-key: 999px; --r-card: 0; --r-chip: 0;
+  --shadow-key: none; --shadow-key-down: none; --shadow-card: none;
+  --font-ui: 'Josefin Sans', sans-serif; --font-display: 'Josefin Sans', sans-serif; --font-key: 'Josefin Sans', sans-serif;
+  --fw-key: 700; --ls-display: 0;
+  --bg-art:
+    radial-gradient(circle at 88% 12%, #f2c230 0 90px, transparent 91px),
+    linear-gradient(#d8342b, #d8342b) 96% 94% / 110px 110px no-repeat,
+    linear-gradient(45deg, #1f4e9c 0 50%, transparent 50%) 0 100% / 190px 190px no-repeat;
+}
+[data-theme="bauhaus"] .key[data-kind="op"], [data-theme="bauhaus"] .key[data-kind="ac"] { border-radius: 0; }
+[data-theme="bauhaus"] .key[data-kind="eq"] { border-radius: 0 999px 999px 0; }
+[data-theme="bauhaus"] .display { border-width: 0 0 6px 0; border-style: solid; }
+[data-theme="bauhaus"] .brand-name { text-transform: lowercase; letter-spacing: .02em; }
+
+/* 11 ── Soft · neumorphism, but with readable contrast */
+[data-theme="soft"] {
+  --bg: #e6e9ef; --device: #e6e9ef; --device-solid: #e6e9ef; --device-border: transparent; --r-device: 36px;
+  --device-shadow: 18px 18px 40px #c5cad3, -18px -18px 40px #ffffff;
+  --text: #2a3140; --muted: #5f6878; --surface: #e6e9ef; --surface-2: #dde1e8; --border: #cfd4dc;
+  --display-bg: #e6e9ef; --display-text: #2a3140; --display-muted: #646d7d; --display-border: transparent;
+  --key: #e6e9ef; --key-text: #2a3140; --key-op: #e6e9ef; --key-op-text: #2d6cdf; --key-fn: #e6e9ef; --key-fn-text: #4a5262;
+  --key-eq: #2d6cdf; --key-eq-text: #fff; --key-ac: #e6e9ef; --key-ac-text: #c93535;
+  --accent: #2d6cdf; --on-accent: #fff; --danger: #c93535;
+  --tok-op: #2d6cdf; --tok-fn: #9b4dca; --tok-paren: #8a93a3; --tok-const: #c93535;
+  --r-key: 20px; --r-card: 24px;
+  --shadow-key: 6px 6px 12px #c5cad3, -6px -6px 12px #ffffff; --shadow-key-down: inset 4px 4px 8px #c5cad3, inset -4px -4px 8px #ffffff;
+  --shadow-card: inset 6px 6px 14px #c9ced7, inset -6px -6px 14px #ffffff; --press-scale: .97;
+  --font-ui: 'Manrope', sans-serif; --font-display: 'Manrope', sans-serif; --font-key: 'Manrope', sans-serif; --fw-key: 700;
+}
+[data-theme="soft"] .key[data-kind="eq"] { box-shadow: 6px 6px 14px #b7c3da, -6px -6px 12px #ffffff; }
+[data-theme="soft"] .tabs, [data-theme="soft"] .icon-btn { border-color: transparent; box-shadow: inset 3px 3px 6px #c9ced7, inset -3px -3px 6px #fff; }
+
+/* 12 ── Dot Matrix · Nothing: OLED black, dot type, one red accent */
+[data-theme="dot"] {
+  color-scheme: dark;
+  --bg: #000; --device: transparent; --device-solid: #0a0a0a; --device-border: #1f1f1f;
+  --text: #f2f2f2; --muted: #7a7a7a; --surface: #101010; --surface-2: #181818; --border: #262626;
+  --display-bg: #000; --display-text: #fff; --display-muted: #6f6f6f; --display-border: #1c1c1c;
+  --key: #141414; --key-text: #f2f2f2; --key-op: #1e1e1e; --key-op-text: #f2f2f2; --key-fn: #0e0e0e; --key-fn-text: #bdbdbd;
+  --key-eq: #d71921; --key-eq-text: #fff; --key-ac: #f2f2f2; --key-ac-text: #000;
+  --accent: #d71921; --on-accent: #fff; --danger: #ff3b30;
+  --tok-num: #fff; --tok-op: #d71921; --tok-fn: #bdbdbd; --tok-paren: #6f6f6f; --tok-const: #d71921;
+  --shadow-key: none; --shadow-key-down: inset 0 0 0 1px #d71921; --shadow-card: none;
+  --font-ui: 'Space Mono', monospace; --font-display: 'Doto', 'Space Mono', monospace; --font-key: 'Doto', 'Space Mono', monospace; --font-mono: 'Space Mono', monospace;
+  --fw-key: 900; --fs-key: 30px; --fs-fn: 17px; --ls-display: .02em;
+  --bg-art: radial-gradient(rgba(255,255,255,.07) 1px, transparent 1.2px) 0 0 / 12px 12px;
+}
+[data-theme="dot"] .expr, [data-theme="dot"] .result { font-weight: 900; }
+[data-theme="dot"] .key[data-kind="fn"], [data-theme="dot"] .key[data-kind="mem"] { font-family: 'Space Mono', monospace; font-weight: 700; }
+
+/* 13 ── Blueprint · technical drawing: grid paper, outlined keys, title block */
+[data-theme="blueprint"] {
+  color-scheme: dark;
+  --bg: #123a6b; --device: transparent; --device-solid: #143f73; --device-border: rgba(219,232,255,.35);
+  --text: #e6efff; --muted: #9db6dc; --surface: rgba(219,232,255,.06); --surface-2: rgba(219,232,255,.12); --border: rgba(219,232,255,.35);
+  --display-bg: rgba(10,40,80,.55); --display-text: #ffffff; --display-muted: #9db6dc; --display-border: rgba(219,232,255,.6);
+  --key: rgba(18,58,107,.6); --key-text: #e6efff; --key-op: rgba(219,232,255,.1); --key-op-text: #fff; --key-fn: transparent; --key-fn-text: #c5d6f2;
+  --key-eq: #ffffff; --key-eq-text: #123a6b; --key-ac: transparent; --key-ac-text: #ffd166;
+  --key-border: rgba(219,232,255,.6); --bw: 1.5px;
+  --accent: #ffd166; --on-accent: #123a6b; --danger: #ff8a80;
+  --tok-num: #fff; --tok-op: #ffd166; --tok-fn: #8fd3ff; --tok-paren: #9db6dc; --tok-const: #ffd166;
+  --r-key: 3px; --r-card: 2px; --r-chip: 2px;
+  --shadow-key: none; --shadow-key-down: inset 0 0 0 2px #fff; --shadow-card: none;
+  --font-ui: 'IBM Plex Mono', monospace; --font-display: 'IBM Plex Mono', monospace; --font-key: 'IBM Plex Mono', monospace; --font-mono: 'IBM Plex Mono', monospace;
+  --fw-key: 400; --fs-key: 24px; --ls-display: 0;
+  --bg-art:
+    linear-gradient(rgba(219,232,255,.16) 1px, transparent 1px) 0 0 / 100px 100px,
+    linear-gradient(90deg, rgba(219,232,255,.16) 1px, transparent 1px) 0 0 / 100px 100px,
+    linear-gradient(rgba(219,232,255,.06) 1px, transparent 1px) 0 0 / 20px 20px,
+    linear-gradient(90deg, rgba(219,232,255,.06) 1px, transparent 1px) 0 0 / 20px 20px, #123a6b;
+}
+[data-theme="blueprint"] .key[data-kind="ac"] { border-style: dashed; }
+[data-theme="blueprint"] .display { border-style: dashed; }
+[data-theme="blueprint"] .display::after {
+  content: 'SCALE 1:1  ·  UNITS: ANY'; position: absolute; left: 14px; bottom: 6px; font: 500 9px var(--font-mono); letter-spacing: .12em; color: var(--display-muted); opacity: .7;
+}
+
+/* 14 ── Arcade · 8-bit cabinets: pixel font, stepped pixel borders, neon */
+[data-theme="arcade"] {
+  color-scheme: dark;
+  --bg: #14102b; --device: transparent; --device-solid: #1b1638; --device-border: #3a3170;
+  --text: #ffffff; --muted: #9b93d6; --surface: #221c45; --surface-2: #2c2558; --border: #3a3170;
+  --display-bg: #05040d; --display-text: #ffffff; --display-muted: #8a83c4; --display-border: #3a3170;
+  --key: #2a2350; --key-text: #fff; --key-op: #e8336f; --key-op-text: #fff; --key-fn: #221c45; --key-fn-text: #3fd0ff;
+  --key-eq: #ffd23f; --key-eq-text: #14102b; --key-ac: #3fd0ff; --key-ac-text: #14102b;
+  --accent: #ffd23f; --on-accent: #14102b; --danger: #ff4d6d;
+  --tok-num: #fff; --tok-op: #ff4d8d; --tok-fn: #3fd0ff; --tok-paren: #8a83c4; --tok-const: #ffd23f;
+  --r-key: 0; --r-card: 0; --r-chip: 0;
+  --shadow-key: inset -4px -4px 0 rgba(0,0,0,.35), inset 4px 4px 0 rgba(255,255,255,.18); --shadow-key-down: inset 4px 4px 0 rgba(0,0,0,.35);
+  --shadow-card: 0 0 0 4px #3a3170, 0 0 0 8px #14102b, 0 0 0 12px #2a2350;
+  --font-ui: 'Press Start 2P', monospace; --font-display: 'Press Start 2P', monospace; --font-key: 'Press Start 2P', monospace; --font-mono: 'Press Start 2P', monospace;
+  --fs-key: 18px; --fs-fn: 10px; --fw-key: 400; --fs-scale: .62; --press-scale: 1; --press-y: 3px; --ls-display: 0;
+  --bg-art: radial-gradient(#ffffff 1px, transparent 1.5px) 0 0 / 90px 70px, radial-gradient(#ffd23f 1px, transparent 1.5px) 40px 30px / 130px 110px, #14102b;
+}
+[data-theme="arcade"] .display { margin: 12px; }
+[data-theme="arcade"] .brand-name { font-size: 12px; }
+[data-theme="arcade"] .brand-label, [data-theme="arcade"] .chip, [data-theme="arcade"] .meta-hint, [data-theme="arcade"] .tabs [role="tab"] { font-size: 8px; }
+[data-theme="arcade"] .tape .t-res { font-size: 13px; }
+[data-theme="arcade"] .tape .t-expr, [data-theme="arcade"] .game-card p { font-size: 9px; line-height: 1.6; }

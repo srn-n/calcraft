@@ -1,0 +1,33 @@
+{
+  "name": "bouncy-calculator",
+  "version": "5.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Bouncy Calculator v5 — interactive, themed, offline calculator with games",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "build:single": "vite build --mode single",
+    "preview": "vite preview",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "vite": "6.3.5",
+    "vite-plugin-singlefile": "2.3.0",
+    "vitest": "3.2.4",
+    "@fontsource/archivo": "5.2.5",
+    "@fontsource/space-mono": "5.2.5",
+    "@fontsource/rajdhani": "5.2.5",
+    "@fontsource/jetbrains-mono": "5.2.5",
+    "@fontsource/fraunces": "5.2.5",
+    "@fontsource/ibm-plex-sans-condensed": "5.2.5",
+    "@fontsource/vt323": "5.2.5",
+    "@fontsource/space-grotesk": "5.2.5",
+    "@fontsource/josefin-sans": "5.2.5",
+    "@fontsource/manrope": "5.2.5",
+    "@fontsource/doto": "5.2.5",
+    "@fontsource/ibm-plex-mono": "5.2.5",
+    "@fontsource/press-start-2p": "5.2.5",
+    "dseg": "0.46.0"
+  }
+}
