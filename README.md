@@ -63,6 +63,14 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 **Adding a theme:** add an entry to `src/themes.js` and a `[data-theme="id"]` block of tokens to `themes.css`.
 
+## Privacy, terms and licences
+
+- The calculator makes no network requests. History, memory, theme, settings and game scores are saved in your browser's local storage and never leave your device.
+- Privacy Policy: https://www.simplymadestudio.net/privacy#bouncy-calculator
+- Terms of Use: https://www.simplymadestudio.net/terms#bouncy-calculator
+- Both are linked at the bottom of the Themes sheet in the app.
+- Every bundled font is used under the SIL Open Font License 1.1. The copyright notices and full licence text are in [`public/licenses.txt`](public/licenses.txt), which is also served with the app at `/licenses.txt`.
+
 ## Next steps (Windows / Android)
 
 - **Windows app**: wrap `dist/` with Tauri 2 (`npm create tauri-app`, set `frontendDist` to `../dist`). Expect an installer of about 3–5 MB.

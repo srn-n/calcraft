@@ -272,6 +272,9 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .switch input::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--text); transition: transform 360ms var(--spring); }
 .switch input:checked { background: var(--accent); }
 .switch input:checked::after { transform: translateX(18px); background: var(--on-accent); }
+.legal-links { display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 2px 2px; font: 500 11px var(--font-mono); color: var(--muted); }
+.legal-links a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+.legal-links a:hover { color: var(--text); }
 
 .palette {
   width: min(560px, calc(100vw - 24px)); margin: 12vh auto auto; border-radius: 16px; overflow: hidden;
