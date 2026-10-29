@@ -116,6 +116,10 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 @keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
 .app[data-view="tools"] .pad-wrap { display: none; }
 .app[data-view="games"] .sci, .app[data-view="games"] .mem-row { display: none; }
+/* Games menu and intro card: no keypad (it does nothing there), and the list can scroll */
+.app[data-view="games"]:not([data-playing]) .pad-wrap { display: none; }
+.view-games { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+.view-games:has(> .game) { overflow: hidden; }
 
 /* ============ Display ============ */
 .display {
@@ -408,6 +412,28 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .game-q small { display: block; font: 600 12px/1.4 var(--font-mono); letter-spacing: .06em; color: var(--display-muted); margin-top: 6px; }
 .game-in { min-height: 1.2em; text-align: right; font: 700 calc(var(--fs-scale) * 30px)/1.2 var(--font-display); white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
 .game-in.good { color: var(--accent); }
+.game-in.shake { animation: shake 300ms var(--out); color: var(--danger); }
+.game-intro .intro-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: safe center; gap: 10px; text-align: center; padding: 6px 4px; }
+.game-intro .g-icon { font: 800 34px/1 var(--font-display); color: var(--accent); }
+.game-intro h3 { margin: 0; font: 800 22px var(--font-display); }
+.intro-rules { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; max-width: 32ch; font: 500 13px/1.4 var(--font-ui); color: var(--display-text); }
+.intro-rules li { padding: 6px 10px; border-radius: 10px; background: var(--surface); }
+.game-intro .best { font: 700 10px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--display-muted); }
+.game-intro .pill-btn { min-width: 160px; min-height: 44px; }
+/* Start stays pinned to the bottom of the card even when the rules need scrolling */
+.game-intro .btn-row { position: sticky; bottom: -10px; margin: 0 -14px -10px; padding: 8px 14px 10px; background: var(--display-bg); }
+@container game (max-height: 300px) {
+  .game-intro .g-icon { display: none; }
+  .game-intro h3 { font-size: 17px; }
+  .game-intro .intro-body { gap: 6px; padding: 2px; }
+  .intro-rules { gap: 4px; font-size: 12px; }
+  .intro-rules li { padding: 4px 8px; }
+}
+@media (max-height: 520px) {
+  .game-card { min-height: 0; padding: 10px 12px; gap: 4px; }
+  .game-card .g-icon { font-size: 20px; }
+  .game-card p { font-size: 11px; }
+}
 .game-msg { min-height: 1.3em; font: 600 12px var(--font-mono); color: var(--display-muted); text-align: right; }
 .combo { color: var(--accent); }
 .n-chips { display: flex; gap: 8px; justify-content: center; }
@@ -518,6 +544,8 @@ html { overscroll-behavior: none; } /* no pull-to-refresh / rubber-band while sw
   .app[data-view="tools"] .stage { grid-area: 2 / 1 / 4 / -1; }
   .app[data-view="games"] .stage { grid-area: 2 / 1 / 4 / 3; }
   .app[data-view="games"] { --disp-min: 0px; }
+  .app[data-view="games"]:not([data-playing]) .stage { grid-area: 2 / 1 / 4 / -1; }
+  .game-menu { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .meta-hint { display: none; }
   .side { max-height: 92dvh; }
 }

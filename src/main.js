@@ -153,7 +153,7 @@ function dispatch(a, meta = {}) {
       case 'palette': palette.open(); return;
     }
   }
-  if (S().view === 'games' && games.isPlaying()) {
+  if (S().view === 'games' && games.wantsKeys()) {
     if (kind !== 'eq') feedback(kind);
     games.action(a, meta);
     return;
@@ -267,6 +267,8 @@ const tools = createTools($('#tools'), {
 const games = createGames($('#games'), {
   buzz, play, burst, toast, setBroken, isBroken,
   shake,
+  // The keypad only shows while a game runs; on the menu and intro it would just eat the screen.
+  onPlayingChange: (on) => { $('#app').toggleAttribute('data-playing', on); },
   nope: (a) => { const id = idForAction(a); if (id) nope(id); },
 });
 

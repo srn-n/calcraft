@@ -11,7 +11,7 @@ export function sprint(stage, ctx) {
   const bar = h('div.timebar', {}, h('i'));
   const qEl = h('div.game-q');
   const inEl = h('div.game-in');
-  const msg = h('div.game-msg', {}, 'Type the answer — it checks itself.');
+  const msg = h('div.game-msg', {}, 'Type the answer. = skips.');
   stage.append(gameHead('Sprint', ctx, comboEl, h('span', {}, 'Score ', scoreEl)), bar, qEl, inEl, msg);
 
   const mult = () => Math.min(5, 1 + Math.floor(streak / 3));
@@ -29,12 +29,23 @@ export function sprint(stage, ctx) {
     if (left <= 0) return end();
     raf = requestAnimationFrame(tick);
   };
-  const begin = () => { started = true; t0 = performance.now(); raf = requestAnimationFrame(tick); msg.textContent = ''; };
+  const begin = () => { started = true; t0 = performance.now(); raf = requestAnimationFrame(tick); };
 
+  // A right answer is accepted as soon as it's typed. A wrong one is never judged on its own:
+  // it shakes as a hint and waits for ⌫ (fix) or = (skip). Before, a single mistyped digit on a
+  // one-digit answer was marked wrong instantly and the next tap landed on the next sum.
+  function nudge() {
+    inEl.classList.remove('shake'); void inEl.offsetWidth; inEl.classList.add('shake');
+    msg.textContent = 'Not quite. ⌫ to fix, = to skip.';
+  }
   function check(final) {
-    if (input === '' || input === '−') return;
+    if (input === '' || input === '−') {
+      if (final) { streak = 0; wrong++; msg.textContent = `${q.q} = ${q.answer}`; next(); }
+      return;
+    }
     const v = Number(input.replace('−', '-'));
     if (v === q.answer) {
+      msg.textContent = '';
       streak++; correct++;
       const pts = 10 * mult();
       score += pts;
@@ -44,7 +55,9 @@ export function sprint(stage, ctx) {
       setTimeout(() => inEl.classList.remove('good'), 150);
       if (streak > 0 && streak % 9 === 0) ctx.burst({ count: 40 });
       next();
-    } else if (final || input.replace('−', '').length >= String(Math.abs(q.answer)).length) {
+    } else if (!final) {
+      if (input.replace('−', '').length >= String(Math.abs(q.answer)).length) nudge();
+    } else {
       streak = 0; wrong++;
       ctx.buzz('error'); ctx.play('error'); ctx.shake?.(stage);
       msg.textContent = `${q.q} = ${q.answer}`;
@@ -73,14 +86,15 @@ export function sprint(stage, ctx) {
   }
 
   next();
+  begin(); // the intro card's Start button is the "ready"; the clock runs from here
   const api = {
     action(a) {
       if (over) { if (a.type === 'cmd' && a.cmd === 'eq') restart(); return true; }
-      if (a.type === 'ins' && /^[0-9]$/.test(a.tok)) { if (!started) begin(); if (input.length < 7) input += a.tok; draw(); check(false); return true; }
+      if (a.type === 'ins' && /^[0-9]$/.test(a.tok)) { if (input.length < 7) input += a.tok; draw(); check(false); return true; }
       if (a.type === 'ins' && a.tok === '−' && !input) { input = '−'; draw(); return true; }
-      if (a.type === 'cmd' && a.cmd === 'bksp') { input = input.slice(0, -1); draw(); return true; }
+      if (a.type === 'cmd' && a.cmd === 'bksp') { input = input.slice(0, -1); msg.textContent = ''; draw(); return true; }
       if (a.type === 'cmd' && a.cmd === 'ac') { input = ''; draw(); return true; }
-      if (a.type === 'cmd' && a.cmd === 'eq') { if (!started) begin(); else check(true); return true; }
+      if (a.type === 'cmd' && a.cmd === 'eq') { check(true); return true; }
       ctx.nope(a); return true;
     },
     destroy() { dead = true; cancelAnimationFrame(raf); },
