@@ -1,0 +1,122 @@
+/* ============ Loading screen ============
+   Built from the active theme's own tokens and key styles, so every theme gets its own version:
+   the Simply Made Studio mark (two capsule "keys") bounces in, a mini keypad assembles key by key,
+   the display counts up, then the keys drop away and the calculator rises into place.
+   Pure CSS (no inline styles, CSP-safe). JS only adds .is-leaving when the app is ready. */
+
+.splash {
+  position: fixed; inset: 0; z-index: 55; /* under the theme's grain/scanline overlay (z 60), so it gets it too */
+  display: grid; place-items: center; align-content: center; gap: 22px;
+  background: var(--bg-art); background-color: var(--bg); color: var(--text);
+  padding: 24px;
+  -webkit-user-select: none; user-select: none;
+  /* failsafe: if the script never runs, never trap the user behind the splash */
+  animation: splash-failsafe 400ms ease 6s forwards;
+}
+@keyframes splash-failsafe { to { opacity: 0; visibility: hidden; } }
+
+.splash-device {
+  width: min(232px, 62vw); display: grid; gap: 10px; padding: 14px;
+  background: var(--device-solid, var(--bg)); border: 1px solid var(--device-border, var(--border));
+  border-radius: calc(var(--r-device) * .7); box-shadow: var(--device-shadow);
+  animation: splash-rise 520ms var(--spring) both;
+}
+@keyframes splash-rise { from { transform: translateY(26px) scale(.94); opacity: 0; } }
+
+.splash-display {
+  position: relative; height: 54px; display: flex; align-items: flex-end; justify-content: flex-end; gap: 4px;
+  padding: 6px 12px; overflow: hidden;
+  background: var(--display-bg); color: var(--display-text); border: 1px solid var(--display-border);
+  border-radius: calc(var(--r-card) * .7); box-shadow: var(--shadow-card);
+  font: 700 calc(var(--fs-scale) * 30px)/1 var(--font-display); letter-spacing: var(--ls-display);
+}
+.splash-display small { font-size: .5em; color: var(--display-muted); margin-bottom: .2em; }
+
+/* The display counts 0 → 100 while things load (integer @property; older browsers just show the end) */
+@property --splash-n { syntax: '<integer>'; inherits: false; initial-value: 0; }
+.splash-num { --splash-n: 100; counter-reset: n var(--splash-n); animation: splash-count 1050ms cubic-bezier(.3, .1, .2, 1) 180ms both; }
+.splash-num::after { content: counter(n); }
+@keyframes splash-count { from { --splash-n: 0; } to { --splash-n: 100; } }
+
+/* Mini keypad, using the real .key styles of the theme (shape, colour, texture, shadows) */
+.splash-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.splash .key {
+  height: auto; aspect-ratio: 1.12; min-width: 0; padding: 0; cursor: default; pointer-events: none;
+  font-size: 0; /* no labels: shapes only */
+  animation: splash-key-in 560ms var(--spring) both;
+  transition: none;
+}
+@keyframes splash-key-in {
+  0% { transform: translateY(-90px) scale(.6); opacity: 0; }
+  55% { transform: translateY(4px) scaleX(1.08) scaleY(.88); opacity: 1; } /* lands with a squash */
+  75% { transform: translateY(-3px) scale(.98); }
+}
+/* diagonal ripple: the = key lands last */
+.splash .key:nth-child(1) { animation-delay: 220ms; }
+.splash .key:nth-child(2), .splash .key:nth-child(5) { animation-delay: 270ms; }
+.splash .key:nth-child(3), .splash .key:nth-child(6), .splash .key:nth-child(9) { animation-delay: 320ms; }
+.splash .key:nth-child(4), .splash .key:nth-child(7), .splash .key:nth-child(10), .splash .key:nth-child(13) { animation-delay: 370ms; }
+.splash .key:nth-child(8), .splash .key:nth-child(11), .splash .key:nth-child(14) { animation-delay: 420ms; }
+.splash .key:nth-child(12), .splash .key:nth-child(15) { animation-delay: 470ms; }
+.splash .key:nth-child(16) { animation: splash-key-in 560ms var(--spring) 560ms both, splash-press 260ms var(--out) 1180ms; }
+@keyframes splash-press { 50% { transform: translateY(var(--press-y)) scale(var(--press-scale)); box-shadow: var(--shadow-key-down); } }
+
+/* Name + studio mark */
+.splash-name { display: grid; justify-items: center; gap: 8px; text-align: center; }
+.splash-name b { font: 800 26px/1 var(--font-ui); letter-spacing: -0.02em; animation: splash-fade-up 500ms var(--out) 640ms both; }
+.splash-studio {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 11px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+  animation: splash-fade-up 500ms var(--out) 800ms both;
+}
+@keyframes splash-fade-up { from { transform: translateY(8px); opacity: 0; } }
+
+/* Simply Made Studio mark: two offset capsules, which bounce in like two keys */
+.splash-mark { position: relative; width: 22px; height: 20px; flex: none; }
+.splash-mark i { position: absolute; width: 17px; height: 9px; border-radius: 9px; background: currentColor; }
+.splash-mark i:first-child { top: 0; right: 0; animation: splash-cap 620ms var(--spring) 820ms both; }
+.splash-mark i:last-child { bottom: 0; left: 0; animation: splash-cap 620ms var(--spring) 900ms both; }
+@keyframes splash-cap { 0% { transform: translateY(-14px) scaleX(.6); opacity: 0; } 60% { transform: translateY(1px) scaleX(1.15) scaleY(.8); opacity: 1; } }
+
+/* ---- Leaving: keys fall away, the screen fades, the calculator rises in ---- */
+.splash.is-leaving { animation: splash-out 420ms var(--out) 180ms forwards; pointer-events: none; }
+@keyframes splash-out { to { opacity: 0; visibility: hidden; } }
+.splash.is-leaving .key { animation: splash-key-out 520ms cubic-bezier(.55, 0, .8, .25) both; }
+.splash.is-leaving .key:nth-child(4n + 2) { animation-delay: 40ms; }
+.splash.is-leaving .key:nth-child(4n + 3) { animation-delay: 80ms; }
+.splash.is-leaving .key:nth-child(4n) { animation-delay: 120ms; }
+@keyframes splash-key-out { to { transform: translateY(120px) rotate(12deg); opacity: 0; } }
+.splash.is-leaving .splash-name, .splash.is-leaving .splash-display { transition: opacity 260ms; opacity: 0; }
+
+html.app-in .app { animation: app-in 560ms var(--spring) both; }
+@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 560ms var(--spring) 80ms both; } }
+@keyframes app-in { from { transform: translateY(18px) scale(.985); opacity: 0; } }
+
+/* ---- A few theme-specific touches ---- */
+[data-theme="phosphor"] .splash-display, [data-theme="phosphor"] .splash-name b { text-shadow: 0 0 8px rgba(57,255,122,.7); }
+[data-theme="phosphor"] .splash-num::before { content: '> '; }
+[data-theme="lcd"] .splash-display::before, [data-theme="dsky"] .splash-display::before {
+  content: '888'; position: absolute; right: 12px; bottom: 6px; opacity: .07; /* unlit segments */
+}
+[data-theme="lcd"] .splash-display, [data-theme="dsky"] .splash-display { justify-content: flex-end; }
+[data-theme="lcd"] .splash-display small, [data-theme="dsky"] .splash-display small { display: none; }
+[data-theme="dsky"] .splash-display { text-shadow: 0 0 8px rgba(109,255,122,.45); }
+[data-theme="arcade"] .splash-name b { font-size: 14px; }
+[data-theme="arcade"] .splash-name b::after { content: 'PRESS START'; display: block; margin-top: 10px; font-size: 9px; color: var(--accent); animation: splash-blink 900ms steps(1) infinite; }
+@keyframes splash-blink { 50% { opacity: 0; } }
+[data-theme="cyber"] .splash-name b { animation: splash-fade-up 500ms var(--out) 640ms both, splash-glitch 1.6s steps(1) 1.1s infinite; }
+@keyframes splash-glitch { 0%, 92% { transform: none; text-shadow: none; } 93% { transform: translateX(2px); text-shadow: -2px 0 #ff2a6d, 2px 0 #00f3ff; } 96% { transform: translateX(-1px); } }
+[data-theme="clay"] .splash-keys { transform: rotate(-.6deg); }
+[data-theme="blueprint"] .splash-device { border-style: dashed; }
+[data-theme="brutal"] .splash-device { border: 3px solid #111; box-shadow: 6px 6px 0 #111; }
+[data-theme="glass"] .splash-device { background: var(--device); -webkit-backdrop-filter: blur(22px) saturate(180%); backdrop-filter: blur(22px) saturate(180%); }
+
+/* Reduced motion: no flying keys, just a calm fade */
+@media (prefers-reduced-motion: reduce) {
+  .splash *, .splash { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+  .splash { animation: splash-failsafe 1ms ease 6s forwards !important; }
+  .splash.is-leaving { animation: splash-out 200ms linear forwards !important; }
+  html.app-in .app, html.app-in .side { animation: none !important; }
+}
+html.reduce-motion .splash.is-leaving { animation: splash-out 200ms linear forwards !important; }
+html.reduce-motion.app-in .app { animation: none !important; }

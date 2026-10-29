@@ -2,8 +2,9 @@
   "name": "bouncy-calculator",
   "version": "5.1.0",
   "private": true,
+  "author": "Simply Made Studio (https://www.simplymadestudio.net)",
   "type": "module",
-  "description": "Bouncy Calculator v5 — interactive, themed, offline calculator with games",
+  "description": "Bouncy Calculator by Simply Made Studio — interactive, themed, offline calculator with games",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

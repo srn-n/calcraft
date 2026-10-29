@@ -1,5 +1,7 @@
 # Bouncy Calculator v5 (web)
 
+By **[Simply Made Studio](https://www.simplymadestudio.net)**, Sydney. Small software that asks for nothing and works beautifully.
+
 A fast, offline, deeply interactive calculator. The maths is simple, so the UI is the product.
 It has 24 themes based on real objects, focused tools, and four games you play on the calculator's own keypad.
 
@@ -63,6 +65,10 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 **Adding a theme:** add an entry to `src/themes.js` (set `square: true` for square keys in the picker preview) and a `[data-theme="id"]` block of tokens to `themes.css`. Keep small text (`--muted`, `--display-muted`) at 4.5:1 contrast or better.
 
+## Loading screen
+
+The splash in `index.html` is styled entirely by the active theme (`src/styles/splash.css`): the Simply Made Studio mark bounces in, a mini keypad assembles using the theme's real key styles, the display counts to 100, then the keys drop away as the calculator rises in. It plays fully once per session (~1.3 s), is shorter on later reloads, becomes a plain fade with Reduce Motion, and hides itself after 6 s even if JavaScript fails.
+
 ## Phones
 
 - Keys size themselves to the screen: the bottom row is never pushed under Safari's or Chrome's toolbar, from a 320×480 phone up to a Pro Max, in all 24 themes, with the fx panel open or closed.
@@ -82,7 +88,7 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 ## Privacy, terms and licences
 
-- **Feedback:** *Send feedback* (bottom of the Themes sheet, or “Send feedback” in Ctrl+K) opens the user's mail app with a draft to samiiiur@yahoo.com, including the theme, screen size and browser so bugs are easy to reproduce. The user sees and can edit everything before sending. If no mail app is set up, the address is copied instead. Change it in `src/ui/feedback.js`.
+- **Feedback:** *Send feedback* (bottom of the Themes sheet, or “Send feedback” in Ctrl+K) opens the user's mail app with a draft to Simply Made Studio (samiiiur@yahoo.com, the studio's contact address), including the theme, screen size and browser so bugs are easy to reproduce. The user sees and can edit everything before sending. If no mail app is set up, the address is copied instead. Change it in `src/ui/feedback.js`.
 - The calculator makes no network requests. History, memory, theme, settings and game scores are saved in your browser's local storage and never leave your device.
 - Privacy Policy: https://www.simplymadestudio.net/privacy#bouncy-calculator
 - Terms of Use: https://www.simplymadestudio.net/terms#bouncy-calculator

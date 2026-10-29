@@ -1,4 +1,5 @@
-// Feedback: opens the user's own mail app with a pre-filled draft. Nothing is sent by the app itself,
+// Feedback: opens the user's own mail app with a pre-filled draft to Simply Made Studio.
+// Nothing is sent by the app itself,
 // the user sees and can edit everything before pressing Send in their mail app.
 import { toast } from './toast.js';
 

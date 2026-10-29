@@ -11,6 +11,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="apple-mobile-web-app-title" content="Bouncy" />
   <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
+  <meta name="author" content="Simply Made Studio" />
   <meta name="description" content="Bouncy Calculator — a fast, offline, deeply interactive calculator with 24 themes, tools and games." />
   <title>Bouncy Calculator</title>
   <link rel="icon" type="image/svg+xml" href="./icon.svg" />
@@ -28,6 +29,23 @@
   </script>
 </head>
 <body>
+  <!-- Loading screen: plain markup so it paints with the first frame, styled by the active theme -->
+  <div class="splash" id="splash" role="status" aria-busy="true" aria-label="Loading Bouncy Calculator">
+    <div class="splash-device" aria-hidden="true">
+      <div class="splash-display"><span class="splash-num"></span><small>%</small></div>
+      <div class="splash-keys">
+        <i class="key" data-kind="ac"></i><i class="key" data-kind="op"></i><i class="key" data-kind="op"></i><i class="key" data-kind="op"></i>
+        <i class="key" data-kind="num"></i><i class="key" data-kind="num"></i><i class="key" data-kind="num"></i><i class="key" data-kind="op"></i>
+        <i class="key" data-kind="num"></i><i class="key" data-kind="num"></i><i class="key" data-kind="num"></i><i class="key" data-kind="op"></i>
+        <i class="key" data-kind="num"></i><i class="key" data-kind="num"></i><i class="key" data-kind="num"></i><i class="key" data-kind="eq"></i>
+      </div>
+    </div>
+    <div class="splash-name">
+      <b>Bouncy</b>
+      <span class="splash-studio"><span class="splash-mark" aria-hidden="true"><i></i><i></i></span>Simply Made Studio</span>
+    </div>
+  </div>
+
   <div class="bg-art" aria-hidden="true"></div>
   <div class="fx-overlay" aria-hidden="true"></div>
 
@@ -112,7 +130,7 @@
     <div class="theme-grid" id="themeGrid"></div>
     <div class="settings" id="settings"></div>
     <div class="feedback-row">
-      <span>Found a bug or have an idea?<small>Opens your mail app with a draft to the developer.</small></span>
+      <span>Found a bug or have an idea?<small>Opens your mail app with a draft to Simply Made Studio.</small></span>
       <button class="pill-btn" id="feedbackBtn" type="button">Send feedback</button>
     </div>
     <p class="legal-links">
@@ -121,6 +139,7 @@
       <a href="https://www.simplymadestudio.net/terms#bouncy-calculator" target="_blank" rel="noopener">Terms</a>
       <a href="./licenses.txt" target="_blank" rel="noopener">Font licences</a>
     </p>
+    <p class="legal-links studio-credit">© 2026 <a href="https://www.simplymadestudio.net/" target="_blank" rel="noopener">Simply Made Studio</a> · Sydney</p>
   </dialog>
 
   <dialog class="palette" id="palette" aria-label="Command palette" tabindex="-1">

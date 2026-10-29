@@ -1,6 +1,8 @@
 import './styles/fonts.css';
 import './styles/base.css';
 import './styles/themes.css';
+import './styles/splash.css';
+import { dismissSplash } from './ui/splash.js';
 
 import { createStore } from './core/store.js';
 import { load, save } from './core/storage.js';
@@ -382,6 +384,8 @@ render(S());
 $('#metaHint').textContent = matchMedia('(hover: hover)').matches
   ? 'type to calculate · Ctrl+K commands'
   : 'swipe ← delete · ↓ clear · ↑ tape';
+
+dismissSplash();
 
 // Installable offline app when served over http(s) (not in the single-file build).
 if (import.meta.env.PROD && import.meta.env.MODE !== 'single' && location.protocol.startsWith('http') && 'serviceWorker' in navigator) {
