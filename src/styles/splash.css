@@ -1,58 +1,94 @@
-/* ============ Loading screen (~2 s) ============
-   Styled entirely by the active theme's tokens and real .key styles, so all 24 themes get their own.
-   0.00–0.50 s  Simply Made Studio mark: two capsules slide together and lock ("presents")
-   0.30–1.10 s  the calculator rises, keys settle in a soft wave (blur → sharp)
-   0.50–1.60 s  the display counts to 100 % with a progress line; keys press in a ripple as it counts
-   1.00–1.60 s  "Bouncy" bounces in letter by letter
-   1.65–2.10 s  the calculator zooms gently toward you and dissolves into the real app (JS adds .is-leaving)
-   Footer: Privacy Policy · Terms, visible throughout. Pure CSS, CSP-safe (no inline styles). */
+/* ============ Loading screen (~5 s, tap or any key to skip after the studio name) ============
+   Styled by the active theme's tokens and real .key styles, so all 24 themes get their own version.
+
+   0.0 – 2.0 s  STUDIO CARD, centred and alone: the two-capsule mark slides together and locks,
+                "Simply Made Studio" fades in large, then "presents".
+   2.0 – 2.4 s  the card shrinks away; the name stays on as a small header.
+   2.2 – 4.5 s  CALCULATOR: rises from blur, keys settle in a wave, the display counts to 100 %
+                with a progress line while the keys press in a ripple, "Bouncy" bounces in.
+   4.5 – 5.0 s  the calculator zooms toward you and dissolves into the app (JS adds .is-leaving).
+
+   All timings for the calculator scene are offsets from --c, so the whole act moves together.
+   Pure CSS (no inline styles, CSP-safe). */
 
 .splash {
   --ease-soft: cubic-bezier(.22, 1, .36, 1);
   --ease-spring: cubic-bezier(.34, 1.4, .64, 1);
+  --c: 2200ms; /* when the calculator scene begins */
   position: fixed; inset: 0; z-index: 55; /* under the theme's grain / scanline overlay (z 60) */
   display: grid; grid-template-rows: 1fr auto 1fr auto; justify-items: center; align-items: center;
   padding: calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 16px);
   background: var(--bg-art); background-color: var(--bg); color: var(--text);
-  -webkit-user-select: none; user-select: none;
-  animation: splash-failsafe 400ms ease 6s forwards; /* never trap anyone if the script fails */
+  -webkit-user-select: none; user-select: none; cursor: default;
+  animation: splash-failsafe 400ms ease 8s forwards; /* never trap anyone if the script fails */
 }
 @keyframes splash-failsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+@keyframes splash-fade-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-/* soft spotlight behind the device, in the theme's accent */
+/* accent spotlight, which grows when the calculator arrives */
 .splash::before {
-  content: ''; position: absolute; left: 50%; top: 46%; width: min(520px, 120vw); aspect-ratio: 1; translate: -50% -50%;
+  content: ''; position: absolute; left: 50%; top: 46%; width: min(560px, 125vw); aspect-ratio: 1; translate: -50% -50%;
   background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
-  opacity: 0; animation: splash-glow 1400ms var(--ease-soft) 200ms forwards; pointer-events: none;
+  opacity: 0; pointer-events: none;
+  animation: splash-glow-a 1200ms var(--ease-soft) 200ms forwards, splash-glow-b 1400ms var(--ease-soft) var(--c) forwards;
 }
-@keyframes splash-glow { to { opacity: .7; } }
+@keyframes splash-glow-a { to { opacity: .45; } }
+@keyframes splash-glow-b { from { opacity: .45; } to { opacity: .75; } }
 
-/* ---- 1. Studio intro ---- */
-.splash-presents {
-  align-self: end; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 26px;
-  font: 600 11px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+/* ---- Act 1: the studio card ---- */
+.splash-intro {
+  position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 18px; text-align: center;
+  pointer-events: none;
+  animation: splash-intro-out 520ms cubic-bezier(.5, 0, .2, 1) 1950ms forwards;
 }
-.splash-presents span { opacity: 0; animation: splash-fade-up 520ms var(--ease-soft) 280ms forwards; }
+@keyframes splash-intro-out { to { opacity: 0; transform: translateY(-18px) scale(.92); filter: blur(4px); visibility: hidden; } }
+.splash-intro .splash-mark { width: 60px; height: 55px; }
+.splash-intro .splash-mark i { width: 46px; height: 24px; border-radius: 24px; }
+.splash-intro-name {
+  font: 650 clamp(24px, 7vw, 34px)/1.1 var(--font-ui); letter-spacing: -0.02em; color: var(--text);
+  opacity: 0; animation: splash-name-in 900ms var(--ease-soft) 550ms forwards;
+}
+@keyframes splash-name-in { from { opacity: 0; letter-spacing: .12em; filter: blur(6px); } to { opacity: 1; letter-spacing: -0.02em; filter: blur(0); } }
+.splash-intro-sub {
+  font: 600 12px/1 var(--font-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--muted);
+  opacity: 0; animation: splash-fade-up 600ms var(--ease-soft) 1150ms forwards;
+}
+/* a thin rule that draws under the name */
+.splash-intro-name::after {
+  content: ''; display: block; height: 2px; margin: 12px auto 0; width: 64px; border-radius: 2px; background: var(--accent);
+  transform: scaleX(0); animation: splash-rule 700ms var(--ease-soft) 900ms forwards;
+}
+@keyframes splash-rule { to { transform: scaleX(1); } }
+
+/* the mark: two offset capsules that slide together and lock */
 .splash-mark { position: relative; width: 26px; height: 24px; flex: none; color: var(--text); }
 .splash-mark i { position: absolute; width: 20px; height: 10.5px; border-radius: 10px; background: currentColor; }
-.splash-mark i:first-child { top: 0; right: 0; animation: splash-cap-r 640ms var(--ease-spring) both; }
-.splash-mark i:last-child { bottom: 0; left: 0; animation: splash-cap-l 640ms var(--ease-spring) 60ms both; }
-@keyframes splash-cap-r { from { transform: translateX(22px); opacity: 0; } }
-@keyframes splash-cap-l { from { transform: translateX(-22px); opacity: 0; } }
+.splash-mark i:first-child { top: 0; right: 0; }
+.splash-mark i:last-child { bottom: 0; left: 0; }
+.splash-intro .splash-mark i:first-child { animation: splash-cap-r 820ms var(--ease-spring) 100ms both; }
+.splash-intro .splash-mark i:last-child { animation: splash-cap-l 820ms var(--ease-spring) 180ms both; }
+@keyframes splash-cap-r { 0% { transform: translateX(46px); opacity: 0; } 70% { transform: translateX(-3px); opacity: 1; } }
+@keyframes splash-cap-l { 0% { transform: translateX(-46px); opacity: 0; } 70% { transform: translateX(3px); opacity: 1; } }
+/* the "lock" moment: a tiny squeeze once both capsules meet */
+.splash-intro .splash-mark { animation: splash-lock 360ms var(--ease-soft) 880ms; }
+@keyframes splash-lock { 50% { transform: scale(.94, 1.06); } }
 
-/* ---- 2. The calculator ---- */
+/* ---- Act 2 header: the studio name stays on, small ---- */
+.splash-presents {
+  align-self: end; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 26px;
+  font: 600 12px/1 var(--font-mono); letter-spacing: .16em; text-transform: uppercase; color: var(--muted);
+  opacity: 0; animation: splash-fade-up 600ms var(--ease-soft) calc(var(--c) - 100ms) forwards;
+}
+
+/* ---- Act 2: the calculator ---- */
 .splash-stage { display: grid; justify-items: center; gap: 18px; }
 .splash-device {
   position: relative; width: min(228px, 60vw); display: grid; gap: 10px; padding: 14px;
   background: var(--device-solid, var(--bg)); border: 1px solid var(--device-border, var(--border));
-  border-radius: calc(var(--r-device) * .7);
-  box-shadow: var(--device-shadow);
-  animation: splash-rise 820ms var(--ease-soft) 300ms both;
+  border-radius: calc(var(--r-device) * .7); box-shadow: var(--device-shadow);
+  animation: splash-rise 900ms var(--ease-soft) var(--c) both;
 }
-@keyframes splash-rise {
-  from { transform: translateY(34px) scale(.92); opacity: 0; filter: blur(6px); }
-  60% { filter: blur(0); }
-}
+@keyframes splash-rise { from { transform: translateY(34px) scale(.92); opacity: 0; filter: blur(6px); } 60% { filter: blur(0); } }
 
 .splash-display {
   position: relative; height: 56px; display: flex; align-items: flex-end; justify-content: flex-end; gap: 4px;
@@ -62,25 +98,24 @@
   font: 700 calc(var(--fs-scale) * 30px)/1 var(--font-display); letter-spacing: var(--ls-display);
 }
 .splash-display small { font-size: .5em; color: var(--display-muted); margin-bottom: .2em; }
-/* progress line along the bottom of the display */
 .splash-display::after {
   content: ''; position: absolute; left: 10px; right: 10px; bottom: 5px; height: 2px; border-radius: 2px;
   background: var(--accent); transform-origin: left; transform: scaleX(0);
-  animation: splash-bar 1100ms cubic-bezier(.45, .05, .2, 1) 500ms forwards;
+  animation: splash-bar 1800ms cubic-bezier(.45, .05, .2, 1) calc(var(--c) + 300ms) forwards;
 }
 @keyframes splash-bar { to { transform: scaleX(1); } }
 
 @property --splash-n { syntax: '<integer>'; inherits: false; initial-value: 0; }
-.splash-num { --splash-n: 100; counter-reset: n var(--splash-n); animation: splash-count 1100ms cubic-bezier(.45, .05, .2, 1) 500ms both; }
+.splash-num { --splash-n: 100; counter-reset: n var(--splash-n); animation: splash-count 1800ms cubic-bezier(.45, .05, .2, 1) calc(var(--c) + 300ms) both; }
 .splash-num::after { content: counter(n); }
 @keyframes splash-count { from { --splash-n: 0; } to { --splash-n: 100; } }
 
-/* keys: the theme's real key styles */
 .splash-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
 .splash .key {
   height: auto; aspect-ratio: 1.12; min-width: 0; padding: 0; font-size: 0; cursor: default; pointer-events: none;
   transition: none;
-  animation: splash-key-in 620ms var(--ease-spring) both, splash-key-press 300ms var(--ease-soft) none;
+  /* the press must not fill backwards, or its 0 % would hide the arrival movement */
+  animation: splash-key-in 640ms var(--ease-spring) both, splash-key-press 320ms var(--ease-soft) none;
 }
 @keyframes splash-key-in { from { transform: translateY(-26px) scale(.7); opacity: 0; filter: blur(4px); } 70% { filter: blur(0); } }
 @keyframes splash-key-press {
@@ -88,63 +123,65 @@
   45% { transform: translateY(var(--press-y)) scale(var(--press-scale)); box-shadow: var(--shadow-key-down); filter: brightness(1.12); }
 }
 /* arrival wave (diagonal), then a press ripple in the same order while the display counts */
-.splash .key:nth-child(1)  { animation-delay: 420ms, 1000ms; }
-.splash .key:nth-child(2), .splash .key:nth-child(5)  { animation-delay: 460ms, 1060ms; }
-.splash .key:nth-child(3), .splash .key:nth-child(6), .splash .key:nth-child(9)  { animation-delay: 500ms, 1120ms; }
-.splash .key:nth-child(4), .splash .key:nth-child(7), .splash .key:nth-child(10), .splash .key:nth-child(13) { animation-delay: 540ms, 1180ms; }
-.splash .key:nth-child(8), .splash .key:nth-child(11), .splash .key:nth-child(14) { animation-delay: 580ms, 1240ms; }
-.splash .key:nth-child(12), .splash .key:nth-child(15) { animation-delay: 620ms, 1300ms; }
-.splash .key:nth-child(16) { animation-delay: 660ms, 1440ms; animation-duration: 620ms, 380ms; } /* = gets the final press */
+.splash .key:nth-child(1) { animation-delay: calc(var(--c) + 150ms), calc(var(--c) + 1000ms); }
+.splash .key:nth-child(2), .splash .key:nth-child(5) { animation-delay: calc(var(--c) + 200ms), calc(var(--c) + 1110ms); }
+.splash .key:nth-child(3), .splash .key:nth-child(6), .splash .key:nth-child(9) { animation-delay: calc(var(--c) + 250ms), calc(var(--c) + 1220ms); }
+.splash .key:nth-child(4), .splash .key:nth-child(7), .splash .key:nth-child(10), .splash .key:nth-child(13) { animation-delay: calc(var(--c) + 300ms), calc(var(--c) + 1330ms); }
+.splash .key:nth-child(8), .splash .key:nth-child(11), .splash .key:nth-child(14) { animation-delay: calc(var(--c) + 350ms), calc(var(--c) + 1440ms); }
+.splash .key:nth-child(12), .splash .key:nth-child(15) { animation-delay: calc(var(--c) + 400ms), calc(var(--c) + 1550ms); }
+.splash .key:nth-child(16) { animation-delay: calc(var(--c) + 450ms), calc(var(--c) + 1900ms); animation-duration: 640ms, 420ms; } /* = gets the final press at 100 % */
 
-/* ---- 3. Wordmark ---- */
+/* "Bouncy", letter by letter */
 .splash-word { display: flex; font: 800 30px/1 var(--font-ui); letter-spacing: -0.02em; }
-.splash-word span { display: inline-block; opacity: 0; animation: splash-letter 640ms var(--ease-spring) forwards; }
-.splash-word span:nth-child(1) { animation-delay: 1000ms; }
-.splash-word span:nth-child(2) { animation-delay: 1050ms; }
-.splash-word span:nth-child(3) { animation-delay: 1100ms; }
-.splash-word span:nth-child(4) { animation-delay: 1150ms; }
-.splash-word span:nth-child(5) { animation-delay: 1200ms; }
-.splash-word span:nth-child(6) { animation-delay: 1250ms; }
+.splash-word span { display: inline-block; opacity: 0; animation: splash-letter 680ms var(--ease-spring) forwards; }
+.splash-word span:nth-child(1) { animation-delay: calc(var(--c) + 900ms); }
+.splash-word span:nth-child(2) { animation-delay: calc(var(--c) + 960ms); }
+.splash-word span:nth-child(3) { animation-delay: calc(var(--c) + 1020ms); }
+.splash-word span:nth-child(4) { animation-delay: calc(var(--c) + 1080ms); }
+.splash-word span:nth-child(5) { animation-delay: calc(var(--c) + 1140ms); }
+.splash-word span:nth-child(6) { animation-delay: calc(var(--c) + 1200ms); }
 @keyframes splash-letter {
   0% { opacity: 0; transform: translateY(14px) scaleY(.6); }
   55% { opacity: 1; transform: translateY(-5px) scaleY(1.08); }
   80% { transform: translateY(1px) scaleY(.97); }
   100% { opacity: 1; transform: none; }
 }
-@keyframes splash-fade-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
-/* ---- 4. Footer: promise + legal ---- */
+/* ---- Footer: promise, legal links, skip hint ---- */
 .splash-legal {
-  display: grid; justify-items: center; gap: 8px; text-align: center; pointer-events: auto;
-  font: 500 11px/1.4 var(--font-mono); color: var(--muted);
-  opacity: 0; animation: splash-fade-up 600ms var(--ease-soft) 700ms forwards;
+  display: grid; justify-items: center; gap: 8px; text-align: center;
+  font: 500 12px/1.4 var(--font-mono); color: var(--muted);
+  opacity: 0; animation: splash-fade-up 600ms var(--ease-soft) 900ms forwards;
 }
 .splash-legal p { margin: 0; letter-spacing: .04em; }
 .splash-legal nav { display: flex; gap: 16px; }
-.splash-legal a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; padding: 8px 2px; } /* 44px touch rows */
+.splash-legal a { color: var(--text); text-decoration: underline; text-underline-offset: 3px; padding: 8px 2px; cursor: pointer; }
 .splash-legal a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+.splash-skip { opacity: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; animation: splash-skip-in 500ms ease 1700ms forwards; }
+@keyframes splash-skip-in { to { opacity: .6; } }
 
-/* ---- Leaving: keys settle, the device zooms toward you and dissolves into the app ---- */
+/* ---- Leaving: the device zooms toward you and dissolves into the app ---- */
 .splash.is-leaving { animation: splash-out 460ms var(--ease-soft) forwards; pointer-events: none; }
 @keyframes splash-out { 30% { opacity: 1; } to { opacity: 0; visibility: hidden; } }
 .splash.is-leaving .splash-device { animation: splash-zoom 460ms cubic-bezier(.5, 0, .2, 1) forwards; }
 @keyframes splash-zoom { to { transform: scale(1.35); filter: blur(10px); opacity: 0; } }
-.splash.is-leaving .splash-presents, .splash.is-leaving .splash-word, .splash.is-leaving .splash-legal { transition: opacity 220ms, transform 220ms; opacity: 0; transform: translateY(-6px); }
+.splash.is-leaving :is(.splash-presents, .splash-word, .splash-legal, .splash-intro) { transition: opacity 220ms; opacity: 0; }
 
-html.app-in .app { animation: app-in 620ms var(--ease-soft, cubic-bezier(.22, 1, .36, 1)) 120ms both; }
+html.app-in .app { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 120ms both; }
 @media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 200ms both; } }
 @keyframes app-in { from { transform: scale(.96); opacity: 0; filter: blur(6px); } }
 
 /* ---- Theme touches ---- */
-[data-theme="phosphor"] .splash-display, [data-theme="phosphor"] .splash-word { text-shadow: 0 0 8px rgba(57,255,122,.7); }
+[data-theme="phosphor"] :is(.splash-display, .splash-word, .splash-intro-name) { text-shadow: 0 0 8px rgba(57,255,122,.7); }
 [data-theme="phosphor"] .splash-num::before { content: '> '; }
 [data-theme="lcd"] .splash-display::before, [data-theme="dsky"] .splash-display::before { content: '888'; position: absolute; right: 12px; bottom: 10px; opacity: .07; }
 [data-theme="lcd"] .splash-display small, [data-theme="dsky"] .splash-display small { display: none; }
 [data-theme="dsky"] .splash-display { text-shadow: 0 0 8px rgba(109,255,122,.45); }
 [data-theme="arcade"] .splash-word { font-size: 18px; }
-[data-theme="arcade"] .splash-stage::after { content: 'PRESS START'; font: 400 9px var(--font-mono); color: var(--accent); opacity: 0; animation: splash-fade-up 300ms 1350ms forwards, splash-blink 900ms steps(1) 1650ms infinite; }
+[data-theme="arcade"] .splash-intro-name { font-size: 16px; line-height: 1.6; }
+[data-theme="arcade"] .splash-stage::after { content: 'PRESS START'; font: 400 12px var(--font-mono); color: var(--accent); opacity: 0; animation: splash-fade-up 300ms calc(var(--c) + 1400ms) forwards, splash-blink 900ms steps(1) calc(var(--c) + 1700ms) infinite; }
 @keyframes splash-blink { 50% { opacity: 0; } }
-[data-theme="cyber"] .splash-word { animation: splash-glitch 1.2s steps(1) 1.4s infinite; }
+[data-theme="cyber"] .splash-word { animation: splash-glitch 1.2s steps(1) calc(var(--c) + 1500ms) infinite; }
 @keyframes splash-glitch { 0%, 90% { transform: none; text-shadow: none; } 92% { transform: translateX(2px); text-shadow: -2px 0 #ff2a6d, 2px 0 #00f3ff; } 95% { transform: translateX(-1px); } }
 [data-theme="clay"] .splash-keys { rotate: -.6deg; }
 [data-theme="blueprint"] .splash-device { border-style: dashed; }
@@ -168,14 +205,16 @@ html.app-in .app { animation: app-in 620ms var(--ease-soft, cubic-bezier(.22, 1,
   .splash-legal { grid-column: 1 / -1; grid-row: 3; align-self: end; }
 }
 
-/* Reduced motion: no movement, a calm fade, same information */
+/* Reduced motion: no movement. The studio card is shown still, then the calculator scene, with plain fades. */
 @media (prefers-reduced-motion: reduce) {
-  .splash *, .splash::before { animation-duration: 1ms !important; animation-delay: 0ms !important; }
-  .splash { animation: splash-failsafe 1ms ease 6s forwards !important; }
+  .splash *, .splash::before { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+  .splash-intro { animation: splash-intro-out 300ms linear 1950ms forwards !important; }
+  .splash { animation: splash-failsafe 1ms ease 8s forwards !important; }
   .splash.is-leaving { animation: splash-out 240ms linear forwards !important; }
-  .splash.is-leaving .splash-device { animation: none !important; opacity: 0; transition: opacity 240ms; }
+  .splash.is-leaving .splash-device { animation: none !important; }
   html.app-in .app, html.app-in .side { animation: none !important; }
 }
-html.reduce-motion .splash *, html.reduce-motion .splash::before { animation-duration: 1ms !important; animation-delay: 0ms !important; }
+html.reduce-motion .splash *, html.reduce-motion .splash::before { animation-duration: 1ms !important; }
+html.reduce-motion .splash-intro { animation: splash-intro-out 300ms linear 1950ms forwards !important; }
 html.reduce-motion .splash.is-leaving { animation: splash-out 240ms linear forwards !important; }
 html.reduce-motion.app-in .app { animation: none !important; }

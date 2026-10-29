@@ -67,16 +67,15 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 ## Loading screen
 
-About 2 seconds, styled entirely by the active theme (`src/styles/splash.css`), so every theme gets its own version:
+About 5 seconds, styled entirely by the active theme (`src/styles/splash.css`), so every theme gets its own version:
 
-1. The Simply Made Studio mark (two capsules) slides together: "Simply Made Studio presents".
-2. A mini calculator rises and its keys settle in a wave, using the theme's real key styles.
-3. The display counts to 100 % with a progress line while the keys press in a ripple; the `=` gets the last press.
-4. "Bouncy" bounces in letter by letter.
-5. The calculator zooms gently toward you and dissolves into the real app.
+1. **Studio card (0–2 s):** the Simply Made Studio mark slides together and locks, the name fades in large with an accent rule, then "presents".
+2. The card shrinks away and the studio name stays on as a small header.
+3. **Calculator (2.2–4.5 s):** it rises from blur, keys settle in a wave using the theme's real key styles, the display counts to 100 % with a progress line while the keys press in a ripple, and "Bouncy" bounces in letter by letter.
+4. **Exit (4.5–5 s):** the calculator zooms toward you and dissolves into the app.
 
-The footer shows the studio promise and links to the **Privacy Policy** and **Terms of Use** throughout.
-The full ~2 s intro plays on the first launch of a session; reloads in the same session get a ~1.4 s version. Reduce Motion turns it into a still screen with a fade. If JavaScript ever fails, it hides itself after 6 s.
+The footer shows the studio promise and the **Privacy Policy** and **Terms of Use** links throughout. A tap, click or key press skips the rest once the studio name has shown (after 1.6 s); Tab still reaches the links. Reduce Motion keeps the same scenes without movement. If JavaScript fails, the splash hides itself after 8 s.
+To change the length, edit `FULL_MS` in `src/ui/splash.js` and `--c` in `splash.css`.
 
 ## Phones
 
