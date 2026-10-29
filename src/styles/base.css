@@ -2,7 +2,7 @@
 :root {
   --bg: #e9e4dc; --bg-art: none; --overlay: none; --overlay-opacity: 1;
   --device: transparent; --device-border: transparent; --device-shadow: none; --r-device: 28px;
-  --text: #26241f; --muted: #6d6860; --surface: rgba(0,0,0,.05); --surface-2: rgba(0,0,0,.08); --border: rgba(0,0,0,.14);
+  --text: #26241f; --muted: #5f5b54; --surface: rgba(0,0,0,.05); --surface-2: rgba(0,0,0,.08); --border: rgba(0,0,0,.14);
   --display-bg: #dcdad0; --display-text: #26241f; --display-muted: #605e55; --display-border: rgba(0,0,0,.12);
   --key: #2b2b2b; --key-text: #f5f0eb;
   --key-op: #6f6a63; --key-op-text: #f5f0eb;
@@ -21,7 +21,12 @@
   --font-key: 'Archivo', system-ui, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   --fs-key: 25px; --fs-fn: 15px; --fw-key: 600; --fs-scale: 1; --ls-display: -0.02em;
-  --key-h: clamp(48px, 8dvh, 72px); --gap: clamp(7px, 1.4dvh, 12px);
+  /* Key sizing. Keys share whatever height the screen has left after the chrome and a minimum
+     display, so the bottom row is never pushed under a phone's browser toolbar. (Formula below.) */
+  --gap: clamp(7px, 1.4dvh, 12px);
+  --key-h: 56px; --fn-h: 34px; --key-min: 42px;
+  --tabs-h: 39px; --head-h: 40px;
+  --disp-min: 110px; --fn-rows: 1; --pad-gaps: calc(6 * var(--gap)); /* 2 in the pad wrapper + 4 between key rows */
   --press-scale: .93; --press-y: 1px;
   --spring: cubic-bezier(.34, 1.56, .64, 1);
   --out: cubic-bezier(.22, 1, .36, 1);
@@ -52,17 +57,21 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 }
 .app {
   display: flex; flex-direction: column; gap: var(--gap); min-height: 100dvh;
+  height: 100vh; height: 100dvh; /* fixed, so a tall screen of content can never push the keys off the bottom */
   padding: calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 14px);
   background: var(--device); position: relative;
 }
-@media (min-width: 560px) {
+/* Desktop "device card". Needs height too, otherwise a phone in landscape (wide but short) got it. */
+@media (min-width: 560px) and (min-height: 600px) {
   .shell { padding: 24px 16px; min-height: auto; }
   .app {
     min-height: 0; height: min(900px, calc(100dvh - 48px)); border-radius: var(--r-device);
     border: 1px solid var(--device-border); box-shadow: var(--device-shadow); padding: 18px;
+    --vh: calc(min(900px, 100dvh - 48px) - 12px); /* the card is shorter than the viewport */
   }
+  .app.is-sci { --key-min: 36px; } /* mouse/trackpad: smaller keys are fine when the window is short */
 }
-@media (min-width: 920px) {
+@media (min-width: 920px) and (min-height: 600px) {
   .shell { grid-template-columns: 460px 340px; align-items: start; }
 }
 
@@ -70,14 +79,16 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .brand { display: flex; flex-direction: column; line-height: 1.05; min-width: 0; }
 .brand-name { font: 800 17px/1 var(--font-display); letter-spacing: -0.01em; }
-.brand-label { font: 500 10px/1.4 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.brand-label { min-height: 1.4em; font: 500 10px/1.4 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .top-actions { display: flex; gap: 6px; }
 .icon-btn {
-  display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-chip);
+  position: relative; display: grid; place-items: center; width: 40px; height: 40px; border-radius: var(--r-chip);
   border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
   transition: transform 300ms var(--spring), background 150ms;
 }
 .icon-btn:active { transform: scale(.9); }
+/* Invisible hit-area extensions: 44px+ touch targets without making the UI bigger */
+.icon-btn::before { content: ''; position: absolute; inset: -3px; }
 .text-btn { background: none; border: 0; color: var(--muted); font: 600 12px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; cursor: pointer; padding: 6px 8px; border-radius: 8px; }
 .text-btn:hover { color: var(--text); }
 
@@ -86,7 +97,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--r-chip);
 }
 .tabs [role="tab"] {
-  position: relative; z-index: 1; border: 0; background: none; padding: 8px 0; cursor: pointer;
+  position: relative; z-index: 1; border: 0; background: none; padding: 10px 0; cursor: pointer;
   font: 700 12px/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
   transition: color 200ms;
 }
@@ -98,25 +109,29 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 }
 
 /* ============ Views ============ */
-.stage { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+.stage { flex: 1; display: flex; flex-direction: column; min-height: 0; overflow: hidden; }
 .view { display: none; flex: 1; flex-direction: column; min-height: 0; }
 .view.is-active { display: flex; animation: view-in 320ms var(--out); }
+.view-tools { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
 @keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
 .app[data-view="tools"] .pad-wrap { display: none; }
 .app[data-view="games"] .sci, .app[data-view="games"] .mem-row { display: none; }
 
 /* ============ Display ============ */
 .display {
-  position: relative; flex: 1; min-height: 150px; display: flex; flex-direction: column; justify-content: flex-end;
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+  container: display / size; /* text below scales to the display's real height */
+  position: relative; flex: 1; min-height: var(--disp-min); display: flex; flex-direction: column; justify-content: flex-end;
   gap: 4px; padding: 14px 18px 12px; overflow: hidden; touch-action: none;
   background: var(--display-bg); color: var(--display-text); border: 1px solid var(--display-border);
   border-radius: var(--r-card); box-shadow: var(--shadow-card);
 }
 .display-meta { position: absolute; top: 12px; left: 14px; right: 14px; display: flex; gap: 6px; align-items: center; }
 .chip {
-  border: 1px solid var(--display-border); background: transparent; color: var(--display-muted); cursor: pointer;
+  position: relative; border: 1px solid var(--display-border); background: transparent; color: var(--display-muted); cursor: pointer;
   font: 700 10px/1 var(--font-mono); letter-spacing: .12em; padding: 5px 8px; border-radius: var(--r-chip);
 }
+#angleChip::after { content: ''; position: absolute; inset: -12px -8px; } /* 21px chip → 45px touch target */
 .chip-mem { color: var(--accent); border-color: currentColor; cursor: default; }
 .meta-hint { margin-left: auto; font: 500 10px var(--font-mono); color: var(--display-muted); opacity: .7; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (hover: hover) { .meta-hint::after { content: ''; } }
@@ -153,15 +168,33 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 @keyframes pulse { 40% { transform: scale(1.012); } }
 .lcd-ghost { display: none; }
 
+/* Short display (scientific panel on small phones, landscape): smaller type so the sum never
+   rides up under the DEG chip or gets clipped. */
+@container display (max-height: 150px) {
+  .expr { font-size: calc(var(--fit, 1) * var(--fs-scale) * clamp(24px, 8vw, 34px)); }
+  .result { font-size: calc(var(--fs-scale) * 16px); }
+  .display.is-evaluated .expr { font-size: calc(var(--fs-scale) * 14px); }
+  .display.is-evaluated .result { font-size: calc(var(--fit, 1) * var(--fs-scale) * clamp(28px, 9vw, 40px)); }
+  .meta-hint { display: none; }
+}
+@container display (max-height: 96px) {
+  /* Tiny display: no room for the chip row. DEG/RAD is still on its own key in the fx panel. */
+  .display-meta { display: none; }
+  .expr { font-size: min(calc(var(--fit, 1) * var(--fs-scale) * 24px), 26px); }
+  .result { font-size: min(calc(var(--fs-scale) * 15px), 17px); }
+}
+
 /* ============ Keys ============ */
-.pad-wrap { display: flex; flex-direction: column; gap: var(--gap); }
+.pad-wrap { display: flex; flex-direction: column; gap: var(--gap); flex-shrink: 0; }
+/* Rows are sized in CSS before the JS builds the keys, so nothing jumps when they appear (CLS was 0.26). */
 .sci { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 380ms var(--out); }
 .sci > div { overflow: hidden; display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
 .app.is-sci .sci { grid-template-rows: 1fr; }
-.mem-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
-.keypad { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--gap); }
+.mem-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; min-height: var(--fn-h); }
+.keypad { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, var(--key-h)); gap: var(--gap); }
 
 .key {
+  -webkit-touch-callout: none; /* iOS: no magnifier / callout while holding AC or ⌫ */
   position: relative; appearance: none; cursor: pointer; min-width: 0;
   height: var(--key-h); border: var(--bw) solid var(--key-border); border-radius: var(--r-key);
   background: var(--key); color: var(--key-text); box-shadow: var(--shadow-key);
@@ -174,16 +207,17 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .key[data-kind="eq"] { background: var(--key-eq); color: var(--key-eq-text); }
 .key[data-kind="ac"] { background: var(--key-ac); color: var(--key-ac-text); }
 .key[data-kind="fn"], .key[data-kind="mem"] {
-  height: calc(var(--key-h) * .62); background: var(--key-fn); color: var(--key-fn-text);
+  height: var(--fn-h); background: var(--key-fn); color: var(--key-fn-text);
   font-size: calc(var(--fs-fn) * var(--fs-scale)); letter-spacing: .02em;
 }
 .key[data-kind="mem"] { font-family: var(--font-mono); font-size: calc(12px * var(--fs-scale)); font-weight: 700; letter-spacing: .08em; }
 .key.is-on { outline: 2px solid var(--accent); outline-offset: -2px; }
 .key .lbl { display: inline-block; white-space: nowrap; pointer-events: none; }
 .key sup { font-size: .62em; margin-left: 1px; vertical-align: .55em; line-height: 0; }
-/* Scientific panel open: shrink keys so everything fits on one phone screen */
-.app.is-sci { --key-h: clamp(42px, 6.3dvh, 62px); }
-.app.is-sci .display { min-height: 112px; }
+/* Scientific panel open: 3 more rows of function keys share the same height */
+.app.is-sci { --fn-rows: 4; --disp-min: 84px; --pad-gaps: calc(6 * var(--gap) + 14px); }
+/* Games: the memory/scientific rows are hidden and the game card needs more room than the display */
+.app[data-view="games"] { --fn-rows: 0; --disp-min: 236px; --key-min: 38px; --pad-gaps: calc(4 * var(--gap)); }
 .key .alt { display: none; }
 .key.is-holding::after {
   content: ''; position: absolute; inset: -3px; border-radius: inherit; border: 2px solid var(--accent);
@@ -215,7 +249,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .side-head h2 { margin: 0 auto 0 0; font: 800 15px var(--font-display); letter-spacing: .02em; }
 .search {
   width: 100%; border: 1px solid var(--border); background: var(--surface); color: var(--text);
-  border-radius: 10px; padding: 9px 12px; font: 500 13px var(--font-mono);
+  border-radius: 10px; padding: 9px 12px; font: 500 16px var(--font-mono); /* <16px makes iOS zoom in */
 }
 .tape { list-style: none; margin: 0; padding: 0; overflow-y: auto; display: flex; flex-direction: column; }
 .tape li {
@@ -230,7 +264,7 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .tape .t-time { font: 500 10px var(--font-mono); color: var(--muted); opacity: .7; }
 .tape-empty { color: var(--muted); font: 500 13px/1.5 var(--font-mono); text-align: center; margin: 24px 0; }
 .only-mobile { display: grid; }
-@media (min-width: 920px) {
+@media (min-width: 920px) and (min-height: 600px) {
   .side {
     position: sticky; top: 24px; transform: none; visibility: visible; max-height: calc(100dvh - 48px); height: min(860px, calc(100dvh - 48px));
     border: 1px solid var(--device-border, var(--border)); border-radius: var(--r-device); box-shadow: var(--device-shadow);
@@ -256,7 +290,7 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
   all: unset; cursor: pointer; display: flex; flex-direction: column; gap: 8px; padding: 8px; border-radius: 16px;
   border: 1px solid var(--border); background: var(--surface); transition: transform 300ms var(--spring), border-color 150ms;
 }
-.theme-card:hover { transform: translateY(-2px); }
+@media (hover: hover) { .theme-card:hover { transform: translateY(-2px); } }
 .theme-card:active { transform: scale(.96); }
 .theme-card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 .theme-card:focus-visible { outline: 2px solid var(--accent); }
@@ -319,10 +353,10 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
   width: 100%; min-width: 0; border: 1px solid var(--display-border); background: var(--surface); color: var(--display-text);
   border-radius: 12px; padding: 12px 14px; font: 600 20px var(--font-display);
 }
-.field select { font: 600 15px var(--font-ui); }
+.field select { font: 600 16px var(--font-ui); }
 .tool > select, .tool .tool > select {
   width: 100%; border: 1px solid var(--display-border); background: var(--surface); color: var(--display-text);
-  border-radius: 10px; padding: 9px 10px; font: 600 14px var(--font-ui);
+  border-radius: 10px; padding: 9px 10px; font: 600 16px var(--font-ui);
 }
 .tool select option { background: var(--device-solid, #fff); color: var(--text); }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -353,7 +387,7 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
   background: var(--display-bg); color: var(--display-text); border: 1px solid var(--display-border); border-radius: var(--r-card);
   box-shadow: var(--shadow-card); transition: transform 360ms var(--spring);
 }
-.game-card:hover { transform: translateY(-2px); }
+@media (hover: hover) { .game-card:hover { transform: translateY(-2px); } }
 .game-card:active { transform: scale(.96); }
 .game-card:focus-visible { outline: 2px solid var(--accent); }
 .game-card .g-icon { font: 800 26px/1 var(--font-display); color: var(--accent); }
@@ -361,7 +395,8 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .game-card p { margin: 0; font: 500 12px/1.35 var(--font-ui); color: var(--display-muted); flex: 1; }
 .game-card .best { font: 700 10px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--display-muted); }
 .game {
-  flex: 1; display: flex; flex-direction: column; gap: 8px; padding: 14px 16px; position: relative; overflow: hidden;
+  flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 10px 14px; position: relative; overflow: hidden auto; overscroll-behavior: contain; min-height: 0;
+  container: game / size;
   background: var(--display-bg); color: var(--display-text); border: 1px solid var(--display-border); border-radius: var(--r-card); box-shadow: var(--shadow-card);
 }
 .game-head { display: flex; align-items: center; gap: 8px; font: 700 11px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; color: var(--display-muted); }
@@ -369,7 +404,7 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .game-head b { color: var(--display-text); font-size: 13px; }
 .timebar { height: 4px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
 .timebar i { display: block; height: 100%; background: var(--accent); transform-origin: left; transform: scaleX(var(--t, 1)); }
-.game-q { flex: 1; display: grid; place-items: center; text-align: center; font: 800 calc(var(--fs-scale) * clamp(34px, 10vw, 52px))/1.1 var(--font-display); letter-spacing: var(--ls-display); }
+.game-q { flex: 1; display: grid; place-items: center; text-align: center; font: 800 calc(var(--fs-scale) * clamp(28px, 9vw, 52px))/1.1 var(--font-display); letter-spacing: var(--ls-display); }
 .game-q small { display: block; font: 600 12px/1.4 var(--font-mono); letter-spacing: .06em; color: var(--display-muted); margin-top: 6px; }
 .game-in { min-height: 1.2em; text-align: right; font: 700 calc(var(--fs-scale) * 30px)/1.2 var(--font-display); white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
 .game-in.good { color: var(--accent); }
@@ -377,7 +412,7 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .combo { color: var(--accent); }
 .n-chips { display: flex; gap: 8px; justify-content: center; }
 .n-chips button {
-  width: 52px; height: 52px; border-radius: 14px; border: 2px solid var(--accent); background: transparent; color: var(--display-text);
+  width: 46px; height: 46px; border-radius: 14px; border: 2px solid var(--accent); background: transparent; color: var(--display-text);
   font: 800 calc(var(--fs-scale) * 24px) var(--font-display); cursor: pointer; transition: transform 300ms var(--spring), opacity 200ms;
 }
 .n-chips button.used { opacity: .25; transform: scale(.88); }
@@ -387,6 +422,21 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .game-over { display: grid; gap: 10px; place-items: center; text-align: center; }
 .game-over .big-out { text-align: center; }
 .btn-row { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; }
+
+/* Short game card (small phones, landscape): tighter type so the whole game fits without scrolling */
+@container game (max-height: 300px) {
+  .game-q { font-size: calc(var(--fs-scale) * 28px); }
+  .game-q small { font-size: 11px; margin-top: 2px; }
+  .n-chips button { width: 40px; height: 40px; border-radius: 12px; font-size: calc(var(--fs-scale) * 20px); }
+  .game-in { font-size: calc(var(--fs-scale) * 24px); }
+  .game-msg { min-height: 1.1em; font-size: 11px; }
+  .game .pill-btn { padding: 8px 14px; font-size: 11px; }
+  .game-head { font-size: 10px; }
+}
+@container game (max-height: 230px) {
+  .game-q small { display: none; }
+  .game-msg:empty { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
@@ -402,8 +452,72 @@ html.reduce-motion .caret, html.reduce-motion .fx-overlay { animation: none !imp
 /* Smooth theme cross-fade (View Transitions API) */
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 380ms; }
 
-@media (max-height: 640px) {
-  :root { --key-h: 46px; --gap: 7px; }
-  .display { min-height: 110px; }
+/* ============ Phones ============ */
+html { overscroll-behavior: none; } /* no pull-to-refresh / rubber-band while swiping the keypad */
+.tabs, .topbar, .icon-btn { -webkit-touch-callout: none; }
+
+/* Declared on .app (not :root) so they re-compute with .app's own --fn-rows / --disp-min / --chrome-extra. */
+.app { --chrome: calc(var(--head-h) + var(--tabs-h) + 24px + env(safe-area-inset-top) + env(safe-area-inset-bottom) + 3 * var(--gap) + var(--chrome-extra, 0px)); }
+@supports (height: 100dvh) {
+  .app {
+    --fn-h: clamp(30px, 4.6dvh, 44px);
+    --key-h: clamp(var(--key-min), calc((var(--vh, 100dvh) - var(--chrome) - var(--disp-min) - var(--pad-gaps) - var(--fn-rows) * var(--fn-h)) / 5), 72px);
+  }
+}
+
+@media (max-height: 640px) { .meta-hint { display: none; } }
+@media (max-width: 359px) { .tabs [role="tab"] { letter-spacing: .04em; font-size: 11px; } } /* 320px phones */
+@media (max-height: 600px) { .app.is-sci { --key-min: 36px; } }
+@media (max-height: 520px) and (orientation: portrait) {
+  :root { --key-min: 36px; } .app { --disp-min: 72px; } .app.is-sci { --disp-min: 64px; --fn-h: 26px; --key-min: 34px; }
+  .app[data-view="games"] { --key-min: 34px; --disp-min: 200px; }
+}
+
+/* Compact header: on short screens (and on mid-height ones with the scientific panel open) the brand
+   is dropped and the tabs share a row with the icon buttons. Rules are repeated per media block. */
+@media (max-height: 600px) and (orientation: portrait), (max-height: 600px) and (max-width: 559px) {
+  .app { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr) auto; column-gap: 8px; --tabs-h: 0px; --chrome: calc(var(--head-h) + 24px + env(safe-area-inset-top) + env(safe-area-inset-bottom) + 2 * var(--gap) + var(--chrome-extra, 0px)); }
+  .topbar { display: contents; }
+  .brand, .topbar::after { display: none !important; }
+  .tabs { grid-column: 1; grid-row: 1; align-self: center; }
+  .top-actions { grid-column: 2; grid-row: 1; }
+  .stage, .pad-wrap { grid-column: 1 / -1; }
+}
+@media (max-height: 780px) and (orientation: portrait) {
+  .app.is-sci, .app[data-view="games"] { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr) auto; column-gap: 8px; --tabs-h: 0px; --chrome: calc(var(--head-h) + 24px + env(safe-area-inset-top) + env(safe-area-inset-bottom) + 2 * var(--gap) + var(--chrome-extra, 0px)); }
+  :is(.app.is-sci, .app[data-view="games"]) .topbar { display: contents; }
+  :is(.app.is-sci, .app[data-view="games"]) .brand, :is(.app.is-sci, .app[data-view="games"]) .topbar::after { display: none !important; }
+  :is(.app.is-sci, .app[data-view="games"]) .tabs { grid-column: 1; grid-row: 1; align-self: center; }
+  :is(.app.is-sci, .app[data-view="games"]) .top-actions { grid-column: 2; grid-row: 1; }
+  :is(.app.is-sci, .app[data-view="games"]) :is(.stage, .pad-wrap) { grid-column: 1 / -1; }
+}
+
+/* Landscape phones: display + scientific keys on the left, keypad on the right */
+@media (orientation: landscape) and (max-height: 520px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .app {
+    display: grid; height: 100dvh; min-height: 0; gap: 8px 14px;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.15fr);
+    grid-template-rows: auto minmax(0, 1fr) auto;
+    grid-template-areas: "tabs actions mem" "stage stage keys" "sci sci keys";
+    padding: calc(env(safe-area-inset-top) + 8px) calc(env(safe-area-inset-right) + 14px) calc(env(safe-area-inset-bottom) + 8px) calc(env(safe-area-inset-left) + 14px);
+    --fn-h: 34px;
+  }
+  .topbar, .pad-wrap { display: contents; }
+  .brand, .topbar::after { display: none !important; }
+  .tabs { grid-area: tabs; align-self: center; }
+  .top-actions { grid-area: actions; }
+  .stage { grid-area: stage; }
+  .display { min-height: 0; }
+  .sci { grid-area: sci; }
+  .mem-row { grid-area: mem; align-self: center; }
+  .keypad { grid-area: keys; grid-template-rows: repeat(5, minmax(34px, 1fr)); gap: 7px; }
+  .keypad .key { height: auto; }
+  .expr { font-size: calc(var(--fit, 1) * var(--fs-scale) * clamp(28px, 7vh, 48px)); }
+  .display.is-evaluated .result { font-size: calc(var(--fit, 1) * var(--fs-scale) * clamp(32px, 11vh, 56px)); }
+  .app[data-view="tools"] .stage { grid-area: 2 / 1 / 4 / -1; }
+  .app[data-view="games"] .stage { grid-area: 2 / 1 / 4 / 3; }
+  .app[data-view="games"] { --disp-min: 0px; }
   .meta-hint { display: none; }
+  .side { max-height: 92dvh; }
 }

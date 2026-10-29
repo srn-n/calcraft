@@ -9,7 +9,7 @@ import { parseNumberStrict } from '../core/numbers.js';
 const num = parseNumberStrict;
 const fmt = (n, d = 2) => (Number.isFinite(n) ? formatNumber(clean(Number(n.toFixed(d)))) : '—');
 const field = (label, input) => h('label.field', {}, h('span', {}, label), input);
-const numInput = (value, oninput, extra = {}) => h('input', { type: 'text', inputmode: 'decimal', value, oninput, autocomplete: 'off', maxlength: 24, ...extra });
+const numInput = (value, oninput, extra = {}) => h('input', { type: 'text', inputmode: 'decimal', value, oninput, autocomplete: 'off', enterkeyhint: 'done', maxlength: 24, ...extra });
 
 /* ---------- units (factor to base unit) ---------- */
 export const UNITS = {

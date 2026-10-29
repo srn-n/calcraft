@@ -110,6 +110,7 @@
 
 /* 6 ── Voyager · HP-12C 1981: brown-black body, brushed bezel, gold shift labels, LCD */
 [data-theme="voyager"] {
+  --chrome-extra: 36px; /* display margins / extra row gaps this theme adds */
   color-scheme: dark;
   --bg: #17130f; --device: linear-gradient(180deg, #2b241d, #211c17); --device-solid: #241e18; --device-border: #3a3128;
   --device-shadow: 0 30px 70px -20px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.06);
@@ -129,10 +130,24 @@
 }
 [data-theme="voyager"] .key .alt { color: #c8a35a; opacity: 1; top: auto; bottom: calc(100% + 1px); left: 0; right: 0; text-align: center; font-size: 8px; }
 [data-theme="voyager"] .keypad, [data-theme="voyager"] .sci > div { row-gap: calc(var(--gap) + 6px); }
+[data-theme="voyager"] .app.is-sci { --chrome-extra: 48px; } /* + the scientific rows' wider gaps */
+/* Short phones: keep just enough row gap for the gold shift labels so every key still fits */
+@media (max-height: 700px) {
+  [data-theme="voyager"] { --chrome-extra: 18px; }
+  [data-theme="voyager"] .app.is-sci { --chrome-extra: 22px; }
+  [data-theme="voyager"] .keypad, [data-theme="voyager"] .sci > div { row-gap: max(var(--gap), 9px); }
+}
+@media (max-height: 520px) {
+  [data-theme="voyager"], [data-theme="voyager"] .app.is-sci { --chrome-extra: 0px; }
+  [data-theme="voyager"] .display { margin: 0; }
+  [data-theme="voyager"] .keypad, [data-theme="voyager"] .sci > div { row-gap: var(--gap); }
+  [data-theme="voyager"] .key .alt { display: none; } /* no room for shift labels on a 480px-tall screen */
+}
 [data-theme="voyager"] .display { margin: 6px; }
 
 /* 7 ── Solar LCD · Casio SL-300: grey plastic, solar strip, seven-segment LCD with ghost segments */
 [data-theme="lcd"] {
+  --chrome-extra: 16px; /* display margins / extra row gaps this theme adds */
   --bg: #9fa3a8; --device: linear-gradient(180deg, #b9bcc0, #a9adb2); --device-solid: #b3b6ba; --device-border: #8d9197;
   --device-shadow: 0 30px 60px -24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5);
   --text: #1e2125; --muted: #42474d; --surface: rgba(0,0,0,.06); --surface-2: rgba(0,0,0,.1); --border: rgba(0,0,0,.18);
@@ -297,6 +312,7 @@
 
 /* 14 ── Arcade · 8-bit cabinets: pixel font, stepped pixel borders, neon */
 [data-theme="arcade"] {
+  --chrome-extra: 24px; /* display margins / extra row gaps this theme adds */
   color-scheme: dark;
   --bg: #14102b; --device: transparent; --device-solid: #1b1638; --device-border: #3a3170;
   --text: #ffffff; --muted: #9b93d6; --surface: #221c45; --surface-2: #2c2558; --border: #3a3170;

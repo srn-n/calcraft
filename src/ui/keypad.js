@@ -5,7 +5,7 @@ const ins = (tok) => ({ type: 'ins', tok });
 const cmd = (c) => ({ type: 'cmd', cmd: c });
 
 export const MAIN_KEYS = [
-  { id: 'ac', label: 'AC', kind: 'ac', act: cmd('ac'), aria: 'All clear — hold to wipe memory and tape', alt: 'esc' },
+  { id: 'ac', label: 'AC', kind: 'ac', act: cmd('ac'), aria: 'AC, all clear. Hold to wipe memory and tape', alt: 'esc' },
   { id: 'paren', label: '( )', kind: 'op', act: ins('()'), aria: 'Brackets', alt: '( )' },
   { id: 'pct', label: '%', kind: 'op', act: ins('%'), aria: 'Percent', alt: '%' },
   { id: 'div', label: '÷', kind: 'op', act: ins('÷'), aria: 'Divide', alt: '/' },
@@ -40,11 +40,11 @@ const SCI = [
 ];
 
 const MEM = [
-  { id: 'mc', label: 'MC', act: cmd('mc'), aria: 'Memory clear' },
-  { id: 'mr', label: 'MR', act: cmd('mr'), aria: 'Memory recall' },
-  { id: 'mplus', label: 'M+', act: cmd('mplus'), aria: 'Memory add' },
-  { id: 'mminus', label: 'M−', act: cmd('mminus'), aria: 'Memory subtract' },
-  { id: 'fx', label: 'fx', act: cmd('sci'), aria: 'Scientific panel' },
+  { id: 'mc', label: 'MC', act: cmd('mc'), aria: 'MC, memory clear' },
+  { id: 'mr', label: 'MR', act: cmd('mr'), aria: 'MR, memory recall' },
+  { id: 'mplus', label: 'M+', act: cmd('mplus'), aria: 'M+, memory add' },
+  { id: 'mminus', label: 'M−', act: cmd('mminus'), aria: 'M−, memory subtract' },
+  { id: 'fx', label: 'fx', act: cmd('sci'), aria: 'fx, scientific panel' },
 ];
 
 const KEY_INDEX = new Map();

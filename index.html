@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
   <meta name="color-scheme" content="light dark" />
   <meta name="theme-color" content="#e9e4dc" />
+  <!-- Phones: installable full-screen on iOS, and stop Safari turning long results into phone-number links -->
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Bouncy" />
+  <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
   <meta name="description" content="Bouncy Calculator — a fast, offline, deeply interactive calculator with 24 themes, tools and games." />
   <title>Bouncy Calculator</title>
   <link rel="icon" type="image/svg+xml" href="./icon.svg" />
@@ -86,7 +92,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
       </div>
-      <input class="search" id="historySearch" type="search" placeholder="Search tape…" aria-label="Search history" maxlength="100" />
+      <input class="search" id="historySearch" type="search" placeholder="Search tape…" aria-label="Search history" maxlength="100" enterkeyhint="search" />
       <ol class="tape" id="tape"></ol>
       <p class="tape-empty" id="tapeEmpty">Your calculations print here, like a receipt roll.<br />Tap one to reuse it.</p>
     </aside>

@@ -63,6 +63,15 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 **Adding a theme:** add an entry to `src/themes.js` (set `square: true` for square keys in the picker preview) and a `[data-theme="id"]` block of tokens to `themes.css`. Keep small text (`--muted`, `--display-muted`) at 4.5:1 contrast or better.
 
+## Phones
+
+- Keys size themselves to the screen: the bottom row is never pushed under Safari's or Chrome's toolbar, from a 320×480 phone up to a Pro Max, in all 24 themes, with the fx panel open or closed.
+- Short screens (and the fx panel or games on mid-size phones) fold the tabs into the icon row to give the keys more room.
+- Landscape phones get a two-column layout: display and fx keys on the left, keypad on the right.
+- No zoom-on-focus (all inputs ≥ 16px), no pull-to-refresh while swiping, no iOS long-press callout on keys, 44px+ touch targets, and no layout shift on load.
+- Lighthouse mobile: Performance 99 · Accessibility 100 · Best Practices 100 · SEO 100.
+- If you change spacing in a theme (display margins, extra row gaps), set `--chrome-extra` in that theme so the key-size formula accounts for it.
+
 ## Security
 
 - `vercel.json` sends a strict Content-Security-Policy (no `unsafe-inline`, no `unsafe-eval`, no framing) plus `nosniff`, `Referrer-Policy` and `Permissions-Policy`.

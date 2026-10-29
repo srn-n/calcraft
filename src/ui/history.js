@@ -10,7 +10,7 @@ export function createHistory({ onUseExpr, onUseValue, onClear }) {
   const scrim = $('#scrim');
   let items = [];
   let group = true;
-  const wide = matchMedia('(min-width: 920px)');
+  const wide = matchMedia('(min-width: 920px) and (min-height: 600px)'); // must match base.css
 
   const time = (t) => new Date(t).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
