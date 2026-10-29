@@ -82,6 +82,7 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 ## Privacy, terms and licences
 
+- **Feedback:** *Send feedback* (bottom of the Themes sheet, or “Send feedback” in Ctrl+K) opens the user's mail app with a draft to samiiiur@yahoo.com, including the theme, screen size and browser so bugs are easy to reproduce. The user sees and can edit everything before sending. If no mail app is set up, the address is copied instead. Change it in `src/ui/feedback.js`.
 - The calculator makes no network requests. History, memory, theme, settings and game scores are saved in your browser's local storage and never leave your device.
 - Privacy Policy: https://www.simplymadestudio.net/privacy#bouncy-calculator
 - Terms of Use: https://www.simplymadestudio.net/terms#bouncy-calculator

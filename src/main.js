@@ -17,6 +17,7 @@ import { createPalette } from './ui/palette.js';
 import { createTools } from './ui/tools.js';
 import { createGames, GAMES } from './ui/games/index.js';
 import { toast } from './ui/toast.js';
+import { sendFeedback } from './ui/feedback.js';
 import { buzz, setHaptics } from './fx/haptics.js';
 import { play, setSound, setSoundProfile } from './fx/sound.js';
 import { burst } from './fx/confetti.js';
@@ -248,6 +249,7 @@ const palette = createPalette({
     { title: `Key sounds: ${S().settings.sound ? 'on → off' : 'off → on'}`, run: () => store.set({ settings: { ...S().settings, sound: !S().settings.sound } }) },
     { title: 'Clear history tape', run: () => store.set({ history: [] }) },
     { title: 'Wipe everything (tape, memory, Ans)', run: wipeAll },
+    { title: 'Send feedback', sub: 'opens your mail app', run: openFeedback },
     { title: 'Keyboard shortcuts', sub: 's c t l g r p e · Enter = · Esc AC · Del · ←→ caret', run: () => toast('s c t → sin cos tan · l ln · g log · r √ · p π · ^ power · ! factorial · Enter = · Esc AC · Del deletes forward · ←/→ move caret · Ctrl+K commands', 6000) },
     { title: 'Surprise me (random theme)', run: () => { const o = THEMES.filter((t) => t.id !== S().theme); setTheme(o[Math.floor(Math.random() * o.length)].id); } },
   ],
@@ -271,6 +273,18 @@ const games = createGames($('#games'), {
   onPlayingChange: (on) => { $('#app').toggleAttribute('data-playing', on); },
   nope: (a) => { const id = idForAction(a); if (id) nope(id); },
 });
+
+/* ---------------- feedback ---------------- */
+function openFeedback() {
+  const ua = navigator.userAgent.replace(/\s+/g, ' ').slice(0, 160);
+  sendFeedback({
+    version: __APP_VERSION__,
+    theme: themeById(S().theme).name,
+    screen: `${innerWidth}×${innerHeight} @${Math.round((devicePixelRatio || 1) * 10) / 10}x`,
+    browser: ua,
+  });
+}
+$('#feedbackBtn').addEventListener('click', openFeedback);
 
 /* ---------------- chrome: tabs, buttons ---------------- */
 $$('.tabs [role="tab"]').forEach((b) => b.addEventListener('click', () => { setView(b.dataset.view); buzz('fn'); }));

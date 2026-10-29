@@ -80,3 +80,17 @@ describe('pentest hardening', () => {
     expect(html).toMatch(/id="historySearch"[^>]*maxlength="100"/);
   });
 });
+
+import { feedbackHref, FEEDBACK_EMAIL } from '../src/ui/feedback.js';
+describe('feedback mailto', () => {
+  it('goes to the right address with an encoded subject and body', () => {
+    const href = feedbackHref({ version: '5.1.0', theme: 'Braun ET66', screen: '393×659 @3x', browser: 'Test & Co <x>' });
+    expect(FEEDBACK_EMAIL).toBe('samiiiur@yahoo.com');
+    expect(href.startsWith('mailto:samiiiur@yahoo.com?subject=')).toBe(true);
+    expect(href).not.toMatch(/[\s<>"]/); // nothing raw that could break or inject into the URL
+    const u = new URL(href);
+    expect(u.searchParams.get('subject')).toBe('Bouncy Calculator feedback (v5.1.0)');
+    expect(u.searchParams.get('body')).toContain('Theme: Braun ET66');
+    expect(u.searchParams.get('body')).toContain('Browser: Test & Co <x>');
+  });
+});
