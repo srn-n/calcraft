@@ -67,7 +67,16 @@ docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 
 ## Loading screen
 
-The splash in `index.html` is styled entirely by the active theme (`src/styles/splash.css`): the Simply Made Studio mark bounces in, a mini keypad assembles using the theme's real key styles, the display counts to 100, then the keys drop away as the calculator rises in. It plays fully once per session (~1.3 s), is shorter on later reloads, becomes a plain fade with Reduce Motion, and hides itself after 6 s even if JavaScript fails.
+About 2 seconds, styled entirely by the active theme (`src/styles/splash.css`), so every theme gets its own version:
+
+1. The Simply Made Studio mark (two capsules) slides together: "Simply Made Studio presents".
+2. A mini calculator rises and its keys settle in a wave, using the theme's real key styles.
+3. The display counts to 100 % with a progress line while the keys press in a ripple; the `=` gets the last press.
+4. "Bouncy" bounces in letter by letter.
+5. The calculator zooms gently toward you and dissolves into the real app.
+
+The footer shows the studio promise and links to the **Privacy Policy** and **Terms of Use** throughout.
+The full ~2 s intro plays on the first launch of a session; reloads in the same session get a ~1.4 s version. Reduce Motion turns it into a still screen with a fade. If JavaScript ever fails, it hides itself after 6 s.
 
 ## Phones
 
