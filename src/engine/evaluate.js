@@ -46,6 +46,7 @@ export function evaluateAst(node, ctx = {}) {
             if (b === 0) throw new CalcError('div0', 'Can’t divide by 0');
             return a / b;
           case '^': {
+            if (a === 0 && b < 0) throw new CalcError('div0', 'Can’t divide by 0'); // 0^−1 = 1/0
             const r = Math.pow(a, b);
             if (Number.isNaN(r)) throw new CalcError('domain', 'Not a real number');
             return r;

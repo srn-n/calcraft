@@ -103,3 +103,51 @@ describe('tiny answers', () => {
     expect(preview(s, 'deg')).toBe(1.0000001);
   });
 });
+
+/* ---- regression tests for the Oct 2026 pentest ---- */
+import { parseNumberStrict, normalizeDigits } from '../src/core/numbers.js';
+import { evaluate } from '../src/engine/index.js';
+
+describe('pentest: no silent wrong answers from pasted text', () => {
+  const val = (t) => preview({ ...initialCalc(), expr: sanitizePaste(t) }, 'deg');
+  it('Unicode digits are read, not dropped', () => {
+    expect(val('1٣+1')).toBe(14);   // Arabic-Indic 3 used to vanish → 2
+    expect(val('2０+1')).toBe(21);  // fullwidth 0 used to vanish → 3
+    expect(val('٢×٣')).toBe(6);
+    expect(val('１００＋５')).toBe(105);
+    expect(normalizeDigits('१२३')).toBe('123'); // Devanagari
+  });
+  it('invisible / bidi characters are removed, not trusted', () => {
+    expect(sanitizePaste('1‮+2')).toBe('1+2');
+    expect(sanitizePaste('1​0+5')).toBe('10+5');
+  });
+  it('currency, NBSP, Swiss apostrophes, trailing = are fine', () => {
+    expect(val('$1,234.50+$10')).toBe(1244.5);
+    expect(val('1 000+1')).toBe(1001);
+    expect(val("1'000+1")).toBe(1001);
+    expect(val('2+2=')).toBe(4);
+  });
+  it('unreadable text is rejected whole', () => {
+    expect(sanitizePaste('5 ; 3')).toBe('');
+    expect(sanitizePaste('<b>1</b>')).toBe('');
+    expect(sanitizePaste('30°')).toBe('');
+    expect(sanitizePaste('9'.repeat(5000))).toBe('');
+  });
+});
+
+describe('pentest: strict numbers in Tools', () => {
+  it('decimal comma, thousands, currency', () => {
+    expect(parseNumberStrict('1,5')).toBe(1.5);
+    expect(parseNumberStrict('1,234.56')).toBe(1234.56);
+    expect(parseNumberStrict('$12')).toBe(12);
+    expect(parseNumberStrict('−5')).toBe(-5);
+    expect(parseNumberStrict('2.5e3')).toBe(2500);
+  });
+  it('partial garbage is NaN, not a prefix', () => {
+    for (const s of ['12abc', '0x10', '1..2', '', '   ', 'Infinity', '∞', '1e999', '--1']) expect(parseNumberStrict(s), s).toBeNaN();
+  });
+});
+
+describe('pentest: engine edge', () => {
+  it('0^−1 is a divide-by-zero, not "Too big"', () => expect(evaluate('0^(−1)').code).toBe('div0'));
+});

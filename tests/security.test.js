@@ -59,3 +59,24 @@ describe('storage validation', () => {
     expect(cleanTools({ units: { cat: '__proto__' } }, UNITS).units.cat).toBe('Length');
   });
 });
+
+describe('pentest hardening', () => {
+  it('tape drops planted markup and bidi-override text', () => {
+    const h = cleanHistory([
+      { expr: '<img src=x onerror=alert(1)>', value: 1, t: 1 },
+      { expr: '‮1+2', value: 3, t: 1 },
+      { expr: '1+2', value: 3, t: 1 },
+    ]);
+    expect(h.map((x) => x.expr)).toEqual(['1+2']);
+  });
+  it('service worker caches by path (no ?query cache explosion)', () => {
+    const sw = read('public/sw.js');
+    expect(sw).toMatch(/url\.origin \+ url\.pathname/);
+    expect(sw).not.toMatch(/c\.put\(req,/);
+  });
+  it('free-text inputs are length-limited', () => {
+    const html = read('index.html');
+    expect(html).toMatch(/id="paletteInput"[^>]*maxlength="300"/);
+    expect(html).toMatch(/id="historySearch"[^>]*maxlength="100"/);
+  });
+});

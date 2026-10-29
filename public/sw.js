@@ -1,6 +1,6 @@
 // Offline-first service worker.
 // Bump VERSION on every release so old caches (and old hashed assets) are dropped.
-const VERSION = 'bouncy-v5.1.0';
+const VERSION = 'bouncy-v5.1.1';
 const SHELL = './index.html';
 
 self.addEventListener('install', (e) => {
@@ -36,18 +36,23 @@ self.addEventListener('fetch', (e) => {
     return;
   }
 
+  // Cache by path only. Keying on the full URL let every new ?query add another copy
+  // (/icon.svg?1, ?2, … grew the cache without limit).
+  const key = url.origin + url.pathname;
+  const cacheable = (res) => res.ok && res.type === 'basic' && !isHtml(res);
+
   if (isHashed(url)) {
     // Hashed build assets never change: cache first.
-    e.respondWith(caches.match(req).then((hit) => hit || fetch(req).then((res) => {
-      if (res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
+    e.respondWith(caches.match(key).then((hit) => hit || fetch(req).then((res) => {
+      if (cacheable(res)) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(key, copy)); }
       return res;
     })));
     return;
   }
 
   // Everything else (manifest, icons, licences): stale-while-revalidate so they don't freeze forever.
-  e.respondWith(caches.open(VERSION).then((c) => c.match(req).then((hit) => {
-    const net = fetch(req).then((res) => { if (res.ok) c.put(req, res.clone()); return res; }).catch(() => hit);
+  e.respondWith(caches.open(VERSION).then((c) => c.match(key).then((hit) => {
+    const net = fetch(req).then((res) => { if (cacheable(res)) c.put(key, res.clone()); return res; }).catch(() => hit || Response.error());
     return hit || net;
   })));
 });

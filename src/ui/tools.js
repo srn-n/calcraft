@@ -3,14 +3,13 @@ import { h } from './dom.js';
 import { formatNumber, clean } from '../engine/index.js';
 import { load, save } from '../core/storage.js';
 import { cleanTools } from '../core/schema.js';
+import { parseNumberStrict } from '../core/numbers.js';
 
-const num = (v) => {
-  const n = parseFloat(String(v).replace(/,/g, '').replace('−', '-'));
-  return Number.isFinite(n) ? n : NaN;
-};
+// Strict: "1,5" is 1.5 (not 15), "12abc" and "0x10" are rejected (not 12 and 0).
+const num = parseNumberStrict;
 const fmt = (n, d = 2) => (Number.isFinite(n) ? formatNumber(clean(Number(n.toFixed(d)))) : '—');
 const field = (label, input) => h('label.field', {}, h('span', {}, label), input);
-const numInput = (value, oninput, extra = {}) => h('input', { type: 'text', inputmode: 'decimal', value, oninput, autocomplete: 'off', ...extra });
+const numInput = (value, oninput, extra = {}) => h('input', { type: 'text', inputmode: 'decimal', value, oninput, autocomplete: 'off', maxlength: 24, ...extra });
 
 /* ---------- units (factor to base unit) ---------- */
 export const UNITS = {
@@ -55,7 +54,8 @@ export function createTools(host, { getAns, sendToCalc }) {
     const pctLabel = h('span', {}, `Tip ${t.pct}%`);
     const peopleOut = h('b', { style: { minWidth: '2ch', textAlign: 'center', font: '800 22px var(--font-display)' } }, t.people);
     const update = () => {
-      const bill = num(t.bill);
+      const raw = num(t.bill);
+      const bill = raw >= 0 ? raw : NaN; // a negative bill isn't a bill
       const tipAmt = bill * t.pct / 100;
       let per = (bill + tipAmt) / Math.max(1, t.people);
       if (t.round) per = Math.ceil(per);
@@ -141,8 +141,12 @@ export function createTools(host, { getAns, sendToCalc }) {
     };
     return h('div.tool', {},
       card('What is X% of Y?', '15', '80', (x, y) => [fmt(x / 100 * y, 4)], ['X %', 'Y']),
-      card('X is what % of Y?', '30', '120', (x, y) => [fmt(x / y * 100, 4) + '%'], ['X', 'Y']),
-      card('% change from A to B', '80', '100', (a, b) => { const c = (b - a) / Math.abs(a) * 100; return [(c > 0 ? '+' : '') + fmt(c, 4) + '%', Number.isFinite(c) ? (c >= 0 ? 'increase' : 'decrease') : '']; }, ['From A', 'To B']),
+      card('X is what % of Y?', '30', '120', (x, y) => { const p = x / y * 100; return Number.isFinite(p) ? [fmt(p, 4) + '%'] : ['—', y === 0 ? 'Y can’t be 0' : '']; }, ['X', 'Y']),
+      card('% change from A to B', '80', '100', (a, b) => {
+        const c = (b - a) / Math.abs(a) * 100;
+        if (!Number.isFinite(c)) return ['—', a === 0 ? 'can’t change from 0' : ''];
+        return [(c > 0 ? '+' : '') + fmt(c, 4) + '%', c >= 0 ? 'increase' : 'decrease'];
+      }, ['From A', 'To B']),
       card('Discount', '129.99', '25', (p, d) => [fmt(p * (1 - d / 100)), `you save ${fmt(p * d / 100)}`], ['Price', '% off']));
   }
 

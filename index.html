@@ -86,7 +86,7 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
         </button>
       </div>
-      <input class="search" id="historySearch" type="search" placeholder="Search tape…" aria-label="Search history" />
+      <input class="search" id="historySearch" type="search" placeholder="Search tape…" aria-label="Search history" maxlength="100" />
       <ol class="tape" id="tape"></ol>
       <p class="tape-empty" id="tapeEmpty">Your calculations print here, like a receipt roll.<br />Tap one to reuse it.</p>
     </aside>
@@ -114,7 +114,7 @@
   </dialog>
 
   <dialog class="palette" id="palette" aria-label="Command palette">
-    <input id="paletteInput" placeholder="Type a command or a sum…" autocomplete="off" spellcheck="false" />
+    <input id="paletteInput" placeholder="Type a command or a sum…" autocomplete="off" spellcheck="false" maxlength="300" />
     <ul id="paletteList" role="listbox"></ul>
     <div class="palette-foot">↑↓ choose · Enter run · Esc close</div>
   </dialog>

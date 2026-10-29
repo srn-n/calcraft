@@ -11,8 +11,12 @@ export function applyTheme(id, { animate = true } = {}) {
     const meta = document.querySelector('meta[name="theme-color"]');
     if (meta) meta.content = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
   };
-  if (animate && document.startViewTransition && !reducedMotion()) document.startViewTransition(swap);
-  else swap();
+  if (animate && document.startViewTransition && !reducedMotion()) {
+    // Rapid switching skips the previous transition; its promises then reject with AbortError.
+    // That's expected, so swallow it instead of spamming unhandled rejections.
+    const vt = document.startViewTransition(swap);
+    for (const p of [vt.ready, vt.finished, vt.updateCallbackDone]) p?.catch?.(() => {});
+  } else swap();
   return t;
 }
 

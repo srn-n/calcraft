@@ -119,6 +119,7 @@ function memory(op) {
   const v = currentValue();
   if (v == null) { toast('Nothing to store yet'); nope('mplus'); return; }
   const next = op === 'mplus' ? m + v : m - v;
+  if (!Number.isFinite(next)) { toast('Memory overflow — not stored'); nope(op); feedback('error'); return; }
   store.set({ memory: Number(next.toPrecision(12)) });
   toast(`M = ${formatNumber(Number(next.toPrecision(12)))}`);
 }
@@ -303,8 +304,12 @@ window.addEventListener('keydown', (e) => {
 window.addEventListener('paste', (e) => {
   const t = e.target;
   if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return;
-  const text = C.sanitizePaste(e.clipboardData?.getData('text') || '');
-  if (!text) return;
+  const rawText = e.clipboardData?.getData('text') || '';
+  const text = C.sanitizePaste(rawText);
+  if (!text) {
+    if (rawText.trim()) { e.preventDefault(); toast('Couldn’t read that as a sum'); feedback('error'); }
+    return;
+  }
   e.preventDefault();
   setView('calc');
   setCalc(C.insert(S().calc, text));

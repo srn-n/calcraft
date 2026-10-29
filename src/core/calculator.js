@@ -1,5 +1,6 @@
 // Calculator editing logic: pure functions over {expr, caret, evaluated, ...}.
 import { evaluate, toExpr, openBrackets } from '../engine/index.js';
+import { normalizeDigits, stripInvisible, resolveCommas } from './numbers.js';
 
 const BIN = ['+', '−', '×', '÷', '^'];
 const POST = ['%', '!', '²', '³'];
@@ -152,22 +153,34 @@ export function moveCaret(s, d) {
 export const setCaret = (s, c) => ({ ...s, evaluated: false, prevExpr: s.evaluated ? '' : s.prevExpr, caret: Math.max(0, Math.min(s.expr.length, c)) });
 
 /** Turn pasted text into a clean expression. */
+/** Characters a pasted sum may contain once cleaned. Anything else means we can't read it exactly. */
+const PASTE_OK = /^[0-9.+−×÷^%!²³()πeE√∛a-zA-Z]*$/;
+
+/**
+ * Turn pasted text into a clean expression, or '' if it can't be read exactly.
+ * Unknown characters used to be silently deleted, which changed the maths: "1٣+1" became 1+1 = 2.
+ */
 export function sanitizePaste(text) {
-  return String(text)
-    .replace(/[\r\n\t]+/g, ' ')
+  const raw = stripInvisible(normalizeDigits(String(text).slice(0, MAX_EXPR * 4)));
+  const out = raw
+    .replace(/[\r\n\t\u00a0\u2009\u202f]+/g, ' ')
+    .replace(/[\p{Sc}]/gu, '') // $1,234.50 → 1,234.50
+    .replace(/(\d)'(?=\d)/g, '$1') // Swiss 1'000
+    .replace(/[=\s]+$/, '') // trailing "="
+    .replace(/\*\*/g, '^')
     .replace(/\*\*/g, '^')
     // 1e-7 / 2.5E+3 (JavaScript, Python, Excel) → engineering E. Typed 'e' stays Euler's number.
     .replace(/(\d)\s*[eE]\s*([+\-\u2212]?\d)/g, '$1E$2')
     // Commas: "1,234" / "1,234,567" are thousands separators; "1,5" / "3,14159" are decimal commas.
-    .replace(/(\d),(?=\d)/g, (m, d, off, str) => (/^\d{3}(?!\d)/.test(str.slice(off + 2)) ? d : d + '.'))
     .replace(/[*xX·∗]/g, (m, i, str) => (m === 'x' && /[a-z]/i.test(str[i + 1] || '') ? m : '×'))
     .replace(/\//g, '÷')
     .replace(/[-–—]/g, '−')
     .replace(/sqrt/gi, '√')
     .replace(/\bpi\b/gi, 'π')
-    .replace(/[^0-9.,+−×÷^%!²³()πeE√∛a-zA-Z ]/g, '')
-    .replace(/\s+/g, '')
-    .slice(0, MAX_EXPR);
+    .replace(/\s+/g, '');
+  const clean = resolveCommas(out);
+  if (!PASTE_OK.test(clean) || clean.length > MAX_EXPR) return '';
+  return clean;
 }
 
 export function preview(s, angle) {

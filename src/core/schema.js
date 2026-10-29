@@ -17,6 +17,10 @@ export function cleanSettings(v) {
   return out;
 }
 
+// Only characters the calculator itself can produce. Planted text (markup, bidi overrides that
+// visually reverse a sum) is dropped instead of being shown on the tape.
+const EXPR_CHARS = /^[0-9.+−×÷^%!²³()πeE√∛a-zA-Z]+$/;
+
 export function cleanHistory(v) {
   if (!Array.isArray(v)) return [];
   const out = [];
@@ -24,7 +28,7 @@ export function cleanHistory(v) {
     if (!it || typeof it !== 'object') continue;
     const expr = str(it.expr);
     const value = finite(it.value, NaN);
-    if (!expr || Number.isNaN(value)) continue;
+    if (!expr || !EXPR_CHARS.test(expr) || Number.isNaN(value)) continue;
     const t = finite(it.t, Date.now());
     out.push({ id: finite(it.id, t), expr, value, t });
     if (out.length >= 200) break;
