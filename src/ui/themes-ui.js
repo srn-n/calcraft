@@ -20,7 +20,7 @@ function miniPreview(t) {
   const s = t.swatch;
   const keys = Array.from({ length: 12 }, (_, i) => {
     const bg = i === 11 ? s.accent : i % 4 === 3 ? s.op : s.key;
-    return h('i', { style: { background: bg, borderRadius: ['cyber', 'phosphor', 'arcade', 'blueprint', 'te', 'lcd', 'voyager'].includes(t.id) ? '3px' : '99px', border: s.key.startsWith('rgba') || s.key === s.bg ? `1px solid ${s.op}` : '0' } });
+    return h('i', { style: { background: bg, borderRadius: t.square ? '3px' : '99px', border: s.key.startsWith('rgba') || s.key === s.bg ? `1px solid ${s.op}` : '0' } });
   });
   return h('div.mini', { style: { background: s.bg } },
     h('div.mini-display', { style: { background: t.scheme === 'dark' ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.07)', color: s.text === s.bg ? s.key : (t.scheme === 'dark' ? s.text : '#222') } }, '1,337'),

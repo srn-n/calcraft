@@ -5,7 +5,9 @@ import { literals } from '../../engine/index.js';
 import { initialCalc, insert, backspace, clear } from '../../core/calculator.js';
 
 export function make24(stage, ctx) {
-  let puzzle, calc, streak = 0, solved = 0, locked = false;
+  let puzzle, calc, streak = 0, solved = 0, locked = false, dead = false;
+  const timers = new Set();
+  const later = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); if (!dead) fn(); }, ms); timers.add(id); };
   const streakEl = h('b', {}, '0');
   const chips = h('div.n-chips');
   const qEl = h('div.game-q');
@@ -46,7 +48,7 @@ export function make24(stage, ctx) {
     streak = 0;
     msg.textContent = `One way: ${puzzle.solution}`;
     ctx.buzz('op');
-    setTimeout(next, 2200);
+    later(next, 2200);
   }
   function submit() {
     const r = check24(calc.expr, puzzle.nums);
@@ -57,7 +59,7 @@ export function make24(stage, ctx) {
       floatScore(stage, '24!');
       ctx.burst({ count: 70 }); ctx.buzz('win'); ctx.play('win');
       msg.textContent = streak > 1 ? `${streak} in a row` : 'Nice.';
-      setTimeout(next, 900);
+      later(next, 900);
     } else {
       ctx.buzz('error'); ctx.play('error'); ctx.shake?.(stage);
       msg.textContent = r.reason;
@@ -80,7 +82,7 @@ export function make24(stage, ctx) {
       draw();
       return true;
     },
-    destroy() { ctx.setBroken([]); },
+    destroy() { dead = true; timers.forEach(clearTimeout); timers.clear(); ctx.setBroken([]); },
   };
   return api;
 }

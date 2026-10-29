@@ -13,5 +13,5 @@ export default defineConfig(({ mode }) => ({
     assetsInlineLimit: mode === 'single' ? 100_000_000 : 0,
     copyPublicDir: mode !== 'single',
   },
-  server: { host: true },
+  // Dev server stays on localhost. Use `npm run dev -- --host` only on a network you trust.
 }));

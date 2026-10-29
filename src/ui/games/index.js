@@ -1,6 +1,7 @@
 // Games hub: menu + active game. Games receive the same actions as the calculator keypad.
 import { h } from '../dom.js';
 import { load, save } from '../../core/storage.js';
+import { cleanBests } from '../../core/schema.js';
 import { sprint } from './sprint.js';
 import { make24 } from './make24.js';
 import { broken } from './broken.js';
@@ -14,7 +15,7 @@ export const GAMES = [
 ];
 
 export function createGames(host, fx) {
-  const bests = load('bests', {});
+  const bests = cleanBests(load('bests', {}));
   let active = null;
 
   const ctx = {

@@ -4,6 +4,7 @@ import './styles/themes.css';
 
 import { createStore } from './core/store.js';
 import { load, save } from './core/storage.js';
+import { cleanSettings, cleanHistory, cleanNumber, cleanAngle, cleanBool, cleanView } from './core/schema.js';
 import * as C from './core/calculator.js';
 import { formatNumber, toExpr, evaluate } from './engine/index.js';
 import { THEMES, themeById } from './themes.js';
@@ -22,15 +23,16 @@ import { burst } from './fx/confetti.js';
 
 /* ---------------- state ---------------- */
 const VIEWS = ['calc', 'tools', 'games'];
+// Everything from storage is validated: corrupted data falls back to defaults instead of crashing.
 const store = createStore({
-  calc: { ...C.initialCalc(), ans: load('ans', 0) },
-  angle: load('angle', 'deg'),
-  memory: load('memory', 0),
-  history: load('history', []),
-  theme: document.documentElement.dataset.theme || 'braun',
-  sci: load('sci', false),
-  view: VIEWS.includes(load('view', 'calc')) ? load('view', 'calc') : 'calc',
-  settings: { sound: false, haptics: true, group: true, hints: true, reduceMotion: false, ...load('settings', {}) },
+  calc: { ...C.initialCalc(), ans: cleanNumber(load('ans', 0)) },
+  angle: cleanAngle(load('angle', 'deg')),
+  memory: cleanNumber(load('memory', 0)),
+  history: cleanHistory(load('history', [])),
+  theme: themeById(document.documentElement.dataset.theme).id,
+  sci: cleanBool(load('sci', false)),
+  view: cleanView(load('view', 'calc'), VIEWS),
+  settings: cleanSettings(load('settings', {})),
 });
 const S = () => store.get();
 const undo = [], redo = [];
@@ -111,7 +113,7 @@ function memory(op) {
   if (op === 'mc') { store.set({ memory: 0 }); toast('Memory cleared'); return; }
   if (op === 'mr') {
     if (!m) { toast('Memory is empty'); return; }
-    setCalc(C.insert(calc, toExpr(m)));
+    setCalc(C.insertValue(calc, m));
     return;
   }
   const v = currentValue();
@@ -128,6 +130,7 @@ function calcAction(a) {
     case 'eq': return doEquals();
     case 'bksp': return setCalc(C.backspace(st.calc));
     case 'ac': return setCalc(C.clear(st.calc));
+    case 'del': return setCalc(C.del(st.calc));
     case 'left': return setCalc(C.moveCaret(st.calc, -1), { record: false });
     case 'right': return setCalc(C.moveCaret(st.calc, 1), { record: false });
     case 'home': return setCalc(C.setCaret(st.calc, 0), { record: false });
@@ -210,7 +213,7 @@ const display = createDisplay({
 
 const history = createHistory({
   onUseExpr: (it) => { setView('calc'); setCalc({ ...C.initialCalc(), ans: S().calc.ans, expr: it.expr, caret: it.expr.length }); },
-  onUseValue: (it) => { setView('calc'); setCalc(C.insert(S().calc, toExpr(it.value))); },
+  onUseValue: (it) => { setView('calc'); setCalc(C.insertValue(S().calc, it.value)); },
   onClear: () => { store.set({ history: [] }); toast('Tape cleared'); },
 });
 
@@ -244,14 +247,20 @@ const palette = createPalette({
     { title: `Key sounds: ${S().settings.sound ? 'on → off' : 'off → on'}`, run: () => store.set({ settings: { ...S().settings, sound: !S().settings.sound } }) },
     { title: 'Clear history tape', run: () => store.set({ history: [] }) },
     { title: 'Wipe everything (tape, memory, Ans)', run: wipeAll },
-    { title: 'Keyboard shortcuts', sub: 's c t l g r p e · Enter = · Esc AC · ←→ caret', run: () => toast('s c t → sin cos tan · l ln · g log · r √ · p π · ^ power · ! factorial · Enter = · Esc AC · ←/→ move caret · Ctrl+K commands', 6000) },
+    { title: 'Keyboard shortcuts', sub: 's c t l g r p e · Enter = · Esc AC · Del · ←→ caret', run: () => toast('s c t → sin cos tan · l ln · g log · r √ · p π · ^ power · ! factorial · Enter = · Esc AC · Del deletes forward · ←/→ move caret · Ctrl+K commands', 6000) },
     { title: 'Surprise me (random theme)', run: () => { const o = THEMES.filter((t) => t.id !== S().theme); setTheme(o[Math.floor(Math.random() * o.length)].id); } },
   ],
 });
 
 const tools = createTools($('#tools'), {
   getAns: () => S().calc.ans,
-  sendToCalc: (v) => { setView('calc'); setCalc({ ...C.initialCalc(), ans: S().calc.ans, expr: String(v), caret: String(v).length }); toast('Sent to calculator'); },
+  sendToCalc: (v) => {
+    const n = typeof v === 'number' ? v : Number(String(v).replace(/,/g, '').replace(/−/g, '-'));
+    if (!String(v).trim() || !Number.isFinite(n)) { toast('Nothing to send yet'); return; }
+    setView('calc');
+    setCalc(C.insertValue({ ...C.initialCalc(), ans: S().calc.ans }, n));
+    toast('Sent to calculator');
+  },
 });
 
 const games = createGames($('#games'), {
@@ -358,5 +367,6 @@ if (import.meta.env.PROD && import.meta.env.MODE !== 'single' && location.protoc
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
-// Debug/automation hook (also used by the Android/Tauri wrappers if they want state).
-window.bouncy = { store, setTheme, themes: THEMES.map((x) => x.id), themeById };
+// Read-only hook for the Android/Tauri wrappers and automated tests. It can read state and switch
+// themes but cannot write arbitrary state, so a stray script can't plant data through it.
+window.bouncy = Object.freeze({ getState: () => S(), setTheme, themes: Object.freeze(THEMES.map((x) => x.id)) });

@@ -1,7 +1,7 @@
 {
   "name": "Bouncy Calculator",
   "short_name": "Bouncy",
-  "description": "A fast, offline, deeply interactive calculator with 14 themes, tools and games.",
+  "description": "A fast, offline, deeply interactive calculator with 24 themes, tools and games.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

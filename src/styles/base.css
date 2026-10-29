@@ -2,8 +2,8 @@
 :root {
   --bg: #e9e4dc; --bg-art: none; --overlay: none; --overlay-opacity: 1;
   --device: transparent; --device-border: transparent; --device-shadow: none; --r-device: 28px;
-  --text: #26241f; --muted: #7d776e; --surface: rgba(0,0,0,.05); --surface-2: rgba(0,0,0,.08); --border: rgba(0,0,0,.14);
-  --display-bg: #dcdad0; --display-text: #26241f; --display-muted: #77746a; --display-border: rgba(0,0,0,.12);
+  --text: #26241f; --muted: #6d6860; --surface: rgba(0,0,0,.05); --surface-2: rgba(0,0,0,.08); --border: rgba(0,0,0,.14);
+  --display-bg: #dcdad0; --display-text: #26241f; --display-muted: #605e55; --display-border: rgba(0,0,0,.12);
   --key: #2b2b2b; --key-text: #f5f0eb;
   --key-op: #6f6a63; --key-op-text: #f5f0eb;
   --key-fn: #d6d1c8; --key-fn-text: #2b2b2b;
@@ -11,7 +11,7 @@
   --key-ac: #c8442c; --key-ac-text: #fff;
   --key-border: transparent; --bw: 0px;
   --accent: #f2b705; --on-accent: #1d1b17; --danger: #c8442c;
-  --tok-num: var(--display-text); --tok-op: #b8860b; --tok-fn: #2f6f8f; --tok-paren: #9a6b3a; --tok-const: #7a4b9a;
+  --tok-num: var(--display-text); --tok-op: #98700f; --tok-fn: #2f6f8f; --tok-paren: #9a6b3a; --tok-const: #7a4b9a;
   --r-key: 999px; --r-card: 18px; --r-chip: 999px;
   --shadow-key: 0 2px 0 rgba(0,0,0,.35), 0 6px 14px rgba(0,0,0,.12);
   --shadow-key-down: 0 0 0 rgba(0,0,0,.35), 0 2px 6px rgba(0,0,0,.12);
@@ -205,9 +205,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   display: flex; flex-direction: column; gap: 10px; padding: 8px 16px calc(env(safe-area-inset-bottom) + 16px);
   background: var(--device-solid, var(--bg)); color: var(--text); border-top: 1px solid var(--border);
   border-radius: 22px 22px 0 0; box-shadow: 0 -20px 50px rgba(0,0,0,.25);
-  transform: translateY(105%); transition: transform 460ms var(--spring); visibility: hidden;
+  /* visibility waits for the slide-out to finish; otherwise the sheet vanishes instantly on close */
+  transform: translateY(105%); visibility: hidden;
+  transition: transform 460ms var(--out), visibility 0s linear 460ms;
 }
-.side.is-open { transform: translateY(0); visibility: visible; }
+.side.is-open { transform: translateY(0); visibility: visible; transition: transform 460ms var(--spring), visibility 0s; }
 .sheet-grip { width: 42px; height: 5px; border-radius: 9px; background: var(--border); margin: 4px auto 2px; }
 .side-head { display: flex; align-items: center; gap: 8px; }
 .side-head h2 { margin: 0 auto 0 0; font: 800 15px var(--font-display); letter-spacing: .02em; }
@@ -388,9 +390,14 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important; }
-  .caret { animation: none; }
+  .caret, .fx-overlay { animation: none !important; }
 }
-html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after { animation-duration: 1ms !important; transition-duration: 1ms !important; }
+/* In-app "Reduce motion". iteration-count matters: an infinite animation squeezed to 1 ms strobes
+   (the caret and the Phosphor flicker used to flash every frame). */
+html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after {
+  animation-duration: 1ms !important; animation-iteration-count: 1 !important; transition-duration: 1ms !important;
+}
+html.reduce-motion .caret, html.reduce-motion .fx-overlay { animation: none !important; }
 
 /* Smooth theme cross-fade (View Transitions API) */
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 380ms; }

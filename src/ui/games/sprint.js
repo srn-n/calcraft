@@ -21,7 +21,9 @@ export function sprint(stage, ctx) {
     scoreEl.textContent = score;
     comboEl.textContent = mult() > 1 ? `×${mult()} combo` : '';
   };
+  let dead = false;
   const tick = () => {
+    if (dead) return;
     const left = Math.max(0, DURATION - (performance.now() - t0) / 1000);
     bar.style.setProperty('--t', (left / DURATION).toFixed(4));
     if (left <= 0) return end();
@@ -81,7 +83,7 @@ export function sprint(stage, ctx) {
       if (a.type === 'cmd' && a.cmd === 'eq') { if (!started) begin(); else check(true); return true; }
       ctx.nope(a); return true;
     },
-    destroy() { cancelAnimationFrame(raf); },
+    destroy() { dead = true; cancelAnimationFrame(raf); },
   };
   return api;
 }

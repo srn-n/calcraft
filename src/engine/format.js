@@ -4,7 +4,9 @@
 export function toExpr(n) {
   if (n === 0) return '0';
   const a = Math.abs(n);
-  if (a >= 1e15 || a < 1e-9) {
+  // Below 1e-6 String() switches to JS notation ("1e-7"), whose lowercase e the tokenizer
+  // reads as Euler's number — so small answers are always written with an engineering E here.
+  if (a >= 1e15 || a < 1e-6) {
     const [m, e] = n.toExponential(9).split('e');
     return `${trimZeros(m)}E${e.replace('+', '')}`;
   }

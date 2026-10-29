@@ -2,6 +2,7 @@
 import { h } from './dom.js';
 import { formatNumber, clean } from '../engine/index.js';
 import { load, save } from '../core/storage.js';
+import { cleanTools } from '../core/schema.js';
 
 const num = (v) => {
   const n = parseFloat(String(v).replace(/,/g, '').replace('−', '-'));
@@ -33,7 +34,7 @@ export function convert(cat, v, from, to) {
 }
 
 export function createTools(host, { getAns, sendToCalc }) {
-  const st = load('tools', { tab: 'tip', tip: { bill: '', pct: 15, people: 2, round: false }, units: { cat: 'Length', from: 'km', to: 'mi', v: '10' } });
+  const st = cleanTools(load('tools', { units: { cat: 'Length', from: 'km', to: 'mi', v: '10' } }), UNITS);
   const persist = () => save('tools', st);
 
   const tabs = [['tip', 'Tip & Split'], ['units', 'Units'], ['pct', 'Percent']];

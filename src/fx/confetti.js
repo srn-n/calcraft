@@ -1,7 +1,10 @@
 // Pooled canvas confetti. The rAF loop only runs while particles are alive.
+import { reducedMotion } from '../ui/dom.js';
+
 const POOL = 160;
 let canvas, g, parts = [], running = false, dpr = 1;
-const reduced = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Honour both the OS setting and the in-app "Reduce motion" switch.
+const reduced = reducedMotion;
 
 function init() {
   canvas = document.getElementById('confetti');

@@ -118,11 +118,20 @@ export function mountKeypad(onAction, hooks = {}) {
   sci.append(sciInner);
   mem.append(...MEM.map((k) => keyButton(k, 'mem')));
 
-  let holdTimer = 0, repeatTimer = 0, longFired = false;
-  const stopHold = (el) => {
-    clearTimeout(holdTimer); clearInterval(repeatTimer);
-    el?.classList.remove('is-down', 'is-holding');
+  let longFired = false;
+  // Every active press owns its own timers, so two fingers can't cancel (or orphan) each other's repeat.
+  const presses = new Map(); // pointerId → {el, hold, repeat}
+  const stopHold = (id) => {
+    const p = presses.get(id);
+    if (!p) return;
+    clearTimeout(p.hold); clearInterval(p.repeat);
+    p.el.classList.remove('is-down', 'is-holding');
+    presses.delete(id);
   };
+  const stopAll = () => { for (const id of [...presses.keys()]) stopHold(id); };
+  // If the window loses focus mid-hold, pointerup never arrives — without this ⌫ would keep deleting.
+  window.addEventListener('blur', stopAll);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) stopAll(); });
   const fire = (el, source) => {
     const def = KEY_INDEX.get(el.dataset.id);
     if (def) onAction(def.act, { id: def.id, kind: el.dataset.kind, source });
@@ -133,17 +142,25 @@ export function mountKeypad(onAction, hooks = {}) {
       const el = e.target.closest('.key');
       if (!el || e.button > 0) return;
       e.preventDefault(); // keep focus where it is, no text selection, instant response
+      const pid = e.pointerId;
+      stopHold(pid);
       el.classList.add('is-down');
       longFired = false;
       fire(el, 'pointer');
       const id = el.dataset.id;
+      const press = { el, hold: 0, repeat: 0 };
+      presses.set(pid, press);
       if (id === 'ac') {
         el.classList.add('is-holding');
-        holdTimer = setTimeout(() => { longFired = true; el.classList.remove('is-holding'); hooks.onLongAC?.(); }, 650);
+        press.hold = setTimeout(() => { longFired = true; el.classList.remove('is-holding'); hooks.onLongAC?.(); }, 650);
       } else if (id === 'bksp') {
-        holdTimer = setTimeout(() => { repeatTimer = setInterval(() => fire(el, 'repeat'), 55); }, 380);
+        press.hold = setTimeout(() => { press.repeat = setInterval(() => fire(el, 'repeat'), 55); }, 380);
       }
-      const up = () => { stopHold(el); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up); };
+      const up = (ev) => {
+        if (ev.pointerId !== pid) return;
+        stopHold(pid);
+        window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      };
       window.addEventListener('pointerup', up);
       window.addEventListener('pointercancel', up);
     });
@@ -166,7 +183,7 @@ export function keyboardAction(e) {
     '.': ins('.'), ',': ins('.'), '+': ins('+'), '-': ins('−'), '*': ins('×'), x: ins('×'), X: ins('×'), '/': ins('÷'), ':': ins('÷'),
     '%': ins('%'), '^': ins('^'), '!': ins('!'), '(': ins('('), ')': ins(')'), p: ins('π'), e: ins('e'), E: ins('E'),
     s: ins('sin('), c: ins('cos('), t: ins('tan('), l: ins('ln('), g: ins('log('), r: ins('√('), a: ins('Ans'),
-    Enter: cmd('eq'), '=': cmd('eq'), Backspace: cmd('bksp'), Delete: cmd('ac'), Escape: cmd('ac'),
+    Enter: cmd('eq'), '=': cmd('eq'), Backspace: cmd('bksp'), Delete: cmd('del'), Escape: cmd('ac'),
     ArrowLeft: cmd('left'), ArrowRight: cmd('right'), Home: cmd('home'), End: cmd('end'),
     d: cmd('angle'), h: cmd('history'), f: cmd('sci'), '?': cmd('palette'),
   };

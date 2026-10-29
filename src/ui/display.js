@@ -10,7 +10,9 @@ const CLASS = (c, prev) => {
   if (c === 'π' || c === 'e') return 't-const';
   return 't-fn';
 };
-const escapeChar = (c) => (c === '<' ? '&lt;' : c === '&' ? '&amp;' : c);
+// The expression can come from paste or a stored tape entry, so every character is escaped.
+const ESC = { '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;', "'": '&#39;' };
+const escapeChar = (c) => ESC[c] || c;
 
 /** Indices before which a thousands separator is drawn (integer digit runs only). */
 function separatorSlots(expr) {
@@ -76,7 +78,14 @@ export function createDisplay({ onCaret, onCopy, onSwipe }) {
       const key = calc.prevExpr + '=' + txt;
       if (key !== lastRolled) {
         lastRolled = key;
-        resEl.innerHTML = [...txt].map((c, i) => `<span class="roll" style="--i:${i}">${c}</span>`).join('');
+        // Built with DOM nodes (no inline style attributes) so the page works under a strict CSP.
+        resEl.replaceChildren(...[...txt].map((c, i) => {
+          const sp = document.createElement('span');
+          sp.className = 'roll';
+          sp.style.setProperty('--i', i);
+          sp.textContent = c;
+          return sp;
+        }));
       }
       if (ghost) ghost.textContent = '8'.repeat(Math.min(12, Math.max(10, txt.length)));
     } else {

@@ -1,7 +1,7 @@
 # Bouncy Calculator v5 (web)
 
 A fast, offline, deeply interactive calculator. The maths is simple, so the UI is the product.
-It has 14 themes based on real objects, focused tools, and four games you play on the calculator's own keypad.
+It has 24 themes based on real objects, focused tools, and four games you play on the calculator's own keypad.
 
 - **No framework**: vanilla ES modules plus Vite. About 23 KB of JS and 12 KB of CSS gzipped (the old v4 shipped 180 KB of React).
 - **Safe engine**: tokeniser → Pratt parser → evaluator. No `eval` and no `Function()`, so pasted text can never run code.
@@ -12,7 +12,7 @@ It has 14 themes based on real objects, focused tools, and four games you play o
 ```bash
 npm install
 npm run dev          # http://localhost:5173 with hot reload
-npm test             # 96 unit tests (engine, editing, games, units)
+npm test             # 112 unit tests (engine, editing, games, units, security)
 npm run build        # dist/ — host anywhere; installable PWA, works offline
 npm run build:single # dist-single/index.html — one file, double-click to open (file://)
 ```
@@ -32,7 +32,7 @@ npm run build:single # dist-single/index.html — one file, double-click to open
 - Memory keys MC, MR, M+, M−.
 - Gestures: swipe ← to delete, → to undo, ↓ to clear, ↑ to open the tape. Hold AC to wipe everything; hold ⌫ to repeat.
 - Paper-tape history: saved, searchable, tap to reuse.
-- Keyboard: digits and operators, Enter, Esc, `s c t l g r p e` for functions and constants, `d` for DEG/RAD, `f` for fx, `h` for the tape, Ctrl+Z/Y to undo/redo, Ctrl+C to copy, paste a whole expression.
+- Keyboard: digits and operators, Enter, Esc (AC), Delete (forward delete), `s c t l g r p e` for functions and constants, `d` for DEG/RAD, `f` for fx, `h` for the tape, Ctrl+Z/Y to undo/redo, Ctrl+C to copy, paste a whole expression.
 - **Ctrl+K command palette**: switch theme or view, start a game, change settings. You can also type a sum straight into it.
 - Per-theme synthesised key sounds (off by default), haptics, confetti easter eggs, and support for reduced motion.
 
@@ -44,7 +44,7 @@ npm run build:single # dist-single/index.html — one file, double-click to open
 - **Broken Keys**: some keys are cracked; reach the target with the ones that still work, scored with par and stars.
 - **Estimate**: 10 timed rounds; closer guesses score more.
 
-**Themes**: Braun ET66 · Cyber HUD · Liquid Glass · Clay & Moss · TE Field · Voyager (HP-12C) · Solar LCD (Casio) · Phosphor (VT100) · Brutal · Bauhaus · Soft · Dot Matrix (Nothing) · Blueprint · Arcade.
+**Themes**: Braun ET66 · Cyber HUD · Liquid Glass · Clay & Moss · TE Field · Voyager (HP-12C) · Solar LCD (Casio) · Phosphor (VT100) · Brutal · Bauhaus · Soft · Dot Matrix (Nothing) · Blueprint · Arcade · Valentine (Olivetti typewriter) · Station Clock (Swiss railway) · Darkroom (red safelight) · Risograph · Ledger · Tube Amp · Concrete (Barbican) · Washi & Sumi · Mission Control (Apollo DSKY) · Paperback.
 
 ## Structure
 
@@ -61,7 +61,15 @@ tests/         vitest suites
 docs/          DESIGN-RESEARCH.md (100 references) · BRAINSTORM.md
 ```
 
-**Adding a theme:** add an entry to `src/themes.js` and a `[data-theme="id"]` block of tokens to `themes.css`.
+**Adding a theme:** add an entry to `src/themes.js` (set `square: true` for square keys in the picker preview) and a `[data-theme="id"]` block of tokens to `themes.css`. Keep small text (`--muted`, `--display-muted`) at 4.5:1 contrast or better.
+
+## Security
+
+- `vercel.json` sends a strict Content-Security-Policy (no `unsafe-inline`, no `unsafe-eval`, no framing) plus `nosniff`, `Referrer-Policy` and `Permissions-Policy`.
+- The one inline script in `index.html` (theme before first paint) is allowed by its SHA-256 hash. If you edit it, `npm test` fails and prints the new hash to paste into `vercel.json`.
+- Everything read from localStorage is validated (`src/core/schema.js`), so corrupted storage can't crash the app.
+- The dev server listens on localhost only. Use `npm run dev -- --host` to test on your phone, and only on a network you trust.
+- See `docs/AUDIT-2026-10.md` for the full audit.
 
 ## Privacy, terms and licences
 

@@ -6,7 +6,11 @@ import { formatNumber } from '../../engine/index.js';
 const ROUNDS = 10, SECONDS = 8;
 
 export function estimate(stage, ctx) {
-  let round = 0, total = 0, input = '', q, t0 = 0, raf = 0, waiting = false, over = false;
+  let round = 0, total = 0, input = '', q, t0 = 0, raf = 0, waiting = false, over = false, dead = false;
+  // Every delayed step goes through later() so quitting mid-round cancels it. Before this, a round
+  // that ended during the 1.3 s pause kept playing invisibly (sounds, vibration) after you left.
+  const timers = new Set();
+  const later = (fn, ms) => { const id = setTimeout(() => { timers.delete(id); if (!dead) fn(); }, ms); timers.add(id); };
   const roundEl = h('b');
   const totalEl = h('b', {}, '0');
   const bar = h('div.timebar', {}, h('i'));
@@ -19,10 +23,12 @@ export function estimate(stage, ctx) {
   const tick = () => {
     const left = Math.max(0, SECONDS - (performance.now() - t0) / 1000);
     bar.style.setProperty('--t', (left / SECONDS).toFixed(4));
+    if (dead) return;
     if (left <= 0) return submit();
     raf = requestAnimationFrame(tick);
   };
   function ask() {
+    if (dead) return;
     q = estimateQuestion(round);
     qEl.textContent = q.q;
     input = ''; waiting = false;
@@ -42,7 +48,7 @@ export function estimate(stage, ctx) {
     ctx.play(pts > 70 ? 'win' : 'op');
     if (pts >= 95) ctx.burst({ count: 40 });
     draw();
-    setTimeout(() => { round++; if (round >= ROUNDS) end(); else ask(); }, 1300);
+    later(() => { round++; if (round >= ROUNDS) end(); else ask(); }, 1300);
   }
   function end() {
     over = true;
@@ -70,7 +76,7 @@ export function estimate(stage, ctx) {
       if (a.type === 'cmd' && a.cmd === 'eq') { submit(); return true; }
       ctx.nope(a); return true;
     },
-    destroy() { cancelAnimationFrame(raf); },
+    destroy() { dead = true; cancelAnimationFrame(raf); timers.forEach(clearTimeout); timers.clear(); },
   };
   return api;
 }
