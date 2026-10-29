@@ -1,0 +1,11 @@
+:root { --bg: #e9e4dc; --text: #26241f; --muted: #605e55; --key: #2b2b2b; --key-text: #f5f0eb; --accent: #f2b705; }
+@media (prefers-color-scheme: dark) { :root { --bg: #000; --text: #f2f2f2; --muted: #9a9a9a; --key: #f2f2f2; --key-text: #000; --accent: #d71921; } }
+* { box-sizing: border-box; }
+html, body { height: 100%; margin: 0; }
+body { display: grid; place-items: center; padding: 24px; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, sans-serif; text-align: center; }
+.code { margin: 0; font: 800 clamp(72px, 22vw, 140px)/1 ui-monospace, monospace; letter-spacing: -0.04em; }
+.code::after { content: ''; display: block; width: 56px; height: 6px; margin: 14px auto 0; border-radius: 6px; background: var(--accent); }
+h1 { margin: 18px 0 4px; font-size: 20px; }
+p { margin: 0 0 24px; color: var(--muted); }
+.btn { display: inline-block; padding: 14px 26px; border-radius: 999px; background: var(--key); color: var(--key-text); font-weight: 700; text-decoration: none; }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
