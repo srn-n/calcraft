@@ -34,7 +34,10 @@ export function createPalette({ commands, onCalc, getAngle }) {
     }
     sel = Math.min(sel, Math.max(0, items.length - 1));
     list.replaceChildren(...items.map((c, i) =>
-      h('li', { role: 'option', 'aria-selected': String(i === sel), onpointerdown: (e) => { e.preventDefault(); run(i); }, onmousemove: () => { if (sel !== i) { sel = i; mark(); } } },
+      // Run on a completed tap/click, never on pointerdown: on phones a swipe to scroll starts with a
+      // pointerdown, so the item under your finger used to run (e.g. "Go to Calc") instead of scrolling.
+      // Mouse pointerdown is still cancelled so the search box keeps focus.
+      h('li', { role: 'option', 'aria-selected': String(i === sel), onclick: () => run(i), onpointerdown: (e) => { if (e.pointerType === 'mouse') e.preventDefault(); }, onmousemove: () => { if (sel !== i) { sel = i; mark(); } } },
         h('span', {}, c.title), c.keys ? h('kbd', {}, c.keys) : c.sub ? h('span.sub', {}, c.sub) : null)));
   }
   const mark = () => [...list.children].forEach((li, i) => li.setAttribute('aria-selected', String(i === sel)));
@@ -54,7 +57,13 @@ export function createPalette({ commands, onCalc, getAngle }) {
   dlg.addEventListener('click', (e) => { if (e.target === dlg) dlg.close(); });
 
   return {
-    open() { input.value = ''; sel = 0; render(); dlg.showModal(); input.focus(); },
+    open() {
+      input.value = ''; sel = 0; render(); dlg.showModal();
+      list.scrollTop = 0;
+      // On touch screens don't pop the keyboard over the list; tap the box to type.
+      if (!matchMedia('(pointer: coarse)').matches) input.focus();
+      else dlg.focus();
+    },
     isOpen: () => dlg.open,
   };
 }

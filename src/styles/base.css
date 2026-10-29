@@ -323,8 +323,19 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .palette[open] { animation: pop 260ms var(--spring); }
 @keyframes pop { from { transform: scale(.94); opacity: 0; } }
 .palette input { width: 100%; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); padding: 16px 18px; font: 600 16px var(--font-ui); outline: none; }
-.palette ul { list-style: none; margin: 0; padding: 6px; max-height: 50vh; overflow: auto; }
-.palette li { display: flex; justify-content: space-between; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font: 500 14px var(--font-ui); }
+.palette ul { list-style: none; margin: 0; padding: 6px; max-height: 50vh; max-height: 56dvh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
+.palette li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font: 500 14px var(--font-ui); -webkit-user-select: none; user-select: none; }
+.palette li > :first-child { flex: none; }
+.palette li .sub { text-align: right; min-width: 0; }
+.palette:focus { outline: none; }
+/* Phones: description under the title instead of squeezed beside it */
+@media (max-width: 559px) {
+  .palette { margin-top: calc(env(safe-area-inset-top) + 12px); }
+  .palette li { flex-direction: column; align-items: flex-start; gap: 2px; padding: 11px 12px; }
+  .palette li .sub { text-align: left; }
+  .palette-foot { display: none; } /* arrow-key / Esc hints mean nothing on a touch screen */
+}
+@media (pointer: coarse) { .palette li kbd { display: none; } } /* "Ctrl C", "F"… are keyboard-only */
 .palette li[aria-selected="true"] { background: var(--accent); color: var(--on-accent); }
 .palette li kbd, .palette li .sub { font: 500 11px var(--font-mono); opacity: .7; }
 .palette-foot { padding: 8px 14px; font: 500 11px var(--font-mono); color: var(--muted); border-top: 1px solid var(--border); }
