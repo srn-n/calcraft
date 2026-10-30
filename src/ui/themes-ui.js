@@ -9,7 +9,10 @@ export function applyTheme(id, { animate = true } = {}) {
     doc.dataset.theme = t.id;
     $('#themeLabel').textContent = t.label;
     const meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.content = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
+    const bg = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
+    if (meta) meta.content = bg;
+    // Android app: tint the system bars to match (no-op on the web).
+    try { window.BouncyNative?.setBars?.(/^#[0-9a-f]{6}$/i.test(bg) ? bg : t.swatch.bg, t.scheme === 'dark'); } catch { /* ignore */ }
   };
   if (animate && document.startViewTransition && !reducedMotion()) {
     // Rapid switching skips the previous transition; its promises then reject with AbortError.

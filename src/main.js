@@ -57,7 +57,8 @@ const shake = (el) => { el.classList.remove('shake'); void el.offsetWidth; el.cl
 
 async function copy(text) {
   try {
-    await navigator.clipboard.writeText(text);
+    if (window.BouncyNative?.copy) window.BouncyNative.copy(String(text)); // Android app: system clipboard
+    else await navigator.clipboard.writeText(text);
   } catch {
     const ta = h('textarea', { style: { position: 'fixed', opacity: '0' } }, text);
     document.body.append(ta); ta.select();
@@ -173,6 +174,16 @@ function toggleAngle() {
   store.set({ angle });
   toast(angle === 'deg' ? 'Degrees' : 'Radians', 900);
   feedback('fn');
+}
+
+/** Android back button / gesture: close the top-most layer. Returns false when there's nothing left to close. */
+function goBack() {
+  const open = document.querySelector('dialog[open]');
+  if (open) { open.close(); return true; }
+  if (history.isOpen()) { history.close(); return true; }
+  if (S().view === 'games' && !document.querySelector('#games .game-menu')) { games.leave(); return true; } // game or intro → games menu
+  if (S().view !== 'calc') { setView('calc'); return true; }
+  return false;
 }
 
 function setView(view) {
@@ -388,10 +399,10 @@ $('#metaHint').textContent = matchMedia('(hover: hover)').matches
 dismissSplash();
 
 // Installable offline app when served over http(s) (not in the single-file build).
-if (import.meta.env.PROD && import.meta.env.MODE !== 'single' && location.protocol.startsWith('http') && 'serviceWorker' in navigator) {
+if (import.meta.env.PROD && import.meta.env.MODE !== 'single' && import.meta.env.MODE !== 'android' && location.protocol.startsWith('http') && 'serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(() => {});
 }
 
 // Read-only hook for the Android/Tauri wrappers and automated tests. It can read state and switch
 // themes but cannot write arbitrary state, so a stray script can't plant data through it.
-window.bouncy = Object.freeze({ getState: () => S(), setTheme, themes: Object.freeze(THEMES.map((x) => x.id)) });
+window.bouncy = Object.freeze({ getState: () => S(), setTheme, back: goBack, themes: Object.freeze(THEMES.map((x) => x.id)) });

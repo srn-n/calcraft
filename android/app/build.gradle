@@ -1,0 +1,57 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Upload-key signing. Credentials live OUTSIDE the repo in ../../.signing/keystore.properties
+// (git-ignored). Without that file, release builds are produced unsigned.
+def signingProps = new Properties()
+def signingFile = rootProject.file('../.signing/keystore.properties')
+if (signingFile.exists()) signingFile.withInputStream { signingProps.load(it) }
+
+android {
+    namespace 'net.simplymadestudio.bouncycalculator'
+    compileSdk 36
+
+    defaultConfig {
+        applicationId 'net.simplymadestudio.bouncycalculator'
+        minSdk 24
+        targetSdk 36
+        versionCode 1
+        versionName '5.1.0'
+    }
+
+    signingConfigs {
+        release {
+            if (signingFile.exists()) {
+                storeFile rootProject.file('../.signing/' + signingProps['storeFile'])
+                storePassword signingProps['storePassword']
+                keyAlias signingProps['keyAlias']
+                keyPassword signingProps['keyPassword']
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            debuggable false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+            if (signingFile.exists()) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    androidResources {
+        // Fonts and images in the web bundle are already compressed.
+        noCompress += ['woff2', 'png']
+    }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.14.0'
+}

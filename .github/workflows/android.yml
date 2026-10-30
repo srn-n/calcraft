@@ -1,0 +1,100 @@
+name: Android release build
+
+# Builds the Play Store bundle (AAB) and a test APK from the same web code that runs on Vercel.
+# Runs on every push to main that touches the app, or manually from the Actions tab.
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'src/**'
+      - 'public/**'
+      - 'index.html'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'vite.config.js'
+      - 'vercel.json'
+      - 'android/**'
+      - '.github/workflows/android.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      HAS_SIGNING: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install, test and build the web app (Android mode)
+        run: |
+          npm ci
+          npm test
+          npm run build:android
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0'
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.13'
+
+      # Optional: sign in CI when the upload key is stored as repository secrets.
+      # Without them the build is unsigned and you sign locally (see android/README.md).
+      - name: Prepare upload key
+        if: env.HAS_SIGNING == 'true'
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          mkdir -p .signing
+          echo "$KEYSTORE_B64" | base64 -d > .signing/upload.jks
+          {
+            echo "storeFile=upload.jks"
+            echo "storePassword=$STORE_PASSWORD"
+            echo "keyAlias=$KEY_ALIAS"
+            echo "keyPassword=$KEY_PASSWORD"
+          } > .signing/keystore.properties
+
+      - name: Build AAB and APK
+        working-directory: android
+        run: gradle --no-daemon bundleRelease assembleRelease
+
+      - name: Collect outputs
+        run: |
+          mkdir -p out
+          cp android/app/build/outputs/bundle/release/*.aab out/
+          cp android/app/build/outputs/apk/release/*.apk out/
+          cp "$ANDROID_HOME/build-tools/36.0.0/lib/apksigner.jar" out/   # for signing locally
+          (cd out && sha256sum * > SHA256SUMS.txt)
+          ls -la out
+
+      - name: Remove upload key
+        if: always()
+        run: rm -rf .signing
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bouncy-calculator-android
+          path: out/
+          retention-days: 14

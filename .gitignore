@@ -5,3 +5,17 @@ shots/
 _to_delete/
 *.zip
 .pentest-dist/
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/app/src/main/assets/www/
+*.keystore
+*.jks
+.signing/
+release/*.aab
+release/*.apk
+release/*.idsig
+release/*.jar

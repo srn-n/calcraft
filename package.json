@@ -4,13 +4,14 @@
   "private": true,
   "author": "Simply Made Studio (https://www.simplymadestudio.net)",
   "type": "module",
-  "description": "Bouncy Calculator by Simply Made Studio — interactive, themed, offline calculator with games",
+  "description": "Bouncy Calculator by Simply Made Studio \u2014 interactive, themed, offline calculator with games",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
     "build:single": "vite build --mode single",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:android": "vite build --mode android"
   },
   "devDependencies": {
     "@fontsource/archivo": "5.2.5",
