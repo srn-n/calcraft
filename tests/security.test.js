@@ -94,3 +94,36 @@ describe('feedback mailto', () => {
     expect(u.searchParams.get('body')).toContain('Browser: Test & Co <x>');
   });
 });
+
+import { execFileSync } from 'node:child_process';
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+
+describe('security report 2026-11-02', () => {
+  const check = (html) => {
+    const dir = mkdtempSync(join(tmpdir(), 'csp-'));
+    writeFileSync(join(dir, 'index.html'), html);
+    try { execFileSync('node', ['scripts/check-csp-build.mjs', dir], { stdio: 'pipe' }); return 'pass'; } catch (e) { return String(e.stderr); }
+  };
+  it('CSP build check passes the real page and rejects single-file style output', () => {
+    expect(check(read('index.html'))).toBe('pass');
+    expect(check('<html><script>alert(1)</script></html>')).toMatch(/inline <script>/);
+    expect(check('<html><style>a{}</style></html>')).toMatch(/inline <style>/);
+    expect(check('<html><div style="color:red"></div></html>')).toMatch(/style=""/);
+    expect(check('<html><img src=x onerror="x()"></html>')).toMatch(/event handler/);
+  });
+  it('web and android builds run the check; Vercel is pinned to dist/', () => {
+    const pkg = JSON.parse(read('package.json'));
+    expect(pkg.scripts.build).toMatch(/check-csp-build\.mjs dist/);
+    expect(pkg.scripts['build:android']).toMatch(/check-csp-build\.mjs/);
+    expect(pkg.scripts['build:single']).not.toMatch(/check-csp/); // local-only target
+    const v = JSON.parse(read('vercel.json'));
+    expect(v.outputDirectory).toBe('dist');
+    expect(v.buildCommand).toBe('npm run build');
+  });
+  it('HSTS is set explicitly', () => {
+    const h = JSON.parse(read('vercel.json')).headers[0].headers.find((x) => x.key === 'Strict-Transport-Security');
+    expect(h?.value).toMatch(/max-age=63072000; includeSubDomains/);
+  });
+});

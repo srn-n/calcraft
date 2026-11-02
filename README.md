@@ -91,6 +91,9 @@ To change the length, edit `FULL_MS` in `src/ui/splash.js` and `--c` in `splash.
 - `vercel.json` sends a strict Content-Security-Policy (no `unsafe-inline`, no `unsafe-eval`, no framing) plus `nosniff`, `Referrer-Policy` and `Permissions-Policy`.
 - The one inline script in `index.html` (theme before first paint) is allowed by its SHA-256 hash. If you edit it, `npm test` fails and prints the new hash to paste into `vercel.json`.
 - Everything read from localStorage is validated (`src/core/schema.js`), so corrupted storage can't crash the app.
+- `npm run build` and `npm run build:android` finish with `scripts/check-csp-build.mjs`, which fails the build if any HTML would break the CSP (an unhashed inline script, an inline style or an inline event handler). `vercel.json` pins Vercel to `npm run build` → `dist/`.
+- `npm run build:single` inlines all JS and CSS into one file. It's for local/offline use only and must never be deployed to the web (the CSP check would reject it).
+- HSTS (2 years, subdomains, preload) is set explicitly in `vercel.json`.
 - The dev server listens on localhost only. Use `npm run dev -- --host` to test on your phone, and only on a network you trust.
 - See `docs/AUDIT-2026-10.md` for the full audit.
 

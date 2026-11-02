@@ -151,3 +151,11 @@ describe('pentest: strict numbers in Tools', () => {
 describe('pentest: engine edge', () => {
   it('0^−1 is a divide-by-zero, not "Too big"', () => expect(evaluate('0^(−1)').code).toBe('div0'));
 });
+
+import { MAX_BYTES } from '../src/core/storage.js';
+describe('storage size cap', () => {
+  it('is large enough for a full 200-entry tape', () => {
+    const tape = Array.from({ length: 200 }, (_, i) => ({ id: i, expr: '9'.repeat(400), value: i, t: i }));
+    expect(JSON.stringify(tape).length).toBeLessThan(MAX_BYTES);
+  });
+});

@@ -7,11 +7,11 @@
   "description": "Bouncy Calculator by Simply Made Studio \u2014 interactive, themed, offline calculator with games",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "vite build && node scripts/check-csp-build.mjs dist",
     "build:single": "vite build --mode single",
     "preview": "vite preview",
     "test": "vitest run",
-    "build:android": "vite build --mode android"
+    "build:android": "vite build --mode android && node scripts/check-csp-build.mjs android/app/src/main/assets/www"
   },
   "devDependencies": {
     "@fontsource/archivo": "5.2.5",
