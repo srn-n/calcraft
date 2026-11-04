@@ -6,4 +6,10 @@
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:windowLightStatusBar">true</item>
     </style>
+    <!-- Used for the system splash on the next launch when the last theme was dark (Android 13+). -->
+    <style name="Theme.Bouncy.Night">
+        <item name="android:windowBackground">@color/ink</item>
+        <item name="android:colorBackground">@color/ink</item>
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
 </resources>

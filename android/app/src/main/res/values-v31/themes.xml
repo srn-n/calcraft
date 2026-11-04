@@ -10,4 +10,13 @@
         <item name="android:windowSplashScreenBackground">@color/paper</item>
         <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
     </style>
+    <!-- Used for the system splash on the next launch when the last theme was dark (Android 13+). -->
+    <style name="Theme.Bouncy.Night">
+        <item name="android:windowBackground">@color/ink</item>
+        <item name="android:colorBackground">@color/ink</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+        <item name="android:windowSplashScreenBackground">@color/ink</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">@color/icon_bg</item>
+    </style>
 </resources>

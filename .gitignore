@@ -19,3 +19,4 @@ release/*.aab
 release/*.apk
 release/*.idsig
 release/*.jar
+release/ci-build/

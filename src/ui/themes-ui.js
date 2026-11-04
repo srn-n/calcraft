@@ -2,6 +2,14 @@
 import { $, h, reducedMotion } from './dom.js';
 import { THEMES, themeById } from '../themes.js';
 
+/** Light status-bar icons only when they out-contrast dark ones (WCAG luminance below ~0.18). */
+export function isDarkColor(hex) {
+  const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const n = parseInt(hex.slice(1), 16);
+  const L = 0.2126 * lin(n >> 16 & 255) + 0.7152 * lin(n >> 8 & 255) + 0.0722 * lin(n & 255);
+  return L < 0.18;
+}
+
 export function applyTheme(id, { animate = true } = {}) {
   const t = themeById(id);
   const doc = document.documentElement;
@@ -12,7 +20,9 @@ export function applyTheme(id, { animate = true } = {}) {
     const bg = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
     if (meta) meta.content = bg;
     // Android app: tint the system bars to match (no-op on the web).
-    try { window.BouncyNative?.setBars?.(/^#[0-9a-f]{6}$/i.test(bg) ? bg : t.swatch.bg, t.scheme === 'dark'); } catch { /* ignore */ }
+    // Icon colour follows the real background brightness, not just the theme's light/dark label.
+    const hex = /^#[0-9a-f]{6}$/i.test(bg) ? bg : /^#[0-9a-f]{6}$/i.test(t.swatch.bg) ? t.swatch.bg : null;
+    try { if (hex) window.BouncyNative?.setBars?.(hex, isDarkColor(hex)); } catch { /* ignore */ }
   };
   if (animate && document.startViewTransition && !reducedMotion()) {
     // Rapid switching skips the previous transition; its promises then reject with AbortError.

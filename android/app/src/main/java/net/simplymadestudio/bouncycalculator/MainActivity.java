@@ -6,6 +6,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.graphics.Insets;
@@ -15,6 +16,7 @@ import android.os.Bundle;
 import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -42,7 +44,7 @@ import java.util.regex.Pattern;
  *  - Content is served from https://appassets.androidplatform.net via WebViewAssetLoader (no file:// access).
  *  - Only that origin may load inside the WebView; every other link opens outside the app.
  *  - The app has no INTERNET permission, so it cannot send anything anywhere.
- *  - The JS bridge exposes three small, validated methods: haptic, copy, setBars.
+ *  - The JS bridge exposes small, validated methods: haptic, copy, setBars, setCanGoBack, ready.
  */
 public class MainActivity extends Activity {
 
@@ -55,16 +57,33 @@ public class MainActivity extends Activity {
     private WebViewAssetLoader assetLoader;
     private OnBackInvokedCallback backCallback;
     private boolean darkBars = false;
+    private boolean backRegistered = false;
+    private volatile boolean canGoBack = false;   // set by the web app: is there a layer for Back to close?
+    private boolean pageReady = false;
+    private SharedPreferences prefs;
+
+    private static final String PREFS = "ui";
+    private static final String PREF_BAR = "barColor";
+    private static final String PREF_DARK = "barDark";
+    private static final long SPLASH_MAX_MS = 1500;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setupEdgeToEdge();
 
+        // Start in the last theme's colours, so a dark theme doesn't flash the light background.
+        prefs = getSharedPreferences(PREFS, MODE_PRIVATE);
+        int bg = prefs.getInt(PREF_BAR, Color.parseColor("#E9E4DC"));
+        darkBars = prefs.getBoolean(PREF_DARK, false);
+        getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(bg));
+
         root = new FrameLayout(this);
-        root.setBackgroundColor(Color.parseColor("#E9E4DC"));
+        root.setBackgroundColor(bg);
         setContentView(root);
         applyInsets();
+        applyBarIcons();
+        holdSplashUntilReady();
 
         assetLoader = new WebViewAssetLoader.Builder()
                 .setDomain(HOST)
@@ -73,7 +92,34 @@ public class MainActivity extends Activity {
 
         createWebView();
         web.loadUrl(START_URL);
-        registerBack();
+    }
+
+    /** Android 12+: keep the system splash on screen until the page has painted (max 1.5 s), so there's no blank frame. */
+    private void holdSplashUntilReady() {
+        if (Build.VERSION.SDK_INT < 31) return;
+        // Fade the system splash into the app instead of cutting to it.
+        getSplashScreen().setOnExitAnimationListener(view -> view.animate()
+                .alpha(0f).setDuration(260).setInterpolator(new android.view.animation.DecelerateInterpolator())
+                .withEndAction(view::remove).start());
+        // Next launch, show a dark splash if the current theme is dark (no light flash before a dark theme).
+        if (Build.VERSION.SDK_INT >= 33) {
+            getSplashScreen().setSplashScreenTheme(darkBars ? R.style.Theme_Bouncy_Night : R.style.Theme_Bouncy);
+        }
+        root.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                if (!pageReady) return false;
+                root.getViewTreeObserver().removeOnPreDrawListener(this);
+                return true;
+            }
+        });
+        root.postDelayed(this::markReady, SPLASH_MAX_MS);
+    }
+
+    private void markReady() {
+        if (pageReady) return;
+        pageReady = true;
+        root.invalidate();
     }
 
     /* ---------------------------------------------------------------- WebView */
@@ -133,10 +179,17 @@ public class MainActivity extends Activity {
         }
 
         @Override
+        public void onPageFinished(WebView view, String url) {
+            pushInsets();
+            markReady(); // fallback if the page never calls BouncyNative.ready()
+        }
+
+        @Override
         public boolean onRenderProcessGone(WebView view, RenderProcessGoneDetail detail) {
             // The renderer crashed or was killed for memory: rebuild the WebView instead of crashing the app.
             root.removeView(web);
             web.destroy();
+            setCanGoBack(false);
             createWebView();
             web.loadUrl(START_URL);
             return true;
@@ -213,7 +266,29 @@ public class MainActivity extends Activity {
                 getWindow().setBackgroundDrawable(new android.graphics.drawable.ColorDrawable(c));
                 darkBars = dark;
                 applyBarIcons();
+                prefs.edit().putInt(PREF_BAR, c).putBoolean(PREF_DARK, dark).apply();
+                if (Build.VERSION.SDK_INT >= 33) {
+                    getSplashScreen().setSplashScreenTheme(dark ? R.style.Theme_Bouncy_Night : R.style.Theme_Bouncy);
+                }
             });
+        }
+
+        /** The web app reports whether Back has something to close (dialog, tape, game, other tab). */
+        @JavascriptInterface
+        public void setCanGoBack(boolean value) {
+            runOnUiThread(() -> MainActivity.this.setCanGoBack(value));
+        }
+
+        /** System-bar sizes as "top,right,bottom,left" in CSS px, read synchronously when the page boots. */
+        @JavascriptInterface
+        public String insets() {
+            return insetsCss;
+        }
+
+        /** The page has rendered its first frame: let the system splash screen go. */
+        @JavascriptInterface
+        public void ready() {
+            runOnUiThread(MainActivity.this::markReady);
         }
     }
 
@@ -238,21 +313,46 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Pad the content by the system bars and display cutout, so nothing sits under them. */
+    /*
+     * Edge-to-edge: the WebView fills the whole screen and each theme's own background (gradients,
+     * patterns, glass) runs behind the transparent status and gesture bars, so they always match.
+     * The bar sizes go to the page as CSS safe areas; only the on-screen keyboard pads the view.
+     */
+    private volatile String insetsCss = "0,0,0,0";
+
     @SuppressWarnings("deprecation")
     private void applyInsets() {
         root.setOnApplyWindowInsetsListener((v, insets) -> {
+            int t, r, b, l, ime = 0;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 Insets i = insets.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout());
-                Insets ime = insets.getInsets(WindowInsets.Type.ime());
-                v.setPadding(i.left, i.top, i.right, Math.max(i.bottom, ime.bottom));
-                return WindowInsets.CONSUMED;
+                t = i.top; r = i.right; b = i.bottom; l = i.left;
+                ime = insets.getInsets(WindowInsets.Type.ime()).bottom;
+            } else {
+                t = insets.getSystemWindowInsetTop(); r = insets.getSystemWindowInsetRight();
+                b = insets.getSystemWindowInsetBottom(); l = insets.getSystemWindowInsetLeft();
+                if (b > dp(120)) { ime = b; b = insets.getStableInsetBottom(); } // keyboard open (pre-R)
             }
-            v.setPadding(insets.getSystemWindowInsetLeft(), insets.getSystemWindowInsetTop(),
-                    insets.getSystemWindowInsetRight(), insets.getSystemWindowInsetBottom());
-            return insets.consumeSystemWindowInsets();
+            boolean keyboard = ime > b;
+            v.setPadding(0, 0, 0, keyboard ? ime : 0);
+            float d = getResources().getDisplayMetrics().density;
+            String css = fmt(t / d) + "," + fmt(r / d) + "," + fmt(keyboard ? 0 : b / d) + "," + fmt(l / d);
+            if (!css.equals(insetsCss)) { insetsCss = css; pushInsets(); }
+            return Build.VERSION.SDK_INT >= Build.VERSION_CODES.R ? WindowInsets.CONSUMED : insets.consumeSystemWindowInsets();
         });
         root.requestApplyInsets();
+    }
+
+    private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
+
+    private static String fmt(float v) { return String.valueOf(Math.round(v * 10f) / 10f); }
+
+    /** Send the current safe areas to the page (values are numbers we computed, never page input). */
+    private void pushInsets() {
+        if (web == null) return;
+        String[] p = insetsCss.split(",");
+        web.evaluateJavascript("(function(s){s.setProperty('--sa-t','" + p[0] + "px');s.setProperty('--sa-r','" + p[1]
+                + "px');s.setProperty('--sa-b','" + p[2] + "px');s.setProperty('--sa-l','" + p[3] + "px')})(document.documentElement.style)", null);
     }
 
     @SuppressWarnings("deprecation")
@@ -273,25 +373,39 @@ public class MainActivity extends Activity {
 
     /* ---------------------------------------------------------------- back */
 
-    private void registerBack() {
+    /*
+     * Back is only intercepted while the web app has something open. At the calculator's home screen
+     * Android handles Back itself: on Android 13+ that plays the predictive "back to home" animation,
+     * and the app goes to the background (it isn't destroyed, so reopening it is instant).
+     */
+    private void setCanGoBack(boolean value) {
+        canGoBack = value;
         if (Build.VERSION.SDK_INT >= 33) {
-            backCallback = this::handleBack;
-            getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+            if (value && !backRegistered) {
+                if (backCallback == null) backCallback = this::webBack;
+                getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
+                backRegistered = true;
+            } else if (!value && backRegistered) {
+                getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
+                backRegistered = false;
+            }
         }
     }
 
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() { // Android 12 and older
-        handleBack();
+        if (canGoBack && web != null) { webBack(); return; }
+        if (!moveTaskToBack(true)) super.onBackPressed(); // keep the app warm instead of destroying it
     }
 
-    /** Ask the web app to close its top layer (dialog, tape, game, tab). If nothing is open, leave the app. */
-    private void handleBack() {
-        if (web == null) { finish(); return; }
+    /** Ask the web app to close its top layer. If it had nothing to close after all, leave the app. */
+    private void webBack() {
+        if (web == null) { moveTaskToBack(true); return; }
         web.evaluateJavascript("(window.bouncy && window.bouncy.back) ? window.bouncy.back() : false", value -> {
             if (!"true".equals(value)) {
-                if (!moveTaskToBack(true)) finish();
+                setCanGoBack(false);
+                moveTaskToBack(true);
             }
         });
     }
@@ -301,18 +415,23 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (web != null) web.onResume();
+        if (web != null) { web.resumeTimers(); web.onResume(); }
     }
 
     @Override
     protected void onPause() {
-        if (web != null) web.onPause();
+        if (web != null) {
+            // Save anything still waiting to be written, then stop animations and timers while hidden (battery).
+            web.evaluateJavascript("window.bouncy && window.bouncy.flush && window.bouncy.flush()", null);
+            web.onPause();
+            web.pauseTimers();
+        }
         super.onPause();
     }
 
     @Override
     protected void onDestroy() {
-        if (Build.VERSION.SDK_INT >= 33 && backCallback != null) {
+        if (Build.VERSION.SDK_INT >= 33 && backRegistered) {
             getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
         }
         if (web != null) {

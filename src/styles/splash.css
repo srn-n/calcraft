@@ -17,13 +17,19 @@
   --c: 2200ms; /* when the calculator scene begins */
   position: fixed; inset: 0; z-index: 55; /* under the theme's grain / scanline overlay (z 60) */
   display: grid; grid-template-rows: 1fr auto 1fr auto; justify-items: center; align-items: center;
-  padding: calc(env(safe-area-inset-top) + 20px) 20px calc(env(safe-area-inset-bottom) + 16px);
+  padding: calc(var(--sa-t) + 20px) 20px calc(var(--sa-b) + 16px);
   background: var(--bg-art); background-color: var(--bg); color: var(--text);
   -webkit-user-select: none; user-select: none; cursor: default;
   animation: splash-failsafe 400ms ease 8s forwards; /* never trap anyone if the script fails */
 }
 @keyframes splash-failsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
 @keyframes splash-fade-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+/* Smoothness: nothing animates until the app has finished booting (JS adds .is-go on the next frame),
+   so the first frames never stutter while scripts run. Every animation is transform/opacity only
+   (no blur filters or letter-spacing), so it runs on the GPU compositor even on budget phones. */
+.splash:not(.is-go)::before, .splash:not(.is-go) *, .splash:not(.is-go) *::before, .splash:not(.is-go) *::after { animation-play-state: paused !important; }
+.splash :is(.splash-intro, .splash-intro-name, .splash-intro-sub, .splash-device, .key, .splash-word span, .splash-presents, .splash-legal) { will-change: transform, opacity; }
 
 /* accent spotlight, which grows when the calculator arrives */
 .splash::before {
@@ -41,14 +47,14 @@
   pointer-events: none;
   animation: splash-intro-out 520ms cubic-bezier(.5, 0, .2, 1) 1950ms forwards;
 }
-@keyframes splash-intro-out { to { opacity: 0; transform: translateY(-18px) scale(.92); filter: blur(4px); visibility: hidden; } }
+@keyframes splash-intro-out { to { opacity: 0; transform: translateY(-18px) scale(.92); visibility: hidden; } }
 .splash-intro .splash-mark { width: 60px; height: 55px; }
 .splash-intro .splash-mark i { width: 46px; height: 24px; border-radius: 24px; }
 .splash-intro-name {
   font: 650 clamp(24px, 7vw, 34px)/1.1 var(--font-ui); letter-spacing: -0.02em; color: var(--text);
   opacity: 0; animation: splash-name-in 900ms var(--ease-soft) 550ms forwards;
 }
-@keyframes splash-name-in { from { opacity: 0; letter-spacing: .12em; filter: blur(6px); } to { opacity: 1; letter-spacing: -0.02em; filter: blur(0); } }
+@keyframes splash-name-in { from { opacity: 0; transform: translateY(6px) scale(1.06); } to { opacity: 1; transform: none; } }
 .splash-intro-sub {
   font: 600 12px/1 var(--font-mono); letter-spacing: .32em; text-transform: uppercase; color: var(--muted);
   opacity: 0; animation: splash-fade-up 600ms var(--ease-soft) 1150ms forwards;
@@ -88,7 +94,7 @@
   border-radius: calc(var(--r-device) * .7); box-shadow: var(--device-shadow);
   animation: splash-rise 900ms var(--ease-soft) var(--c) both;
 }
-@keyframes splash-rise { from { transform: translateY(34px) scale(.92); opacity: 0; filter: blur(6px); } 60% { filter: blur(0); } }
+@keyframes splash-rise { from { transform: translateY(34px) scale(.92); opacity: 0; } }
 
 .splash-display {
   position: relative; height: 56px; display: flex; align-items: flex-end; justify-content: flex-end; gap: 4px;
@@ -117,10 +123,10 @@
   /* the press must not fill backwards, or its 0 % would hide the arrival movement */
   animation: splash-key-in 640ms var(--ease-spring) both, splash-key-press 320ms var(--ease-soft) none;
 }
-@keyframes splash-key-in { from { transform: translateY(-26px) scale(.7); opacity: 0; filter: blur(4px); } 70% { filter: blur(0); } }
+@keyframes splash-key-in { from { transform: translateY(-26px) scale(.7); opacity: 0; } }
 @keyframes splash-key-press {
   0%, 100% { transform: none; }
-  45% { transform: translateY(var(--press-y)) scale(var(--press-scale)); box-shadow: var(--shadow-key-down); filter: brightness(1.12); }
+  45% { transform: translateY(var(--press-y)) scale(var(--press-scale)); box-shadow: var(--shadow-key-down); }
 }
 /* arrival wave (diagonal), then a press ripple in the same order while the display counts */
 .splash .key:nth-child(1) { animation-delay: calc(var(--c) + 150ms), calc(var(--c) + 1000ms); }
@@ -164,12 +170,23 @@
 .splash.is-leaving { animation: splash-out 460ms var(--ease-soft) forwards; pointer-events: none; }
 @keyframes splash-out { 30% { opacity: 1; } to { opacity: 0; visibility: hidden; } }
 .splash.is-leaving .splash-device { animation: splash-zoom 460ms cubic-bezier(.5, 0, .2, 1) forwards; }
-@keyframes splash-zoom { to { transform: scale(1.35); filter: blur(10px); opacity: 0; } }
+@keyframes splash-zoom { to { transform: scale(1.35); opacity: 0; } }
 .splash.is-leaving :is(.splash-presents, .splash-word, .splash-legal, .splash-intro) { transition: opacity 220ms; opacity: 0; }
+
+/* Quick launch (Android app, after the first run): just the studio card, compressed to ~1.5 s. */
+.splash.is-quick .splash-intro { animation: none; }
+.splash.is-quick :is(.splash-presents, .splash-stage) { display: none; }
+.splash.is-quick .splash-intro-name { animation-duration: 650ms; animation-delay: 120ms; }
+.splash.is-quick .splash-intro-sub { animation-duration: 450ms; animation-delay: 450ms; }
+.splash.is-quick .splash-intro-name::after { animation-duration: 500ms; animation-delay: 380ms; }
+.splash.is-quick .splash-intro .splash-mark i:first-child { animation-delay: 0ms; }
+.splash.is-quick .splash-intro .splash-mark i:last-child { animation-delay: 60ms; }
+.splash.is-quick .splash-intro .splash-mark { animation-delay: 620ms; }
+.splash.is-quick::before { animation-delay: 0ms, 900ms; }
 
 html.app-in .app { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 120ms both; }
 @media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 200ms both; } }
-@keyframes app-in { from { transform: scale(.96); opacity: 0; filter: blur(6px); } }
+@keyframes app-in { from { transform: scale(.96); opacity: 0; } }
 
 /* ---- Theme touches ---- */
 [data-theme="phosphor"] :is(.splash-display, .splash-word, .splash-intro-name) { text-shadow: 0 0 8px rgba(57,255,122,.7); }

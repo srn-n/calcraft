@@ -16,17 +16,36 @@ export function load(key, fallback) {
   }
 }
 
-const timers = new Map();
+const timers = new Map();   // key -> pending timeout
+const pending = new Map();  // key -> value waiting to be written
+
+function write(key, value) {
+  try {
+    const json = JSON.stringify(value);
+    if (json === undefined || json.length > MAX_BYTES) return; // never persist something load() would refuse
+    localStorage.setItem(NS + key, json);
+  } catch { /* storage unavailable or full */ }
+}
+
 /** Debounced save so rapid key presses don't hammer storage. */
 export function save(key, value, delay = 250) {
   clearTimeout(timers.get(key));
+  pending.set(key, value);
   timers.set(key, setTimeout(() => {
-    try {
-      const json = JSON.stringify(value);
-      if (json === undefined || json.length > MAX_BYTES) return; // never persist something load() would refuse
-      localStorage.setItem(NS + key, json);
-    } catch { /* storage unavailable or full */ }
+    timers.delete(key);
+    pending.delete(key);
+    write(key, value);
   }, delay));
+}
+
+/** Write every pending save now: called when the page is hidden or the app is closed/backgrounded. */
+export function flush() {
+  for (const [key, value] of pending) {
+    clearTimeout(timers.get(key));
+    write(key, value);
+  }
+  timers.clear();
+  pending.clear();
 }
 
 export function wipe(key) {

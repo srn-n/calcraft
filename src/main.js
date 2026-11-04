@@ -5,7 +5,7 @@ import './styles/splash.css';
 import { dismissSplash } from './ui/splash.js';
 
 import { createStore } from './core/store.js';
-import { load, save } from './core/storage.js';
+import { load, save, flush } from './core/storage.js';
 import { cleanSettings, cleanHistory, cleanNumber, cleanAngle, cleanBool, cleanView } from './core/schema.js';
 import * as C from './core/calculator.js';
 import { formatNumber, toExpr, evaluate } from './engine/index.js';
@@ -23,6 +23,20 @@ import { sendFeedback } from './ui/feedback.js';
 import { buzz, setHaptics } from './fx/haptics.js';
 import { play, setSound, setSoundProfile } from './fx/sound.js';
 import { burst } from './fx/confetti.js';
+
+/* ---------------- Android app: system-bar sizes ---------------- */
+// The app draws edge-to-edge (each theme's background runs behind the status and gesture bars), so it
+// needs the bar sizes as CSS safe areas. Android WebView doesn't report env(safe-area-inset-*)
+// reliably, so the native side provides them ("top,right,bottom,left" in CSS px) and pushes updates.
+try {
+  const v = window.BouncyNative?.insets?.();
+  if (typeof v === 'string' && /^\d+(\.\d+)?(,\d+(\.\d+)?){3}$/.test(v)) {
+    const [t, r, b, l] = v.split(',');
+    const st = document.documentElement.style;
+    st.setProperty('--sa-t', t + 'px'); st.setProperty('--sa-r', r + 'px');
+    st.setProperty('--sa-b', b + 'px'); st.setProperty('--sa-l', l + 'px');
+  }
+} catch { /* web: CSS env() values are used */ }
 
 /* ---------------- state ---------------- */
 const VIEWS = ['calc', 'tools', 'games'];
@@ -177,6 +191,14 @@ function toggleAngle() {
 }
 
 /** Android back button / gesture: close the top-most layer. Returns false when there's nothing left to close. */
+/** Is there a layer the Back gesture should close (dialog, tape, game, non-calculator tab)? No side effects. */
+function canGoBack() {
+  if (document.getElementById('splash')) return false; // Back during the loading screen leaves the app
+  if (document.querySelector('dialog[open]')) return true;
+  if (history.isOpen()) return true;
+  return S().view !== 'calc';
+}
+
 function goBack() {
   const open = document.querySelector('dialog[open]');
   if (open) { open.close(); return true; }
@@ -405,4 +427,27 @@ if (import.meta.env.PROD && import.meta.env.MODE !== 'single' && import.meta.env
 
 // Read-only hook for the Android/Tauri wrappers and automated tests. It can read state and switch
 // themes but cannot write arbitrary state, so a stray script can't plant data through it.
-window.bouncy = Object.freeze({ getState: () => S(), setTheme, back: goBack, themes: Object.freeze(THEMES.map((x) => x.id)) });
+window.bouncy = Object.freeze({ getState: () => S(), setTheme, back: goBack, flush, themes: Object.freeze(THEMES.map((x) => x.id)) });
+
+// Never lose the last calculation: write pending saves the moment the page is hidden or closed.
+addEventListener('pagehide', flush);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flush(); });
+
+// Android app: tell the native side whether Back has something to close. When it doesn't, Android
+// handles Back itself, so the system "back to home" gesture animation plays and the app exits cleanly.
+if (window.BouncyNative?.setCanGoBack) {
+  let last = null, queued = false;
+  const sync = () => {
+    queued = false;
+    const v = canGoBack();
+    if (v !== last) { last = v; try { window.BouncyNative.setCanGoBack(v); } catch { /* ignore */ } }
+  };
+  const queue = () => { if (!queued) { queued = true; queueMicrotask(sync); } };
+  store.sub(queue);
+  new MutationObserver(queue).observe(document.body, { subtree: true, childList: true, attributes: true, attributeFilter: ['open', 'class'] });
+  addEventListener('bouncy:splash-gone', queue);
+  sync();
+}
+
+// Android app: the page is ready to show, so the system splash screen can hand over.
+try { window.BouncyNative?.ready?.(); } catch { /* ignore */ }
