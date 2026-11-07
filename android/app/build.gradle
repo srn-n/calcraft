@@ -16,8 +16,8 @@ android {
         applicationId 'com.simplymadestudio.bouncycalculator'  // Play package name (permanent). Code namespace stays net.* — that's fine
         minSdk 24
         targetSdk 36
-        versionCode 4
-        versionName '5.1.3'
+        versionCode 5
+        versionName '1.0.0'
     }
 
     signingConfigs {
