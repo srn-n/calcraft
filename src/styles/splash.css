@@ -45,7 +45,7 @@
 .splash-intro {
   position: absolute; inset: 0; display: grid; place-content: center; justify-items: center; gap: 18px; text-align: center;
   pointer-events: none;
-  animation: splash-intro-out 520ms cubic-bezier(.5, 0, .2, 1) 1950ms forwards;
+  animation: splash-intro-out 400ms cubic-bezier(.5, 0, .2, 1) 1760ms forwards; /* gone by 2160 ms, before the calculator (--c) */
 }
 @keyframes splash-intro-out { to { opacity: 0; transform: translateY(-18px) scale(.92); visibility: hidden; } }
 .splash-intro .splash-mark { width: 60px; height: 55px; }
@@ -166,16 +166,17 @@
 .splash-skip { opacity: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; animation: splash-skip-in 500ms ease 1700ms forwards; }
 @keyframes splash-skip-in { to { opacity: .6; } }
 
-/* ---- Leaving: one continuous crossfade. The content drifts up and fades first, the backdrop
-   follows on a gentle ease-in-out, and the app eases in underneath at the same time, so there is
-   never a hard edge or a "two-step" fade. ---- */
-.splash.is-leaving { animation: splash-out 640ms cubic-bezier(.45, 0, .25, 1) forwards; pointer-events: none; }
+/* ---- Leaving, in sequence so text never overlaps:
+   0-200 ms    the splash text fades out (backdrop still solid, app still hidden)
+   140-640 ms  the backdrop dissolves
+   240-860 ms  the app eases in, only after the splash text has completely gone ---- */
+.splash.is-leaving { animation: splash-out 500ms cubic-bezier(.4, 0, .2, 1) 140ms forwards; pointer-events: none; }
 @keyframes splash-out { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
-.splash.is-leaving .splash-device { animation: splash-zoom 560ms cubic-bezier(.4, 0, .2, 1) forwards; }
+.splash.is-leaving .splash-device { animation: splash-zoom 220ms cubic-bezier(.4, 0, 1, 1) forwards; }
 @keyframes splash-zoom { to { transform: scale(1.08); opacity: 0; } }
 .splash.is-leaving :is(.splash-presents, .splash-word, .splash-legal, .splash-intro) {
-  transition: opacity 420ms cubic-bezier(.4, 0, .2, 1), transform 640ms cubic-bezier(.22, 1, .36, 1);
-  opacity: 0; transform: translateY(-8px) scale(.985);
+  transition: opacity 200ms cubic-bezier(.4, 0, 1, 1), transform 260ms cubic-bezier(.4, 0, 1, 1);
+  opacity: 0; transform: translateY(-6px) scale(.985);
 }
 
 /* Quick launch (Android app, after the first run): just the studio card, compressed to ~1.5 s. */
@@ -189,8 +190,8 @@
 .splash.is-quick .splash-intro .splash-mark { animation-delay: 620ms; }
 .splash.is-quick::before { animation-delay: 0ms, 900ms; }
 
-html.app-in .app { animation: app-in 760ms cubic-bezier(.22, 1, .36, 1) 80ms both; }
-@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 760ms cubic-bezier(.22, 1, .36, 1) 160ms both; } }
+html.app-in .app { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 240ms both; }
+@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 300ms both; } }
 @keyframes app-in { from { transform: scale(.975) translateY(6px); opacity: 0; } }
 
 /* ---- Android app: leaving with Back, and coming back ---- */
@@ -237,13 +238,13 @@ html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both
 /* Reduced motion: no movement. The studio card is shown still, then the calculator scene, with plain fades. */
 @media (prefers-reduced-motion: reduce) {
   .splash *, .splash::before { animation-duration: 1ms !important; transition-duration: 1ms !important; }
-  .splash-intro { animation: splash-intro-out 300ms linear 1950ms forwards !important; }
+  .splash-intro { animation: splash-intro-out 300ms linear 1760ms forwards !important; }
   .splash { animation: splash-failsafe 1ms ease 8s forwards !important; }
   .splash.is-leaving { animation: splash-out 240ms linear forwards !important; }
   .splash.is-leaving .splash-device { animation: none !important; }
   html.app-in .app, html.app-in .side { animation: none !important; }
 }
 html.reduce-motion .splash *, html.reduce-motion .splash::before { animation-duration: 1ms !important; }
-html.reduce-motion .splash-intro { animation: splash-intro-out 300ms linear 1950ms forwards !important; }
+html.reduce-motion .splash-intro { animation: splash-intro-out 300ms linear 1760ms forwards !important; }
 html.reduce-motion .splash.is-leaving { animation: splash-out 240ms linear forwards !important; }
 html.reduce-motion.app-in .app { animation: none !important; }
