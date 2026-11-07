@@ -13,7 +13,7 @@ android {
     compileSdk 36
 
     defaultConfig {
-        applicationId 'net.simplymadestudio.bouncycalculator'
+        applicationId 'com.simplymadestudio.bouncycalculator'  // Play package name (permanent). Code namespace stays net.* — that's fine
         minSdk 24
         targetSdk 36
         versionCode 3

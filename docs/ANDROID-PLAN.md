@@ -50,7 +50,7 @@ MainActivity (Java, ~250 lines) ── WebViewAssetLoader ───────�
 | Data safety | No data collected, no data shared, no network access |
 | Store assets | 512×512 icon, 1024×500 feature graphic, phone screenshots |
 
-**Package name:** `net.simplymadestudio.bouncycalculator`, matching your studio domain. **This can't be changed after the first upload.** If the old `com.bouncy.calculator` build was already uploaded to your Play Console, say so and I'll switch back to it.
+**Package name (Play application ID):** `com.simplymadestudio.bouncycalculator`. **This can't be changed after the first upload.** The Java code namespace stays `net.simplymadestudio.bouncycalculator`, which is only internal and never shown to users.
 
 **Version:** `versionName 5.1.0` (same as the web), `versionCode 1`.
 

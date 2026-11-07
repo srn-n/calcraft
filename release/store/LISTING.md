@@ -76,7 +76,7 @@ Made in Sydney by Simply Made Studio.
 
 1. Play Console → Create app → name *Bouncy Calculator*, App, Free.
 2. Complete the **App content** answers above and the **Main store listing**.
-3. Testing → **Internal testing** → Create release → upload `BouncyCalculator-5.1.0.aab`.
+3. Testing → **Internal testing** → Create release → upload `BouncyCalculator-5.1.2.aab`.
    - When asked about **Play App Signing**, accept *"Let Google manage and protect your app signing key"*. Your `.signing/upload.jks` becomes the upload key.
 4. Add yourself as a tester, install from the opt-in link, and check it on your phone.
 5. New personal developer accounts must run a **closed test with at least 12 testers for 14 days** before production access. Plan for this.
