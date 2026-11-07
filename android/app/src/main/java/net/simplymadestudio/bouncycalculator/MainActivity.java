@@ -17,6 +17,7 @@ import android.view.HapticFeedbackConstants;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
+import android.view.animation.PathInterpolator;
 import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowInsetsController;
@@ -60,6 +61,8 @@ public class MainActivity extends Activity {
     private boolean backRegistered = false;
     private volatile boolean canGoBack = false;   // set by the web app: is there a layer for Back to close?
     private boolean pageReady = false;
+    private boolean leaving = false;     // the exit animation is playing
+    private boolean outroShown = false;  // the page is faded out (left with Back); fade it back in on return
     private SharedPreferences prefs;
 
     private static final String PREFS = "ui";
@@ -92,15 +95,23 @@ public class MainActivity extends Activity {
 
         createWebView();
         web.loadUrl(START_URL);
+        setCanGoBack(false); // Android 13–14: take Back at the home screen too, for the exit animation
     }
 
     /** Android 12+: keep the system splash on screen until the page has painted (max 1.5 s), so there's no blank frame. */
     private void holdSplashUntilReady() {
         if (Build.VERSION.SDK_INT < 31) return;
-        // Fade the system splash into the app instead of cutting to it.
-        getSplashScreen().setOnExitAnimationListener(view -> view.animate()
-                .alpha(0f).setDuration(260).setInterpolator(new android.view.animation.DecelerateInterpolator())
-                .withEndAction(view::remove).start());
+        // Crossfade the system splash into the app: the icon eases up and away while the backdrop
+        // dissolves on a standard ease-in-out curve (no hard cut, no front-loaded "pop").
+        getSplashScreen().setOnExitAnimationListener(view -> {
+            PathInterpolator ease = new PathInterpolator(0.4f, 0f, 0.2f, 1f);
+            View icon = view.getIconView();
+            if (icon != null) {
+                icon.animate().scaleX(1.12f).scaleY(1.12f).alpha(0f).setDuration(360).setInterpolator(ease).start();
+            }
+            view.animate().alpha(0f).setStartDelay(60).setDuration(420).setInterpolator(ease)
+                    .withEndAction(view::remove).start();
+        });
         // Next launch, show a dark splash if the current theme is dark (no light flash before a dark theme).
         if (Build.VERSION.SDK_INT >= 33) {
             getSplashScreen().setSplashScreenTheme(darkBars ? R.style.Theme_Bouncy_Night : R.style.Theme_Bouncy);
@@ -374,18 +385,26 @@ public class MainActivity extends Activity {
     /* ---------------------------------------------------------------- back */
 
     /*
-     * Back is only intercepted while the web app has something open. At the calculator's home screen
-     * Android handles Back itself: on Android 13+ that plays the predictive "back to home" animation,
-     * and the app goes to the background (it isn't destroyed, so reopening it is instant).
+     * Back closes the web app's top layer first (dialog, tape, game, other tab).
+     *
+     * At the calculator's home screen:
+     *  - Android 15+ (predictive back is on by default): Back is left to the system, which plays its
+     *    own "shrink back to home" gesture animation.
+     *  - Android 14 and older: the app plays a short fade-and-settle itself, then moves to the
+     *    background. It isn't destroyed, so reopening is instant, and it fades back in.
      */
+    private static final boolean SYSTEM_HOME_ANIMATION = Build.VERSION.SDK_INT >= 35;
+    private static final long OUTRO_MS = 210;
+
     private void setCanGoBack(boolean value) {
         canGoBack = value;
         if (Build.VERSION.SDK_INT >= 33) {
-            if (value && !backRegistered) {
+            boolean want = value || !SYSTEM_HOME_ANIMATION;
+            if (want && !backRegistered) {
                 if (backCallback == null) backCallback = this::webBack;
                 getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, backCallback);
                 backRegistered = true;
-            } else if (!value && backRegistered) {
+            } else if (!want && backRegistered) {
                 getOnBackInvokedDispatcher().unregisterOnBackInvokedCallback(backCallback);
                 backRegistered = false;
             }
@@ -395,19 +414,49 @@ public class MainActivity extends Activity {
     @Override
     @SuppressWarnings("deprecation")
     public void onBackPressed() { // Android 12 and older
-        if (canGoBack && web != null) { webBack(); return; }
-        if (!moveTaskToBack(true)) super.onBackPressed(); // keep the app warm instead of destroying it
+        webBack();
     }
 
-    /** Ask the web app to close its top layer. If it had nothing to close after all, leave the app. */
+    /** Close the web app's top layer; if there's nothing to close, leave the app. */
     private void webBack() {
-        if (web == null) { moveTaskToBack(true); return; }
+        if (leaving) return;
+        if (web == null || !canGoBack) { leaveApp(); return; }
         web.evaluateJavascript("(window.bouncy && window.bouncy.back) ? window.bouncy.back() : false", value -> {
             if (!"true".equals(value)) {
                 setCanGoBack(false);
-                moveTaskToBack(true);
+                leaveApp();
             }
         });
+    }
+
+    /** Play the page's exit animation, then send the app to the background. */
+    private void leaveApp() {
+        if (leaving) return;
+        if (web == null) { goHome(); return; }
+        leaving = true;
+        web.evaluateJavascript("(window.bouncy && window.bouncy.outro) ? window.bouncy.outro() : false", value -> {
+            if ("true".equals(value)) {
+                outroShown = true;
+                root.postDelayed(this::goHome, OUTRO_MS);
+            } else {
+                goHome();
+            }
+        });
+    }
+
+    private void goHome() {
+        leaving = false;
+        if (!moveTaskToBack(true)) {
+            returnIn();
+            finish();
+        }
+    }
+
+    /** Fade the page back in after leaving with Back. */
+    private void returnIn() {
+        if (!outroShown || web == null) return;
+        outroShown = false;
+        web.evaluateJavascript("window.bouncy && window.bouncy.returnIn && window.bouncy.returnIn()", null);
     }
 
     /* ---------------------------------------------------------------- lifecycle */
@@ -416,6 +465,7 @@ public class MainActivity extends Activity {
     protected void onResume() {
         super.onResume();
         if (web != null) { web.resumeTimers(); web.onResume(); }
+        returnIn();
     }
 
     @Override

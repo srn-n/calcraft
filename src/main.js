@@ -10,7 +10,7 @@ import { cleanSettings, cleanHistory, cleanNumber, cleanAngle, cleanBool, cleanV
 import * as C from './core/calculator.js';
 import { formatNumber, toExpr, evaluate } from './engine/index.js';
 import { THEMES, themeById } from './themes.js';
-import { $, $$, h } from './ui/dom.js';
+import { $, $$, h, reducedMotion } from './ui/dom.js';
 import { mountKeypad, keyboardAction, idForAction, flash, nope, setBroken, isBroken, setSecond, isSecond, setAngleLabel } from './ui/keypad.js';
 import { createDisplay } from './ui/display.js';
 import { createHistory } from './ui/history.js';
@@ -410,6 +410,46 @@ function render(s) {
 }
 store.sub(render);
 
+/* ---------------- smooth closing for dialogs ---------------- */
+// Every way a dialog closes (Back, Esc, the close button, tapping outside) goes through dlg.close(),
+// so wrapping it gives all of them the same exit animation.
+for (const dlg of document.querySelectorAll('dialog')) {
+  const closeNow = HTMLDialogElement.prototype.close.bind(dlg);
+  dlg.close = (value) => {
+    if (!dlg.open || dlg.classList.contains('is-closing')) return;
+    if (reducedMotion()) { closeNow(value); return; }
+    dlg.classList.add('is-closing');
+    let finished = false;
+    const finish = () => {
+      if (finished) return;
+      finished = true;
+      dlg.classList.remove('is-closing');
+      closeNow(value);
+    };
+    dlg.addEventListener('animationend', (e) => { if (e.target === dlg) finish(); }, { once: true });
+    setTimeout(finish, 360); // never leave a dialog half-closed
+  };
+  dlg.addEventListener('cancel', (e) => { e.preventDefault(); dlg.close(); }); // Esc animates too
+}
+
+/* ---------------- Android app: leave / return animation ---------------- */
+function outro() {
+  if (reducedMotion()) return false;
+  const d = document.documentElement;
+  d.classList.remove('app-return');
+  d.classList.add('app-out');
+  return true;
+}
+function returnIn() {
+  const d = document.documentElement;
+  if (!d.classList.contains('app-out')) return false;
+  d.classList.remove('app-out');
+  if (reducedMotion()) return true;
+  d.classList.add('app-return');
+  setTimeout(() => d.classList.remove('app-return'), 600);
+  return true;
+}
+
 /* ---------------- boot ---------------- */
 const t = applyTheme(S().theme, { animate: false });
 setSoundProfile(t.sound);
@@ -427,7 +467,7 @@ if (import.meta.env.PROD && import.meta.env.MODE !== 'single' && import.meta.env
 
 // Read-only hook for the Android/Tauri wrappers and automated tests. It can read state and switch
 // themes but cannot write arbitrary state, so a stray script can't plant data through it.
-window.bouncy = Object.freeze({ getState: () => S(), setTheme, back: goBack, flush, themes: Object.freeze(THEMES.map((x) => x.id)) });
+window.bouncy = Object.freeze({ getState: () => S(), setTheme, back: goBack, flush, outro, returnIn, themes: Object.freeze(THEMES.map((x) => x.id)) });
 
 // Never lose the last calculation: write pending saves the moment the page is hidden or closed.
 addEventListener('pagehide', flush);

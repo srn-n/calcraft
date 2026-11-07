@@ -42,7 +42,7 @@ export function dismissSplash() {
       el.remove();
       document.documentElement.classList.remove('app-in');
       window.dispatchEvent(new Event('bouncy:splash-gone'));
-    }, 760);
+    }, 900);
   };
   const canSkip = () => elapsed() >= SKIP_AFTER_MS;
   const onTap = (e) => { if (!e.target.closest('a') && canSkip()) leave(); };

@@ -166,12 +166,17 @@
 .splash-skip { opacity: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; animation: splash-skip-in 500ms ease 1700ms forwards; }
 @keyframes splash-skip-in { to { opacity: .6; } }
 
-/* ---- Leaving: the device zooms toward you and dissolves into the app ---- */
-.splash.is-leaving { animation: splash-out 460ms var(--ease-soft) forwards; pointer-events: none; }
-@keyframes splash-out { 30% { opacity: 1; } to { opacity: 0; visibility: hidden; } }
-.splash.is-leaving .splash-device { animation: splash-zoom 460ms cubic-bezier(.5, 0, .2, 1) forwards; }
-@keyframes splash-zoom { to { transform: scale(1.35); opacity: 0; } }
-.splash.is-leaving :is(.splash-presents, .splash-word, .splash-legal, .splash-intro) { transition: opacity 220ms; opacity: 0; }
+/* ---- Leaving: one continuous crossfade. The content drifts up and fades first, the backdrop
+   follows on a gentle ease-in-out, and the app eases in underneath at the same time, so there is
+   never a hard edge or a "two-step" fade. ---- */
+.splash.is-leaving { animation: splash-out 640ms cubic-bezier(.45, 0, .25, 1) forwards; pointer-events: none; }
+@keyframes splash-out { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
+.splash.is-leaving .splash-device { animation: splash-zoom 560ms cubic-bezier(.4, 0, .2, 1) forwards; }
+@keyframes splash-zoom { to { transform: scale(1.08); opacity: 0; } }
+.splash.is-leaving :is(.splash-presents, .splash-word, .splash-legal, .splash-intro) {
+  transition: opacity 420ms cubic-bezier(.4, 0, .2, 1), transform 640ms cubic-bezier(.22, 1, .36, 1);
+  opacity: 0; transform: translateY(-8px) scale(.985);
+}
 
 /* Quick launch (Android app, after the first run): just the studio card, compressed to ~1.5 s. */
 .splash.is-quick .splash-intro { animation: none; }
@@ -184,9 +189,16 @@
 .splash.is-quick .splash-intro .splash-mark { animation-delay: 620ms; }
 .splash.is-quick::before { animation-delay: 0ms, 900ms; }
 
-html.app-in .app { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 120ms both; }
-@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 200ms both; } }
-@keyframes app-in { from { transform: scale(.96); opacity: 0; } }
+html.app-in .app { animation: app-in 760ms cubic-bezier(.22, 1, .36, 1) 80ms both; }
+@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 760ms cubic-bezier(.22, 1, .36, 1) 160ms both; } }
+@keyframes app-in { from { transform: scale(.975) translateY(6px); opacity: 0; } }
+
+/* ---- Android app: leaving with Back, and coming back ---- */
+html.app-out .app, html.app-out .side {
+  transition: transform 220ms cubic-bezier(.4, 0, 1, 1), opacity 200ms cubic-bezier(.4, 0, 1, 1);
+  transform: scale(.965); opacity: 0;
+}
+html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
 
 /* ---- Theme touches ---- */
 [data-theme="phosphor"] :is(.splash-display, .splash-word, .splash-intro-name) { text-shadow: 0 0 8px rgba(57,255,122,.7); }

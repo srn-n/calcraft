@@ -329,6 +329,16 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 }
 .palette[open] { animation: pop 260ms var(--spring); }
 @keyframes pop { from { transform: scale(.94); opacity: 0; } }
+
+/* Closing animations (main.js adds .is-closing, then closes the dialog when it finishes). */
+dialog[open]::backdrop { animation: fade 240ms ease-out; }
+dialog.is-closing::backdrop { animation: backdrop-out 260ms ease-in forwards; }
+@keyframes backdrop-out { to { opacity: 0; } }
+.sheet.is-closing { animation: sheet-out 280ms cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes sheet-out { to { transform: translateY(28%); opacity: 0; } }
+.palette.is-closing { animation: pop-out 200ms cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes pop-out { to { transform: scale(.96); opacity: 0; } }
+dialog.is-closing { pointer-events: none; }
 .palette input { width: 100%; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); padding: 16px 18px; font: 600 16px var(--font-ui); outline: none; }
 .palette ul { list-style: none; margin: 0; padding: 6px; max-height: 50vh; max-height: 56dvh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
 .palette li { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; padding: 10px 12px; border-radius: 10px; cursor: pointer; font: 500 14px var(--font-ui); -webkit-user-select: none; user-select: none; }
