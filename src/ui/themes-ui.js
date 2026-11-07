@@ -10,26 +10,47 @@ export function isDarkColor(hex) {
   return L < 0.18;
 }
 
+// Theme switching must always land on the LAST theme picked, however fast someone taps.
+//  - `wanted` holds the latest choice; every pending swap applies that, never a stale one.
+//  - A running transition is skipped (not stacked), and rapid taps switch instantly without a
+//    transition at all, so nothing queues up, freezes, or swallows a tap.
+let wanted = null;
+let activeVT = null;
+let lastSwitch = -1e9;
+const RAPID_MS = 600;
+
+function swapTo(t) {
+  const doc = document.documentElement;
+  doc.dataset.theme = t.id;
+  $('#themeLabel').textContent = t.label;
+  const meta = document.querySelector('meta[name="theme-color"]');
+  const bg = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
+  if (meta) meta.content = bg;
+  // Android app: tint the system bars to match (no-op on the web).
+  // Icon colour follows the real background brightness, not just the theme's light/dark label.
+  const hex = /^#[0-9a-f]{6}$/i.test(bg) ? bg : /^#[0-9a-f]{6}$/i.test(t.swatch.bg) ? t.swatch.bg : null;
+  try { if (hex) window.BouncyNative?.setBars?.(hex, isDarkColor(hex)); } catch { /* ignore */ }
+}
+
 export function applyTheme(id, { animate = true } = {}) {
   const t = themeById(id);
-  const doc = document.documentElement;
-  const swap = () => {
-    doc.dataset.theme = t.id;
-    $('#themeLabel').textContent = t.label;
-    const meta = document.querySelector('meta[name="theme-color"]');
-    const bg = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
-    if (meta) meta.content = bg;
-    // Android app: tint the system bars to match (no-op on the web).
-    // Icon colour follows the real background brightness, not just the theme's light/dark label.
-    const hex = /^#[0-9a-f]{6}$/i.test(bg) ? bg : /^#[0-9a-f]{6}$/i.test(t.swatch.bg) ? t.swatch.bg : null;
-    try { if (hex) window.BouncyNative?.setBars?.(hex, isDarkColor(hex)); } catch { /* ignore */ }
-  };
-  if (animate && document.startViewTransition && !reducedMotion()) {
-    // Rapid switching skips the previous transition; its promises then reject with AbortError.
-    // That's expected, so swallow it instead of spamming unhandled rejections.
-    const vt = document.startViewTransition(swap);
-    for (const p of [vt.ready, vt.finished, vt.updateCallbackDone]) p?.catch?.(() => {});
-  } else swap();
+  wanted = t;
+  const now = performance.now();
+  const rapid = now - lastSwitch < RAPID_MS;
+  lastSwitch = now;
+
+  if (activeVT) {
+    try { activeVT.skipTransition(); } catch { /* already done */ }
+  }
+  if (animate && !rapid && !activeVT && document.startViewTransition && !reducedMotion()) {
+    const vt = document.startViewTransition(() => swapTo(wanted));
+    activeVT = vt;
+    // Rapid switching skips transitions; their promises then reject with AbortError. Expected.
+    for (const p of [vt.ready, vt.updateCallbackDone]) p?.catch?.(() => {});
+    vt.finished.catch(() => {}).finally(() => { if (activeVT === vt) activeVT = null; });
+  } else {
+    swapTo(t);
+  }
   return t;
 }
 
@@ -44,7 +65,7 @@ function miniPreview(t) {
     h('div.mini-keys', {}, keys));
 }
 
-export function createThemeSheet({ getState, onTheme, onSetting }) {
+export function createThemeSheet({ getState, onTheme, onSetting, onSettings, preview }) {
   const dlg = $('#themeSheet');
   const grid = $('#themeGrid');
   const settingsEl = $('#settings');
@@ -52,20 +73,44 @@ export function createThemeSheet({ getState, onTheme, onSetting }) {
   function renderGrid() {
     const cur = getState().theme;
     grid.replaceChildren(...THEMES.map((t) =>
-      h('button.theme-card', { 'aria-pressed': String(t.id === cur), onclick: () => { onTheme(t.id); renderGrid(); } },
+      h('button.theme-card', { 'aria-pressed': String(t.id === cur), 'data-theme-id': t.id, onclick: () => { onTheme(t.id); markPressed(); } },
         miniPreview(t), h('span.theme-name', {}, t.name), h('span.theme-ref', {}, t.ref))));
   }
 
+  function markPressed() {
+    const cur = getState().theme;
+    for (const b of grid.querySelectorAll('.theme-card')) b.setAttribute('aria-pressed', String(b.dataset.themeId === cur));
+  }
+
+  // Sound and vibration: Off + three levels, with a preview when you pick one.
+  const LEVELS = [
+    { on: 'sound', lvl: 'soundLevel', label: 'Sound', sub: 'Each theme has its own key sounds.', names: ['Off', 'Low', 'Medium', 'High'], test: () => preview?.sound() },
+    { on: 'haptics', lvl: 'hapticLevel', label: 'Vibration', sub: 'On key presses, results and games.', names: ['Off', 'Light', 'Medium', 'Strong'], test: () => preview?.vibrate() },
+  ];
+  function levelRow(c) {
+    const st = getState().settings;
+    const cur = st[c.on] ? st[c.lvl] : 0;
+    return h('div.level-setting', {},
+      h('span', {}, c.label, h('small', {}, c.sub)),
+      h('div.seg', { role: 'radiogroup', 'aria-label': c.label },
+        c.names.map((name, i) => h('button', {
+          type: 'button', role: 'radio', 'aria-checked': String(i === cur),
+          onclick: () => {
+            onSettings(i === 0 ? { [c.on]: false } : { [c.on]: true, [c.lvl]: i });
+            renderSettings();
+            if (i > 0) setTimeout(c.test, 30); // let the new level apply first
+          },
+        }, name))));
+  }
+
   const SETTINGS = [
-    ['sound', 'Key sounds', 'Synthesised per theme. No audio files.'],
-    ['haptics', 'Haptics', 'Vibration on supported phones.'],
     ['group', 'Thousands separators', '1,234,567 instead of 1234567.'],
     ['hints', 'Gesture hints', 'Show swipe hints on the display.'],
     ['reduceMotion', 'Reduce motion', 'Calmer animations (also follows your OS).'],
   ];
   function renderSettings() {
     const st = getState().settings;
-    settingsEl.replaceChildren(...SETTINGS.map(([key, label, sub]) =>
+    settingsEl.replaceChildren(...LEVELS.map(levelRow), ...SETTINGS.map(([key, label, sub]) =>
       h('label.switch', {}, h('span', {}, label, h('small', {}, sub)),
         h('input', { type: 'checkbox', checked: !!st[key], onchange: (e) => onSetting(key, e.target.checked) }))));
   }
@@ -74,7 +119,7 @@ export function createThemeSheet({ getState, onTheme, onSetting }) {
     const cur = getState().theme;
     const others = THEMES.filter((t) => t.id !== cur);
     onTheme(others[Math.floor(Math.random() * others.length)].id);
-    renderGrid();
+    markPressed();
   });
   dlg.addEventListener('click', (e) => {
     if (e.target === dlg || e.target.closest('[data-close]')) dlg.close();

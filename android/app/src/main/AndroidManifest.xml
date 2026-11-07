@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Deliberately NO permissions: no INTERNET, no VIBRATE. The app is fully offline. -->
+    <!-- No INTERNET permission: the app is fully offline and cannot send anything anywhere.
+         VIBRATE is the only permission (key-press vibration); it involves no user data. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <application
         android:allowBackup="true"

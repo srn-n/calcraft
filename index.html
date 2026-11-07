@@ -151,9 +151,21 @@
       Nothing leaves your device unless you send feedback.
       <a href="https://www.simplymadestudio.net/privacy#bouncy-calculator" target="_blank" rel="noopener">Privacy</a>
       <a href="https://www.simplymadestudio.net/terms#bouncy-calculator" target="_blank" rel="noopener">Terms</a>
-      <a href="./licenses.txt" target="_blank" rel="noopener">Font licences</a>
+      <a href="./licenses.txt" target="_blank" rel="noopener" id="licencesLink">Font licences</a>
     </p>
     <p class="legal-links studio-credit">© 2026 <a href="https://www.simplymadestudio.net/" target="_blank" rel="noopener">Simply Made Studio</a> · Sydney</p>
+  </dialog>
+
+  <!-- Font licences, shown in the app instead of navigating away to the text file -->
+  <dialog class="sheet licences-sheet" id="licences" aria-label="Font licences">
+    <div class="sheet-grip" aria-hidden="true"></div>
+    <div class="side-head">
+      <h2>Font licences</h2>
+      <button class="icon-btn" data-close aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"/></svg>
+      </button>
+    </div>
+    <pre class="licences-text" id="licencesText">Loading…</pre>
   </dialog>
 
   <dialog class="palette" id="palette" aria-label="Command palette" tabindex="-1">

@@ -44,7 +44,7 @@ describe('storage validation', () => {
   it('settings only keep known boolean keys', () => {
     expect(cleanSettings(null).haptics).toBe(true);
     expect(cleanSettings({ sound: 'yes', evil: true })).not.toHaveProperty('evil');
-    expect(cleanSettings({ sound: 'yes' }).sound).toBe(false);
+    expect(cleanSettings({ sound: 'yes' }).sound).toBe(true); // invalid → default (on)
   });
   it('numbers, angle, bests', () => {
     expect(cleanNumber('abc')).toBe(0);

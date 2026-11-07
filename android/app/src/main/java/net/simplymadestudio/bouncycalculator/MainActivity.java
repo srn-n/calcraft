@@ -13,7 +13,9 @@ import android.graphics.Insets;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.view.HapticFeedbackConstants;
+import android.os.VibrationEffect;
+import android.os.Vibrator;
+import android.os.VibratorManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -44,7 +46,7 @@ import java.util.regex.Pattern;
  * Security model:
  *  - Content is served from https://appassets.androidplatform.net via WebViewAssetLoader (no file:// access).
  *  - Only that origin may load inside the WebView; every other link opens outside the app.
- *  - The app has no INTERNET permission, so it cannot send anything anywhere.
+ *  - The app has no INTERNET permission, so it cannot send anything anywhere. Its only permission is VIBRATE.
  *  - The JS bridge exposes small, validated methods: haptic, copy, setBars, setCanGoBack, ready.
  */
 public class MainActivity extends Activity {
@@ -158,7 +160,7 @@ public class MainActivity extends Activity {
         s.setBuiltInZoomControls(false);
         s.setDisplayZoomControls(false);
         s.setTextZoom(100);                        // the layout is sized for the viewport; avoid double scaling
-        s.setMediaPlaybackRequiresUserGesture(true);
+        s.setMediaPlaybackRequiresUserGesture(false); // key sounds (Web Audio); the app has no network or media to autoplay
         s.setCacheMode(WebSettings.LOAD_NO_CACHE); // everything is local already
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) s.setSafeBrowsingEnabled(true);
 
@@ -187,6 +189,13 @@ public class MainActivity extends Activity {
             if (isAppOrigin(uri)) return false;   // stay in the app
             openExternally(uri);                  // privacy, terms, studio site, mailto:
             return true;
+        }
+
+        @Override
+        public void onPageStarted(WebView view, String url, android.graphics.Bitmap favicon) {
+            // Safety net: if anything ever navigates away from the calculator (e.g. a bundled text
+            // file), Back must bring the user home instead of closing or doing nothing.
+            setCanGoBack(url != null && !url.startsWith(START_URL));
         }
 
         @Override
@@ -232,31 +241,55 @@ public class MainActivity extends Activity {
 
     /** Called from the web app as window.BouncyNative.*  Runs on a binder thread, so UI work is posted. */
     final class Bridge {
+        /**
+         * Vibration for key presses, = , errors and wins. Uses the vibration motor directly
+         * (VIBRATE permission), so it works even when the phone's own "touch feedback" setting is off.
+         * The in-app Haptics switch decides whether this is called at all.
+         */
         @JavascriptInterface
-        public void haptic(String kind) {
-            if (kind == null || kind.length() > 12) return;
-            final int effect;
-            switch (kind) {
-                case "eq":
-                case "win":
-                    effect = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.CONFIRM : HapticFeedbackConstants.VIRTUAL_KEY;
-                    break;
-                case "error":
-                    effect = Build.VERSION.SDK_INT >= 30 ? HapticFeedbackConstants.REJECT : HapticFeedbackConstants.LONG_PRESS;
-                    break;
-                case "long":
-                    effect = HapticFeedbackConstants.LONG_PRESS;
-                    break;
-                case "op":
-                case "fn":
-                case "ac":
-                case "mem":
-                    effect = HapticFeedbackConstants.VIRTUAL_KEY;
-                    break;
-                default:
-                    effect = HapticFeedbackConstants.KEYBOARD_TAP;
+        public void haptic(String arg) {
+            // "kind:level", e.g. "eq:2". level 1 = light, 2 = medium, 3 = strong.
+            if (arg == null || arg.length() > 16) return;
+            int colon = arg.indexOf(':');
+            final String kind = colon < 0 ? arg : arg.substring(0, colon);
+            int lvl = 2;
+            if (colon >= 0) {
+                String l = arg.substring(colon + 1);
+                if ("1".equals(l)) lvl = 1; else if ("3".equals(l)) lvl = 3;
             }
-            runOnUiThread(() -> { if (web != null) web.performHapticFeedback(effect); });
+            final Vibrator v = vibrator();
+            if (v == null || !v.hasVibrator()) return;
+            final boolean key = !"eq".equals(kind) && !"long".equals(kind) && !"error".equals(kind) && !"win".equals(kind);
+            final float amp = lvl == 1 ? 0.55f : lvl == 3 ? 1f : 0.8f;
+            try {
+                if (Build.VERSION.SDK_INT >= 29 && lvl < 3) {
+                    VibrationEffect e;
+                    if (key) {
+                        boolean click = lvl == 2 && ("op".equals(kind) || "fn".equals(kind) || "ac".equals(kind) || "mem".equals(kind));
+                        e = VibrationEffect.createPredefined(click ? VibrationEffect.EFFECT_CLICK : VibrationEffect.EFFECT_TICK);
+                    } else if ("eq".equals(kind)) {
+                        e = VibrationEffect.createPredefined(lvl == 1 ? VibrationEffect.EFFECT_CLICK : VibrationEffect.EFFECT_HEAVY_CLICK);
+                    } else {
+                        e = waveform(kind, amp);
+                    }
+                    v.vibrate(e);
+                } else if (Build.VERSION.SDK_INT >= 26) {
+                    // Strong (any version), or older phones: explicit length and full amplitude.
+                    long ms = key ? (lvl == 3 ? 22 : 12) : "eq".equals(kind) ? (lvl == 3 ? 40 : 24) : "long".equals(kind) ? 50 : 0;
+                    v.vibrate(ms > 0 ? VibrationEffect.createOneShot(ms, Math.round(255 * amp)) : waveform(kind, amp));
+                } else {
+                    v.vibrate(key ? 12L * lvl : 25L * lvl);
+                }
+            } catch (RuntimeException ignored) { /* never let vibration break a key press */ }
+        }
+
+        private VibrationEffect waveform(String kind, float amp) {
+            int a = Math.max(1, Math.round(255 * amp));
+            if ("win".equals(kind)) {
+                return VibrationEffect.createWaveform(new long[]{0, 14, 50, 14, 50, 40}, new int[]{0, Math.round(a * .6f), 0, Math.round(a * .8f), 0, a}, -1);
+            }
+            if ("long".equals(kind)) return VibrationEffect.createOneShot(45, a);
+            return VibrationEffect.createWaveform(new long[]{0, 28, 45, 28}, new int[]{0, a, 0, a}, -1); // error
         }
 
         @JavascriptInterface
@@ -301,6 +334,21 @@ public class MainActivity extends Activity {
         public void ready() {
             runOnUiThread(MainActivity.this::markReady);
         }
+    }
+
+    private Vibrator vibratorCache;
+
+    @SuppressWarnings("deprecation")
+    private Vibrator vibrator() {
+        if (vibratorCache == null) {
+            if (Build.VERSION.SDK_INT >= 31) {
+                VibratorManager vm = getSystemService(VibratorManager.class);
+                vibratorCache = vm != null ? vm.getDefaultVibrator() : null;
+            } else {
+                vibratorCache = (Vibrator) getSystemService(VIBRATOR_SERVICE);
+            }
+        }
+        return vibratorCache;
     }
 
     /* ---------------------------------------------------------------- edge-to-edge */
@@ -420,6 +468,13 @@ public class MainActivity extends Activity {
     /** Close the web app's top layer; if there's nothing to close, leave the app. */
     private void webBack() {
         if (leaving) return;
+        if (web != null) {
+            String url = web.getUrl();
+            if (url != null && !url.startsWith(START_URL)) {
+                if (web.canGoBack()) web.goBack(); else web.loadUrl(START_URL);
+                return;
+            }
+        }
         if (web == null || !canGoBack) { leaveApp(); return; }
         web.evaluateJavascript("(window.bouncy && window.bouncy.back) ? window.bouncy.back() : false", value -> {
             if (!"true".equals(value)) {

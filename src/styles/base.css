@@ -117,6 +117,10 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .view { display: none; flex: 1; flex-direction: column; min-height: 0; }
 .view.is-active { display: flex; animation: view-in 320ms var(--out); }
 .view-tools { overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding-bottom: 8px; }
+/* Children keep their natural height and the view scrolls. Without this, a tall tool (Percent)
+   squeezed the sub-tab row (Tip & Split / Units / Percent) to 0 px, because a horizontally
+   scrollable row has no minimum height in a flex column. The tabs vanished and you were stuck. */
+.view-tools > * { flex-shrink: 0; }
 @keyframes view-in { from { opacity: 0; transform: translateY(8px); } }
 .app[data-view="tools"] .pad-wrap { display: none; }
 .app[data-view="games"] .sci, .app[data-view="games"] .mem-row { display: none; }
@@ -312,6 +316,17 @@ dialog::backdrop { background: rgba(0,0,0,.4); backdrop-filter: blur(3px); }
 .settings { display: grid; gap: 2px; border-top: 1px solid var(--border); padding-top: 12px; }
 .switch { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 2px; cursor: pointer; font: 600 14px var(--font-ui); }
 .switch small { display: block; font: 500 11px var(--font-mono); color: var(--muted); }
+.level-setting { display: grid; gap: 8px; padding: 10px 2px; font: 600 14px var(--font-ui); }
+.level-setting small { display: block; font: 500 11px var(--font-mono); color: var(--muted); }
+.seg { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; padding: 4px; border-radius: 12px; background: var(--surface-2, var(--surface)); border: 1px solid var(--border); }
+.seg button {
+  all: unset; box-sizing: border-box; text-align: center; cursor: pointer; padding: 8px 4px; border-radius: 9px;
+  font: 700 12px var(--font-ui); letter-spacing: .02em; color: var(--muted);
+  transition: background 180ms, color 180ms, transform 220ms var(--spring);
+}
+.seg button:active { transform: scale(.95); }
+.seg button:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.seg button[aria-checked="true"] { background: var(--accent); color: var(--on-accent); }
 .switch input { appearance: none; width: 44px; height: 26px; border-radius: 99px; background: var(--surface-2); border: 1px solid var(--border); position: relative; cursor: pointer; flex: none; transition: background 200ms; }
 .switch input::after { content: ''; position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%; background: var(--text); transition: transform 360ms var(--spring); }
 .switch input:checked { background: var(--accent); }
@@ -391,6 +406,50 @@ dialog.is-closing { pointer-events: none; }
   border-radius: 10px; padding: 9px 10px; font: 600 16px var(--font-ui);
 }
 .tool select option { background: var(--device-solid, #fff); color: var(--text); }
+
+/* Font licences sheet */
+.licences-text {
+  margin: 10px 0 0; max-height: 68dvh; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  white-space: pre-wrap; word-break: break-word; font: 500 12px/1.55 var(--font-mono); color: var(--text);
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 12px 14px;
+}
+
+/* Themed dropdown (src/ui/picker.js), replaces the OS's own <select> picker */
+.picker {
+  all: unset; box-sizing: border-box; cursor: pointer; width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  border: 1px solid var(--display-border); background: var(--surface); color: var(--display-text);
+  border-radius: 10px; padding: 9px 12px; font: 600 16px var(--font-ui); min-height: 42px;
+  transition: border-color 150ms, transform 200ms var(--spring);
+}
+.picker:active { transform: scale(.98); }
+.picker:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.picker[aria-expanded="true"] { border-color: var(--accent); }
+.picker-value { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.picker-chevron { width: 8px; height: 8px; flex: none; border: solid currentColor; border-width: 0 2px 2px 0; transform: translateY(-2px) rotate(45deg); opacity: .6; transition: transform 200ms; }
+.picker[aria-expanded="true"] .picker-chevron { transform: translateY(2px) rotate(-135deg); }
+.picker-scrim { position: fixed; inset: 0; z-index: 84; background: transparent; }
+.picker-pop {
+  position: fixed; z-index: 85; overflow: hidden; display: flex;
+  background: var(--device-solid, var(--bg)); color: var(--text);
+  border: 1px solid var(--device-border, var(--border)); border-radius: 14px;
+  box-shadow: 0 18px 48px rgba(0,0,0,.28), 0 2px 8px rgba(0,0,0,.12);
+  transform-origin: top center; animation: picker-in 200ms var(--spring) both;
+}
+.picker-pop.is-up { transform-origin: bottom center; }
+.picker-pop.is-closing { animation: picker-out 150ms cubic-bezier(.4, 0, 1, 1) forwards; pointer-events: none; }
+@keyframes picker-in { from { opacity: 0; transform: scale(.96) translateY(-4px); } }
+@keyframes picker-out { to { opacity: 0; transform: scale(.97); } }
+.picker-list { list-style: none; margin: 0; padding: 6px; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; flex: 1; }
+.picker-list li {
+  display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 11px 12px; border-radius: 10px;
+  font: 600 15px var(--font-ui); cursor: pointer; -webkit-user-select: none; user-select: none; outline: none;
+}
+.picker-list li:hover, .picker-list li:focus-visible { background: var(--surface); }
+.picker-list li[aria-selected="true"] { background: var(--accent); color: var(--on-accent); }
+.picker-list li[aria-selected="true"]::after { content: ''; width: 5px; height: 10px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-2px, -1px); }
+
+/* Taps go straight through to the page during a theme transition, so none are swallowed. */
+::view-transition { pointer-events: none; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row-3 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
 .range { width: 100%; accent-color: var(--accent); }

@@ -154,10 +154,13 @@
 }
 
 /* ---- Footer: promise, legal links, skip hint ---- */
+/* Always pinned to the bottom row (also when the quick launch hides the calculator scene, which
+   used to let it slide up into the middle and overlap the studio card), and it rises from below. */
 .splash-legal {
+  grid-row: 4; align-self: end;
   display: grid; justify-items: center; gap: 8px; text-align: center;
   font: 500 12px/1.4 var(--font-mono); color: var(--muted);
-  opacity: 0; animation: splash-fade-up 600ms var(--ease-soft) 900ms forwards;
+  opacity: 0; animation: splash-legal-in 560ms var(--ease-soft) 900ms forwards;
 }
 .splash-legal p { margin: 0; letter-spacing: .04em; }
 .splash-legal nav { display: flex; gap: 16px; }
@@ -179,7 +182,16 @@
   opacity: 0; transform: translateY(-6px) scale(.985);
 }
 
+@keyframes splash-legal-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
+/* These two hold their entrance animation's end state, so a transition can't fade them; give them
+   their own quick exit (the footer drops back down, the header lifts away). */
+.splash.is-leaving .splash-legal { animation: splash-legal-out 200ms cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes splash-legal-out { from { opacity: 1; } to { opacity: 0; transform: translateY(12px); } }
+.splash.is-leaving .splash-presents { animation: splash-presents-out 200ms cubic-bezier(.4, 0, 1, 1) forwards; }
+@keyframes splash-presents-out { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
+
 /* Quick launch (Android app, after the first run): just the studio card, compressed to ~1.5 s. */
+.splash.is-quick .splash-legal { animation-delay: 260ms; }
 .splash.is-quick .splash-intro { animation: none; }
 .splash.is-quick :is(.splash-presents, .splash-stage) { display: none; }
 .splash.is-quick .splash-intro-name { animation-duration: 650ms; animation-delay: 120ms; }

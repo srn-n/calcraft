@@ -67,7 +67,7 @@ Made in Sydney by Simply Made Studio.
 | **Content rating** | Questionnaire, category *Utility/Productivity*. No violence, sexuality, language, gambling, user interaction or location sharing, so you should get *Everyone / PEGI 3* |
 | **Target audience** | 13+ recommended. Choosing under-13 brings in the Families policy and extra review. The app is still fine for kids to use. |
 | **News app** | No |
-| **Data safety** | **No data collected. No data shared.** The app has no INTERNET permission (you can verify this in Play Console → App bundle explorer → Permissions: none). |
+| **Data safety** | **No data collected. No data shared.** The app has no INTERNET permission (Play Console → App bundle explorer → Permissions shows only VIBRATE, which involves no user data). |
 | **Government app** | No |
 | **Financial features** | None |
 | **Health** | None |

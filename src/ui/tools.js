@@ -4,6 +4,7 @@ import { formatNumber, clean } from '../engine/index.js';
 import { load, save } from '../core/storage.js';
 import { cleanTools } from '../core/schema.js';
 import { parseNumberStrict } from '../core/numbers.js';
+import { createPicker } from './picker.js';
 
 // Strict: "1,5" is 1.5 (not 15), "12abc" and "0x10" are rejected (not 12 and 0).
 const num = parseNumberStrict;
@@ -90,16 +91,16 @@ export function createTools(host, { getAns, sendToCalc }) {
     const u = st.units;
     const fromIn = numInput(u.v, () => { u.v = fromIn.value; calc('ltr'); });
     const toIn = numInput('', () => calc('rtl'));
-    const fromSel = h('select', { 'aria-label': 'From unit', onchange: () => { u.from = fromSel.value; calc('ltr'); } });
-    const toSel = h('select', { 'aria-label': 'To unit', onchange: () => { u.to = toSel.value; calc('ltr'); } });
+    const fromSel = createPicker({ label: 'From unit', onchange: (v) => { u.from = v; calc('ltr'); } });
+    const toSel = createPicker({ label: 'To unit', onchange: (v) => { u.to = v; calc('ltr'); } });
     const all = h('div.stat-grid');
     const cats = h('div.chips');
     const fill = () => {
       const keys = Object.keys(UNITS[u.cat].u);
       if (!keys.includes(u.from)) u.from = keys[0];
       if (!keys.includes(u.to)) u.to = keys[1];
-      fromSel.replaceChildren(...keys.map((k) => h('option', { value: k, selected: k === u.from }, k)));
-      toSel.replaceChildren(...keys.map((k) => h('option', { value: k, selected: k === u.to }, k)));
+      fromSel.setOptions(keys, u.from);
+      toSel.setOptions(keys, u.to);
       cats.replaceChildren(...Object.keys(UNITS).map((c) => h('button', { 'aria-pressed': String(c === u.cat), onclick: () => { u.cat = c; fill(); calc('ltr'); } }, c)));
     };
     const calc = (dir) => {

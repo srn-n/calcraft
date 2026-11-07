@@ -8,12 +8,15 @@ const bool = (v, d) => (typeof v === 'boolean' ? v : d);
 const str = (v, max = 400) => (typeof v === 'string' ? v.slice(0, max) : '');
 const obj = (v) => (v && typeof v === 'object' && !Array.isArray(v) ? v : {});
 
-export const SETTINGS_DEFAULT = { sound: false, haptics: true, group: true, hints: true, reduceMotion: false };
+// soundLevel / hapticLevel: 1 = low/light, 2 = medium, 3 = high/strong (Off is sound/haptics = false).
+export const SETTINGS_DEFAULT = { sound: true, haptics: true, group: true, hints: true, reduceMotion: false, soundLevel: 2, hapticLevel: 2 };
 
 export function cleanSettings(v) {
   const o = obj(v);
   const out = {};
-  for (const [k, d] of Object.entries(SETTINGS_DEFAULT)) out[k] = bool(o[k], d);
+  for (const [k, d] of Object.entries(SETTINGS_DEFAULT)) {
+    out[k] = typeof d === 'number' ? (Number.isInteger(o[k]) && o[k] >= 1 && o[k] <= 3 ? o[k] : d) : bool(o[k], d);
+  }
   return out;
 }
 

@@ -17,11 +17,12 @@ import { createHistory } from './ui/history.js';
 import { applyTheme, createThemeSheet } from './ui/themes-ui.js';
 import { createPalette } from './ui/palette.js';
 import { createTools } from './ui/tools.js';
+import { closePicker, isPickerOpen } from './ui/picker.js';
 import { createGames, GAMES } from './ui/games/index.js';
 import { toast } from './ui/toast.js';
 import { sendFeedback } from './ui/feedback.js';
-import { buzz, setHaptics } from './fx/haptics.js';
-import { play, setSound, setSoundProfile } from './fx/sound.js';
+import { buzz, setHaptics, setHapticLevel } from './fx/haptics.js';
+import { play, setSound, setSoundProfile, setSoundLevel } from './fx/sound.js';
 import { burst } from './fx/confetti.js';
 
 /* ---------------- Android app: system-bar sizes ---------------- */
@@ -39,6 +40,14 @@ try {
 } catch { /* web: CSS env() values are used */ }
 
 /* ---------------- state ---------------- */
+// Key sounds are on by default since 1.0. Earlier installs saved "off" as their default, so turn
+// sounds on once for them; after that, whatever the person chooses is kept.
+function soundOnOnce(settings) {
+  if (load('soundDefaultV2', false) === true) return settings;
+  save('soundDefaultV2', true, 0);
+  return { ...settings, sound: true };
+}
+
 const VIEWS = ['calc', 'tools', 'games'];
 // Everything from storage is validated: corrupted data falls back to defaults instead of crashing.
 const store = createStore({
@@ -49,7 +58,7 @@ const store = createStore({
   theme: themeById(document.documentElement.dataset.theme).id,
   sci: cleanBool(load('sci', false)),
   view: cleanView(load('view', 'calc'), VIEWS),
-  settings: cleanSettings(load('settings', {})),
+  settings: soundOnOnce(cleanSettings(load('settings', {}))),
 });
 const S = () => store.get();
 const undo = [], redo = [];
@@ -194,13 +203,15 @@ function toggleAngle() {
 /** Is there a layer the Back gesture should close (dialog, tape, game, non-calculator tab)? No side effects. */
 function canGoBack() {
   if (document.getElementById('splash')) return false; // Back during the loading screen leaves the app
+  if (isPickerOpen()) return true;
   if (document.querySelector('dialog[open]')) return true;
   if (history.isOpen()) return true;
   return S().view !== 'calc';
 }
 
 function goBack() {
-  const open = document.querySelector('dialog[open]');
+  if (closePicker()) return true;
+  const open = [...document.querySelectorAll('dialog[open]')].pop(); // the top-most one
   if (open) { open.close(); return true; }
   if (history.isOpen()) { history.close(); return true; }
   if (S().view === 'games' && !document.querySelector('#games .game-menu')) { games.leave(); return true; } // game or intro → games menu
@@ -210,6 +221,7 @@ function goBack() {
 
 function setView(view) {
   if (!VIEWS.includes(view)) return;
+  closePicker();
   if (S().view === 'games' && view !== 'games') games.leave();
   store.set({ view });
   history.close();
@@ -256,7 +268,7 @@ const history = createHistory({
 
 function setTheme(id) {
   const t = applyTheme(id);
-  setSoundProfile(t.sound);
+  setSoundProfile(t.id);
   store.set({ theme: t.id });
   save('theme', t.id, 0);
   play('eq');
@@ -265,6 +277,8 @@ const themeSheet = createThemeSheet({
   getState: S,
   onTheme: setTheme,
   onSetting: (key, val) => store.set({ settings: { ...S().settings, [key]: val } }),
+  onSettings: (patch) => store.set({ settings: { ...S().settings, ...patch } }),
+  preview: { sound: () => play('eq'), vibrate: () => buzz('eq') },
 });
 
 const palette = createPalette({
@@ -401,7 +415,9 @@ function render(s) {
   }
   if (s.settings !== prev.settings) {
     setSound(s.settings.sound);
+    setSoundLevel(s.settings.soundLevel);
     setHaptics(s.settings.haptics);
+    setHapticLevel(s.settings.hapticLevel);
     document.documentElement.classList.toggle('reduce-motion', s.settings.reduceMotion);
     $('#metaHint').hidden = !s.settings.hints;
     save('settings', s.settings);
@@ -409,6 +425,25 @@ function render(s) {
   prev = s;
 }
 store.sub(render);
+
+/* ---------------- font licences (in-app sheet) ---------------- */
+// Opening licenses.txt as a page left the Android app stuck on a plain text file with no way back,
+// so the licences open in a sheet on top of the app instead (the link still works without JS).
+{
+  const dlg = $('#licences');
+  const text = $('#licencesText');
+  let loaded = false;
+  $('#licencesLink')?.addEventListener('click', (e) => {
+    e.preventDefault();
+    if (!dlg.open) dlg.showModal();
+    if (loaded) return;
+    fetch('./licenses.txt', { cache: 'force-cache' })
+      .then((r) => (r.ok ? r.text() : Promise.reject(new Error(String(r.status)))))
+      .then((t) => { text.textContent = t.slice(0, 20000); loaded = true; })
+      .catch(() => { text.textContent = 'All fonts in this app are licensed under the SIL Open Font License 1.1. The full text could not be loaded right now.'; });
+  });
+  dlg.addEventListener('click', (e) => { if (e.target === dlg || e.target.closest('[data-close]')) dlg.close(); });
+}
 
 /* ---------------- smooth closing for dialogs ---------------- */
 // Every way a dialog closes (Back, Esc, the close button, tapping outside) goes through dlg.close(),
@@ -452,7 +487,7 @@ function returnIn() {
 
 /* ---------------- boot ---------------- */
 const t = applyTheme(S().theme, { animate: false });
-setSoundProfile(t.sound);
+setSoundProfile(t.id);
 render(S());
 $('#metaHint').textContent = matchMedia('(hover: hover)').matches
   ? 'type to calculate · Ctrl+K commands'

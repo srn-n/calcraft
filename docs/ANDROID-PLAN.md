@@ -25,7 +25,7 @@ MainActivity (Java, ~250 lines) ── WebViewAssetLoader ───────�
 | Network | **No INTERNET permission.** The app physically cannot send data, so the Play "No data collected" label is true |
 | Local files | `allowFileAccess=false`, `allowContentAccess=false`, no mixed content, Safe Browsing left on, WebView debugging only in debug builds |
 | Service worker | Not registered in the app (assets are already local) |
-| Permissions | **None.** Haptics use `View.performHapticFeedback`, which needs no VIBRATE permission |
+| Permissions | **VIBRATE only** (key-press vibration through the motor, works even when system touch feedback is off). No INTERNET. |
 | Code | R8 minify and resource shrinking; release build is not debuggable |
 
 ## 3. Native polish
@@ -61,7 +61,7 @@ MainActivity (Java, ~250 lines) ── WebViewAssetLoader ───────�
 3. Sign with a new upload key (RSA 4096, 30-year validity).
 4. Verify:
    - `apksigner verify`;
-   - `aapt2 dump badging`: package, SDK levels, **zero permissions**;
+   - `aapt2 dump badging`: package, SDK levels, and only one permission (**VIBRATE**, for key-press vibration; no INTERNET);
    - `bundletool validate`;
    - the release build is not debuggable.
 5. Run the packaged `www/` in a phone-sized browser with the meta CSP and check for zero CSP violations, zero errors, every theme rendered, and the games working.
