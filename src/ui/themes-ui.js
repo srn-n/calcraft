@@ -24,12 +24,25 @@ function swapTo(t) {
   doc.dataset.theme = t.id;
   $('#themeLabel').textContent = t.label;
   const meta = document.querySelector('meta[name="theme-color"]');
-  const bg = getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
+  const bg = screenColour() || getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
   if (meta) meta.content = bg;
   // Android app: tint the system bars to match (no-op on the web).
   // Icon colour follows the real background brightness, not just the theme's light/dark label.
   const hex = /^#[0-9a-f]{6}$/i.test(bg) ? bg : /^#[0-9a-f]{6}$/i.test(t.swatch.bg) ? t.swatch.bg : null;
   try { if (hex) window.BouncyNative?.setBars?.(hex, isDarkColor(hex)); } catch { /* ignore */ }
+}
+
+/**
+ * The colour actually filling the screen: on phones the calculator body (.app) covers everything,
+ * and in some themes it differs from the backdrop. Used for the status/navigation bars and the
+ * Android window colour, so nothing flashes a different shade while the app starts or resumes.
+ */
+function screenColour() {
+  const app = document.querySelector('.app');
+  if (!app || !matchMedia('(max-width: 919px), (max-height: 599px)').matches) return ''; // desktop: the backdrop is what shows
+  const m = getComputedStyle(app).backgroundColor.match(/rgba?\(\s*(\d+)[,\s]+(\d+)[,\s]+(\d+)(?:[,\s/]+([\d.]+))?/);
+  if (!m || (m[4] !== undefined && Number(m[4]) < 1)) return ''; // transparent body: the backdrop shows
+  return '#' + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('');
 }
 
 export function applyTheme(id, { animate = true } = {}) {
@@ -84,8 +97,8 @@ export function createThemeSheet({ getState, onTheme, onSetting, onSettings, pre
 
   // Sound and vibration: Off + three levels, with a preview when you pick one.
   const LEVELS = [
-    { on: 'sound', lvl: 'soundLevel', label: 'Sound', sub: 'Each theme has its own key sounds.', names: ['Off', 'Low', 'Medium', 'High'], test: () => preview?.sound() },
-    { on: 'haptics', lvl: 'hapticLevel', label: 'Vibration', sub: 'On key presses, results and games.', names: ['Off', 'Light', 'Medium', 'Strong'], test: () => preview?.vibrate() },
+    { on: 'sound', lvl: 'soundLevel', label: 'Sound', sub: window.BouncyNative ? 'Each theme has its own sounds. Follows your phone: muted on silent or vibrate.' : 'Each theme has its own key sounds.', names: ['Off', 'Low', 'Medium', 'High'], test: () => preview?.sound() },
+    { on: 'haptics', lvl: 'hapticLevel', label: 'Vibration', sub: 'On key presses, results and games. Independent of your phone\u2019s sound and vibration settings.', names: ['Off', 'Light', 'Medium', 'Strong'], test: () => preview?.vibrate() },
   ];
   function levelRow(c) {
     const st = getState().settings;

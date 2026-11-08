@@ -306,6 +306,7 @@ const palette = createPalette({
 
 const tools = createTools($('#tools'), {
   getAns: () => S().calc.ans,
+  feedback: (k) => feedback(k),
   sendToCalc: (v) => {
     const n = typeof v === 'number' ? v : Number(String(v).replace(/,/g, '').replace(/−/g, '-'));
     if (!String(v).trim() || !Number.isFinite(n)) { toast('Nothing to send yet'); return; }
@@ -366,19 +367,41 @@ window.addEventListener('keydown', (e) => {
   dispatch(a, { id, source: 'keyboard' });
 });
 
+/** Insert pasted text (Ctrl+V or the paste button). Same strict clean-up either way. */
+function pasteText(rawText) {
+  const text = C.sanitizePaste(rawText);
+  if (!text) {
+    if (String(rawText).trim()) { toast('Couldn’t read that as a sum'); feedback('error'); }
+    return false;
+  }
+  setView('calc');
+  setCalc(C.insert(S().calc, text));
+  toast('Pasted');
+  return true;
+}
+
 window.addEventListener('paste', (e) => {
   const t = e.target;
   if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement) return;
   const rawText = e.clipboardData?.getData('text') || '';
-  const text = C.sanitizePaste(rawText);
-  if (!text) {
-    if (rawText.trim()) { e.preventDefault(); toast('Couldn’t read that as a sum'); feedback('error'); }
-    return;
-  }
+  if (!rawText.trim()) return;
   e.preventDefault();
-  setView('calc');
-  setCalc(C.insert(S().calc, text));
-  toast('Pasted');
+  pasteText(rawText);
+});
+
+// Paste button next to DEG/RAD. Android app: the system clipboard through the native bridge.
+// Web: the Clipboard API (the browser may ask for permission or show its own "Paste" bubble).
+$('#pasteChip').addEventListener('click', async () => {
+  let raw = '';
+  try {
+    if (window.BouncyNative?.paste) raw = String(window.BouncyNative.paste() || '');
+    else if (navigator.clipboard?.readText) raw = await navigator.clipboard.readText();
+    else { toast('Use Ctrl+V or long-press to paste'); return; }
+  } catch {
+    toast('Allow clipboard access to paste'); feedback('error'); return;
+  }
+  if (!raw.trim()) { toast('Clipboard is empty'); feedback('error'); return; }
+  if (pasteText(raw.slice(0, 400))) feedback('op');
 });
 
 /* ---------------- render + persist ---------------- */

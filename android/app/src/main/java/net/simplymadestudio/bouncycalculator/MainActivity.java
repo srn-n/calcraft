@@ -10,6 +10,7 @@ import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.graphics.Color;
 import android.graphics.Insets;
+import android.media.AudioManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -327,6 +328,34 @@ public class MainActivity extends Activity {
         @JavascriptInterface
         public String insets() {
             return insetsCss;
+        }
+
+        /** Paste button: the clipboard's text (first 400 characters). The page validates it like any paste. */
+        @JavascriptInterface
+        public String paste() {
+            try {
+                ClipboardManager cm = getSystemService(ClipboardManager.class);
+                if (cm == null || !cm.hasPrimaryClip()) return "";
+                ClipData clip = cm.getPrimaryClip();
+                if (clip == null || clip.getItemCount() == 0) return "";
+                CharSequence t = clip.getItemAt(0).coerceToText(MainActivity.this);
+                if (t == null) return "";
+                String s = t.toString();
+                return s.length() > 400 ? s.substring(0, 400) : s;
+            } catch (RuntimeException e) {
+                return "";
+            }
+        }
+
+        /**
+         * Key sounds follow the phone's sound mode: when it's on silent or vibrate, the app stays
+         * quiet. Asked on every key press, so changing the mode with the volume keys applies at once.
+         * (Vibration is deliberately separate and ignores this.)
+         */
+        @JavascriptInterface
+        public boolean soundAllowed() {
+            AudioManager am = getSystemService(AudioManager.class);
+            return am == null || am.getRingerMode() == AudioManager.RINGER_MODE_NORMAL;
         }
 
         /** The page has rendered its first frame: let the system splash screen go. */

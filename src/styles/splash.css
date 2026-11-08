@@ -213,6 +213,24 @@ html.app-out .app, html.app-out .side {
 }
 html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
 
+/* ---- Phones (the calculator body fills the screen) ----
+   Several themes paint the calculator body (--device) in a different colour from the backdrop
+   (--bg): TE, Station Clock, Concrete, Mission Control, Voyager, Solar LCD... Fading the whole
+   .app, or showing the splash on --bg, flashed the backdrop colour for a moment: a visible
+   "blink". So on phones the splash is painted with the app's own body (splash.js copies it), and
+   the fades move the app's CONTENT, never its background. */
+@media (max-width: 919px), (max-height: 599px) {
+  html.app-in .app { animation: none; }
+  html.app-in .app > * { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 240ms both; }
+  html.app-out .app { transition: none; transform: none; opacity: 1; }
+  html.app-out .app > * {
+    transition: transform 220ms cubic-bezier(.4, 0, 1, 1), opacity 200ms cubic-bezier(.4, 0, 1, 1);
+    transform: scale(.97); opacity: 0;
+  }
+  html.app-return .app { animation: none; }
+  html.app-return .app > * { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
+}
+
 /* ---- Theme touches ---- */
 [data-theme="phosphor"] :is(.splash-display, .splash-word, .splash-intro-name) { text-shadow: 0 0 8px rgba(57,255,122,.7); }
 [data-theme="phosphor"] .splash-num::before { content: '> '; }
@@ -254,9 +272,9 @@ html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both
   .splash { animation: splash-failsafe 1ms ease 8s forwards !important; }
   .splash.is-leaving { animation: splash-out 240ms linear forwards !important; }
   .splash.is-leaving .splash-device { animation: none !important; }
-  html.app-in .app, html.app-in .side { animation: none !important; }
+  html.app-in .app, html.app-in .app > *, html.app-in .side { animation: none !important; }
 }
 html.reduce-motion .splash *, html.reduce-motion .splash::before { animation-duration: 1ms !important; }
 html.reduce-motion .splash-intro { animation: splash-intro-out 300ms linear 1760ms forwards !important; }
 html.reduce-motion .splash.is-leaving { animation: splash-out 240ms linear forwards !important; }
-html.reduce-motion.app-in .app { animation: none !important; }
+html.reduce-motion.app-in .app, html.reduce-motion.app-in .app > * { animation: none !important; }

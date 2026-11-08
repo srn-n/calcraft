@@ -5,6 +5,8 @@ import { load, save } from '../core/storage.js';
 import { cleanTools } from '../core/schema.js';
 import { parseNumberStrict } from '../core/numbers.js';
 import { createPicker } from './picker.js';
+import { createBills, BILL_KINDS, FREQS } from './bills.js';
+import { reducedMotion } from './dom.js';
 
 // Strict: "1,5" is 1.5 (not 15), "12abc" and "0x10" are rejected (not 12 and 0).
 const num = parseNumberStrict;
@@ -33,18 +35,23 @@ export function convert(cat, v, from, to) {
   return (v * c.u[from]) / c.u[to];
 }
 
-export function createTools(host, { getAns, sendToCalc }) {
-  const st = cleanTools(load('tools', { units: { cat: 'Length', from: 'km', to: 'mi', v: '10' } }), UNITS);
+export function createTools(host, { getAns, sendToCalc, feedback = () => {} }) {
+  const st = cleanTools(load('tools', { units: { cat: 'Length', from: 'km', to: 'mi', v: '10' } }), UNITS, { kinds: BILL_KINDS, freqs: Object.keys(FREQS) });
   const persist = () => save('tools', st);
 
-  const tabs = [['tip', 'Tip & Split'], ['units', 'Units'], ['pct', 'Percent']];
+  const tabs = [['tip', 'Tip & Split'], ['units', 'Units'], ['pct', 'Percent'], ['bills', 'Bills']];
   const tabBar = h('div.subtabs', { role: 'tablist' });
   const body = h('div.panel.tool');
   host.append(tabBar, body);
 
   function renderTabs() {
     tabBar.replaceChildren(...tabs.map(([id, label]) =>
-      h('button', { 'aria-pressed': String(st.tab === id), onclick: () => { st.tab = id; persist(); renderTabs(); renderBody(); } }, label)));
+      h('button', { 'aria-pressed': String(st.tab === id), onclick: (e) => {
+        if (st.tab === id) return;
+        const dir = tabs.findIndex((t) => t[0] === id) > tabs.findIndex((t) => t[0] === st.tab) ? 1 : -1;
+        st.tab = id; persist(); renderTabs(); renderBody(dir);
+        tabBar.querySelector('[aria-pressed="true"]')?.classList.add('is-popping');
+      } }, label)));
   }
 
   /* Tip & Split */
@@ -151,9 +158,17 @@ export function createTools(host, { getAns, sendToCalc }) {
       card('Discount', '129.99', '25', (p, d) => [fmt(p * (1 - d / 100)), `you save ${fmt(p * d / 100)}`], ['Price', '% off']));
   }
 
-  function renderBody() {
-    body.replaceChildren(st.tab === 'tip' ? tip() : st.tab === 'units' ? units() : pct());
+  // Sub-tab switching: the new tool springs in from the side you're heading to, with a little
+  // overshoot (different from the main Calc / Tools / Games slide).
+  function renderBody(dir = 0) {
+    body.replaceChildren(st.tab === 'tip' ? tip() : st.tab === 'units' ? units() : st.tab === 'pct' ? pct()
+      : createBills(st.bills, persist, { sendToCalc, feedback }));
+    if (!dir || reducedMotion()) return;
+    body.classList.remove('tool-in-left', 'tool-in-right');
+    void body.offsetWidth; // restart the animation
+    body.classList.add(dir > 0 ? 'tool-in-right' : 'tool-in-left');
   }
+  body.addEventListener('animationend', (e) => { if (e.target === body) body.classList.remove('tool-in-left', 'tool-in-right'); });
 
   renderTabs();
   renderBody();

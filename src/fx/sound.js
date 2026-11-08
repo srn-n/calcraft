@@ -110,8 +110,13 @@ function voice(a, v, t) {
   }
 }
 
+// Android app: the phone's sound mode wins. On silent or vibrate, no key sounds (vibration is separate).
+function systemAllows() {
+  try { return window.BouncyNative?.soundAllowed ? window.BouncyNative.soundAllowed() !== false : true; } catch { return true; }
+}
+
 export function play(kind = 'num') {
-  if (!enabled) return;
+  if (!enabled || !systemAllows()) return;
   const a = ac();
   if (!a) return;
   try {

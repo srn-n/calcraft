@@ -21,10 +21,30 @@ const QUICK = IS_APP && seenBefore();
 const FULL_MS = QUICK ? 1500 : 4500;  // full: + 460 ms exit ≈ 5 s
 const SKIP_AFTER_MS = QUICK ? 300 : 1600;
 
+/**
+ * Phones: paint the splash with the calculator body's own background (solid colour or gradient), so
+ * the hand-over to the app is seamless in every theme. Translucent bodies (Liquid Glass) keep the
+ * theme backdrop, which is what shows through them. Set through the CSSOM, which the CSP allows.
+ */
+function matchScreen(el) {
+  try {
+    if (!matchMedia('(max-width: 919px), (max-height: 599px)').matches) return;
+    const app = document.querySelector('.app');
+    if (!app) return;
+    const cs = getComputedStyle(app);
+    const img = cs.backgroundImage;
+    const alpha = (cs.backgroundColor.match(/rgba\([^)]*[,/]\s*([\d.]+)\s*\)/) || [])[1];
+    const solid = alpha === undefined || Number(alpha) >= 1;
+    if (img && img !== 'none' && /gradient/.test(img)) el.style.backgroundImage = img;
+    else if (solid) { el.style.backgroundImage = 'none'; el.style.backgroundColor = cs.backgroundColor; }
+  } catch { /* keep the CSS default */ }
+}
+
 export function dismissSplash() {
   const el = document.getElementById('splash');
   if (!el) return;
   if (IS_APP) markSeen();
+  matchScreen(el);
   if (QUICK) el.classList.add('is-quick');
   let done = false;
   const start = performance.now();
@@ -57,7 +77,9 @@ export function dismissSplash() {
   window.addEventListener('keydown', onKey, true);
 
   // Start the animation on a fresh frame, after boot work, so it begins smoothly.
-  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-go')));
+  // ...and only once the fonts are in, so text never swaps typeface mid-animation (a flicker).
+  const go = () => requestAnimationFrame(() => requestAnimationFrame(() => el.classList.add('is-go')));
+  Promise.race([document.fonts?.ready ?? Promise.resolve(), wait(QUICK ? 450 : 700)]).then(go, go);
 
   const fonts = document.fonts?.ready ?? Promise.resolve();
   Promise.race([fonts, wait(QUICK ? 800 : 2500)])

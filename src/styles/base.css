@@ -143,7 +143,10 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   position: relative; border: 1px solid var(--display-border); background: transparent; color: var(--display-muted); cursor: pointer;
   font: 700 10px/1 var(--font-mono); letter-spacing: .12em; padding: 5px 8px; border-radius: var(--r-chip);
 }
-#angleChip::after { content: ''; position: absolute; inset: -12px -8px; } /* 21px chip → 45px touch target */
+#angleChip::after, #pasteChip::after { content: ''; position: absolute; inset: -12px -3px; } /* 21px chip → 45px touch target */
+.chip-paste { display: inline-flex; align-items: center; justify-content: center; padding: 3px 7px; transition: transform 220ms var(--spring), color 150ms; }
+.chip-paste svg { width: 13px; height: 13px; stroke-width: 2; }
+.chip-paste:active { transform: scale(.9); color: var(--accent); }
 .chip-mem { color: var(--accent); border-color: currentColor; cursor: default; }
 .meta-hint { margin-left: auto; font: 500 10px var(--font-mono); color: var(--display-muted); opacity: .7; letter-spacing: .04em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 @media (hover: hover) { .meta-hint::after { content: ''; } }
@@ -406,6 +409,91 @@ dialog.is-closing { pointer-events: none; }
   border-radius: 10px; padding: 9px 10px; font: 600 16px var(--font-ui);
 }
 .tool select option { background: var(--device-solid, #fff); color: var(--text); }
+
+/* ============ Tools: sub-tab switch (bouncy, from the side you're heading to) ============ */
+.panel.tool-in-right { animation: tool-in-right 520ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.panel.tool-in-left { animation: tool-in-left 520ms cubic-bezier(.34, 1.56, .64, 1) both; }
+@keyframes tool-in-right { from { opacity: 0; transform: translateX(26px) scale(.97); } 60% { opacity: 1; } }
+@keyframes tool-in-left { from { opacity: 0; transform: translateX(-26px) scale(.97); } 60% { opacity: 1; } }
+.subtabs button { transition: background 200ms, color 200ms, border-color 200ms; }
+.subtabs button.is-popping { animation: subtab-pop 420ms cubic-bezier(.34, 1.8, .64, 1); }
+@keyframes subtab-pop { 0% { transform: scale(.88); } 100% { transform: none; } }
+
+/* ============ Tools: Bills ============ */
+.bills { display: flex; flex-direction: column; gap: 12px; }
+.bill-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.picker.bill-cur { width: auto; min-width: 72px; min-height: 34px; padding: 5px 10px; font-size: 14px; flex: none; }
+.bill-summary { display: grid; grid-template-columns: 1.3fr 1.3fr .8fr; gap: 8px; }
+.bill-summary .stat { display: grid; gap: 4px; padding: 10px; }
+.bill-summary small { font: 700 9px var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--display-muted); }
+.bill-summary b { font: 800 min(calc(var(--fs-scale) * 16px), 4.1vw)/1.15 var(--font-display); white-space: nowrap; letter-spacing: -.01em; }
+.bill-summary .stat { min-width: 0; overflow: hidden; }
+.bill-summary .is-overdue b { color: #e5484d; }
+.bill-list { display: flex; flex-direction: column; gap: 8px; }
+.bill-row {
+  display: flex; align-items: stretch; gap: 6px; border-radius: 14px; background: var(--surface);
+  border: 1px solid transparent; animation: bill-in 460ms cubic-bezier(.34, 1.56, .64, 1) both;
+}
+@keyframes bill-in { from { opacity: 0; transform: translateY(10px) scale(.97); } }
+.bill-row.is-overdue { border-color: #e5484d; }
+.bill-row.is-paid { opacity: .6; }
+.bill-row.is-paying { animation: bill-pay 380ms cubic-bezier(.34, 1.56, .64, 1) forwards; }
+@keyframes bill-pay { 40% { transform: scale(1.03); } 100% { transform: translateX(14px); opacity: 0; } }
+.bill-main {
+  all: unset; box-sizing: border-box; flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px;
+  padding: 10px 4px 10px 10px; cursor: pointer; border-radius: 14px; color: var(--display-text);
+}
+.bill-main:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; }
+.bill-icon {
+  flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+  background: var(--display-bg); color: var(--accent); border: 1px solid var(--display-border);
+}
+.bill-icon svg { width: 18px; height: 18px; stroke-width: 1.9; }
+.bill-text { flex: 1; min-width: 0; display: grid; gap: 2px; }
+.bill-text b { font: 700 14px var(--font-ui); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bill-due { font: 600 11px var(--font-mono); color: var(--display-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bill-row.is-overdue .bill-due { color: #e5484d; }
+.bill-row.is-soon .bill-due { color: var(--accent); }
+.bill-amt { flex: none; font: 800 15px var(--font-display); }
+.bill-pay, .bill-paid {
+  flex: none; width: 46px; display: grid; place-items: center; border-radius: 0 14px 14px 0;
+  border: 0; border-left: 1px solid var(--display-border); background: transparent; color: var(--display-muted); cursor: pointer;
+  transition: color 150ms, transform 260ms var(--spring);
+}
+.bill-pay svg, .bill-paid svg { width: 20px; height: 20px; stroke-width: 2.4; }
+.bill-pay:active { transform: scale(.85); color: var(--accent); }
+.bill-paid { cursor: default; color: var(--accent); }
+.bill-empty { margin: 0; padding: 14px; border-radius: 14px; background: var(--surface); font: 500 13px/1.5 var(--font-ui); color: var(--display-muted); text-align: center; }
+.bill-presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 6px; }
+.bill-presets button {
+  display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--display-border); background: var(--surface); color: var(--display-text);
+  font: 600 12px var(--font-ui); text-align: left; transition: transform 260ms var(--spring);
+}
+.bill-presets button:active { transform: scale(.94); }
+.bill-presets .bill-icon { width: 26px; height: 26px; border-radius: 8px; }
+.bill-presets .bill-icon svg { width: 15px; height: 15px; }
+.bill-presets span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bill-editor {
+  display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px;
+  background: var(--surface); border: 1px solid var(--accent); animation: bill-in 420ms cubic-bezier(.34, 1.56, .64, 1) both;
+}
+.bill-editor-head { display: flex; align-items: center; justify-content: space-between; font: 800 14px var(--font-ui); }
+.bill-editor .field input { font-size: 16px; padding: 10px 12px; }
+.bill-kinds { display: flex; flex-wrap: wrap; gap: 6px; }
+.bill-kinds button { all: unset; cursor: pointer; border-radius: 10px; }
+.bill-kinds button[aria-pressed="true"] .bill-icon { background: var(--accent); color: var(--on-accent); border-color: transparent; }
+.bill-kinds button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bill-date { display: grid; grid-template-columns: 1fr 1.2fr 1.3fr; gap: 6px; }
+.bill-editor textarea, .bill-notes {
+  width: 100%; box-sizing: border-box; resize: vertical; border: 1px solid var(--display-border); background: var(--surface);
+  color: var(--display-text); border-radius: 12px; padding: 10px 12px; font: 500 14px/1.45 var(--font-ui);
+}
+.bill-notes { background: var(--surface); min-height: 96px; }
+.bill-history { display: grid; gap: 3px; font: 500 12px var(--font-mono); color: var(--display-muted); }
+.bill-history small { font: 700 9px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
+.bill-delete { margin-right: auto; }
+html.reduce-motion :is(.bill-row, .bill-editor, .panel.tool-in-left, .panel.tool-in-right, .subtabs button) { animation: none !important; }
 
 /* Font licences sheet */
 .licences-text {

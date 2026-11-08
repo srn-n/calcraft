@@ -52,14 +52,57 @@ export function cleanBests(v) {
 }
 
 /** Tools state: tab, tip, units. `units` is the UNITS table, passed in to avoid a cycle. */
-export function cleanTools(v, units) {
+const ISO_DATE = /^(\d{4})-(\d{2})-(\d{2})$/;
+function cleanISO(v) {
+  const m = typeof v === 'string' && ISO_DATE.exec(v);
+  if (!m) return '';
+  const y = +m[1], mo = +m[2], d = +m[3];
+  const dt = new Date(y, mo - 1, d);
+  return y >= 2000 && y <= 2100 && dt.getMonth() === mo - 1 && dt.getDate() === d ? v : '';
+}
+
+/** Bills (Tools → Bills). Up to 60 bills, short strings, known kinds/frequencies, real dates. */
+export function cleanBills(v, { kinds, freqs }) {
+  const o = obj(v);
+  const items = [];
+  const seen = new Set();
+  for (const it of Array.isArray(o.items) ? o.items : []) {
+    if (items.length >= 60) break;
+    const b = obj(it);
+    const id = str(b.id, 24);
+    const due = cleanISO(b.due);
+    if (!/^[a-z0-9]+$/i.test(id) || seen.has(id) || !due) continue;
+    seen.add(id);
+    const paid = [];
+    for (const p of Array.isArray(b.paid) ? b.paid : []) {
+      if (paid.length >= 12) break;
+      const pd = cleanISO(obj(p).d);
+      if (pd) paid.push({ d: pd, a: Math.max(0, Math.min(1e12, finite(obj(p).a, 0))) });
+    }
+    items.push({
+      id,
+      kind: kinds.includes(b.kind) ? b.kind : 'other',
+      name: str(b.name, 30),
+      amount: str(b.amount, 20),
+      freq: freqs.includes(b.freq) ? b.freq : 'month',
+      due,
+      note: str(b.note, 200),
+      paid,
+      done: bool(b.done, false),
+    });
+  }
+  const CUR = ['$', '€', '£', '¥', '₹', '৳'];
+  return { items, note: str(o.note, 2000), cur: CUR.includes(o.cur) ? o.cur : '$' };
+}
+
+export function cleanTools(v, units, billOpts = { kinds: ['other'], freqs: ['month'] }) {
   const o = obj(v);
   const tip = obj(o.tip);
   const u = obj(o.units);
   const cat = Object.prototype.hasOwnProperty.call(units, u.cat) ? u.cat : 'Length';
   const keys = Object.keys(units[cat].u);
   return {
-    tab: ['tip', 'units', 'pct'].includes(o.tab) ? o.tab : 'tip',
+    tab: ['tip', 'units', 'pct', 'bills'].includes(o.tab) ? o.tab : 'tip',
     tip: {
       bill: str(tip.bill, 20),
       pct: Math.max(0, Math.min(30, Math.round(finite(tip.pct, 15)))),
@@ -72,5 +115,6 @@ export function cleanTools(v, units) {
       to: keys.includes(u.to) ? u.to : keys[1],
       v: str(u.v, 20) || '10',
     },
+    bills: cleanBills(o.bills, billOpts),
   };
 }
