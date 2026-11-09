@@ -35,3 +35,26 @@ describe('theme catalogue', () => {
     expect(themeById('nope').id).toBe(THEMES[0].id);
   });
 });
+
+describe('exclusive signature sounds and characters', async () => {
+  const { SIGNATURE } = await import('../src/fx/signature.js');
+  const { CAST } = await import('../src/ui/buddy.js');
+  const ex = THEMES.filter((t) => t.exclusive).map((t) => t.id);
+  it('every exclusive theme has a full signature sound set', () => {
+    expect(Object.keys(SIGNATURE).sort()).toEqual([...ex].sort());
+    for (const id of ex) for (const k of ['num', 'op', 'ac', 'eq', 'error', 'theme']) expect(typeof SIGNATURE[id][k], `${id}.${k}`).toBe('function');
+  });
+  it('every exclusive character has its own reactions', () => {
+    expect(Object.keys(CAST).sort()).toEqual([...ex].sort());
+    for (const id of ex) {
+      const c = CAST[id];
+      expect(c.eq.length).toBeGreaterThan(2);
+      expect(['stars', 'slash', 'web', 'hearts', 'paws']).toContain(c.burst);
+      expect(css).toContain(`[data-bud-idle="${c.idle}"]`);
+    }
+  });
+  it('theme switching no longer uses a full-page view transition', () => {
+    const ui = readFileSync(new URL('../src/ui/themes-ui.js', import.meta.url), 'utf8');
+    expect(ui).not.toMatch(/startViewTransition/);
+  });
+});

@@ -1,4 +1,6 @@
 // Synthesised key sounds, one voice per theme. No audio files (zero bytes of assets).
+// The five Exclusive themes have full signature sets instead (signature.js).
+import { SIGNATURE } from './signature.js';
 //
 // Every voice is a short "body" tone with a pitch sweep, an optional noise transient (the click
 // of a key), and an optional low-pass filter (warmth). Three variants per theme: number keys,
@@ -11,7 +13,8 @@ let noiseBuf = null;
 let volume = 1;
 const VOLUME = { 1: 0.45, 2: 1, 3: 1.8 };
 export const setSound = (on) => { enabled = on; if (on) warm(); };
-export const setSoundLevel = (lvl) => { volume = VOLUME[lvl] ?? 1; };
+export const setSoundLevel = (lvl) => { volume = VOLUME[lvl] ?? 1; if (master) master.gain.value = volume; };
+let master = null; // Exclusive sets play through this (volume + a gentle limiter so chords never clip)
 export const setSoundProfile = (p) => { profile = p; };
 
 function ac() {
@@ -119,10 +122,37 @@ function systemAllows() {
   try { return window.BouncyNative?.soundAllowed ? window.BouncyNative.soundAllowed() !== false : true; } catch { return true; }
 }
 
-export function play(kind = 'num') {
+function masterOut(a) {
+  if (!master || master.context !== a) {
+    const lim = a.createDynamicsCompressor();
+    lim.threshold.value = -10; lim.ratio.value = 8; lim.attack.value = 0.002; lim.release.value = 0.12;
+    master = a.createGain();
+    master.gain.value = volume;
+    master.connect(lim).connect(a.destination);
+  }
+  return master;
+}
+
+let lastAt = 0;
+/** kind: num | op | fn | mem | ac | eq | win | error | theme. detail: the digit for num keys. */
+export function play(kind = 'num', detail) {
   if (!enabled || !systemAllows()) return;
   const a = ac();
   if (!a) return;
+  const sig = SIGNATURE[profile];
+  if (sig) {
+    try {
+      const t = a.currentTime + 0.002;
+      const k = kind === 'win' ? 'eq' : kind === 'fn' || kind === 'mem' ? 'op' : kind;
+      // Mashing keys: skip a sound rather than pile up dozens of voices.
+      if ((k === 'num' || k === 'op') && t - lastAt < 0.03) return;
+      lastAt = t;
+      (sig[k] || sig.op)(a, masterOut(a), t, detail);
+      if (kind === 'win') setTimeout(() => play('theme'), 260);
+    } catch { /* never let audio break a key press */ }
+    return;
+  }
+  if (kind === 'theme') kind = 'eq';
   try {
     const set = VOICES[profile] || VOICES[ALIASES[profile]] || VOICES.braun;
     const k = kind === 'eq' || kind === 'win' ? 'eq' : kind === 'num' ? 'num' : 'op';

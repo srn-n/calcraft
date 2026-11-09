@@ -550,23 +550,43 @@
 /* ═════════ Exclusive themes: original characters drawn on the keys (art: src/ui/theme-art.js) ═════════ */
 /* Shared: the character sits on the left of the = key (the sign moves right), a motif marks each
    operator key, an accessory sits on AC, and the character waves from the header. */
-[data-exclusive] .key[data-id="eq"] {
-  background-image: var(--art-char); background-repeat: no-repeat; background-size: auto 82%; background-position: 10% 60%;
-  padding-left: 46%;
+[data-exclusive] .key[data-id="eq"] { padding-left: 46%; }
+/* The character is its own layer (::before) so it can move on its own: see src/ui/buddy.js. */
+[data-exclusive] .key[data-id="eq"]:not(.is-broken)::before {
+  content: ''; position: absolute; left: 6%; top: 9%; height: 82%; aspect-ratio: 1; pointer-events: none;
+  background: var(--art-char) center / contain no-repeat; transition: scale 120ms var(--out);
 }
+[data-exclusive] .key[data-id="eq"].is-down::before { scale: 1.08; }
 [data-exclusive] .key[data-kind="op"] {
   background-image: var(--art-op); background-repeat: no-repeat; background-size: 15px 15px; background-position: right 7px top 6px;
 }
 [data-exclusive] .key[data-id="ac"] {
   background-image: var(--art-ac); background-repeat: no-repeat; background-size: 20px 20px; background-position: right 7px top 6px;
 }
-[data-exclusive] .key[data-id="eq"].is-down { background-size: auto 88%; }
 [data-exclusive] .brand { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; }
 [data-exclusive] .brand::before {
   content: ''; grid-row: 1 / span 2; width: 36px; height: 36px; background: var(--art-char) center / contain no-repeat;
   animation: char-wave 2.6s var(--out) infinite;
 }
 @keyframes char-wave { 0%, 70%, 100% { transform: none; } 78% { transform: rotate(-8deg) translateY(-2px); } 86% { transform: rotate(6deg); } 94% { transform: rotate(-3deg); } }
+
+/* Left alone for a while, each character does its own thing (buddy.js sets data-bud-idle). */
+[data-bud-idle] :is(.key[data-id="eq"], .brand)::before { animation-duration: 3s; animation-timing-function: ease-in-out; animation-iteration-count: infinite; }
+[data-bud-idle="float"] :is(.key[data-id="eq"], .brand)::before { animation-name: bud-float; }
+[data-bud-idle="breathe"] :is(.key[data-id="eq"], .brand)::before { animation-name: bud-breathe; animation-duration: 4s; }
+[data-bud-idle="hang"] :is(.key[data-id="eq"], .brand)::before { animation-name: bud-hang; }
+[data-bud-idle="dance"] :is(.key[data-id="eq"], .brand)::before { animation-name: bud-dance; animation-duration: 1.1s; }
+[data-bud-idle="sleep"] :is(.key[data-id="eq"], .brand)::before { animation-name: bud-sleep; animation-duration: 3.6s; }
+@keyframes bud-float { 0%, 100% { transform: translateY(0) rotate(-4deg); } 50% { transform: translateY(-12%) rotate(5deg); } }
+@keyframes bud-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.06) translateY(-3%); } }
+@keyframes bud-hang { 0%, 100% { transform: rotate(180deg); } 25% { transform: rotate(188deg) translateX(-3%); } 75% { transform: rotate(172deg) translateX(3%); } }
+@keyframes bud-dance { 0%, 100% { transform: rotate(-10deg) translateY(0); } 25% { transform: rotate(0) translateY(-10%); } 50% { transform: rotate(10deg) translateY(0); } 75% { transform: rotate(0) translateY(-10%); } }
+@keyframes bud-sleep { 0%, 100% { transform: rotate(-12deg) scale(1, 1); } 50% { transform: rotate(-12deg) scale(1.04, .95) translateY(3%); } }
+/* Weaver hangs from a thread while upside down */
+[data-bud-idle="hang"] .key[data-id="eq"]::after {
+  content: ''; position: absolute; left: calc(6% + var(--key-h) * .41 - 1px); top: 0; width: 1.5px; height: 11%; background: var(--accent); opacity: .8; pointer-events: none;
+}
+
 html.reduce-motion [data-exclusive] .brand::before, html.reduce-motion[data-exclusive] .brand::before { animation: none; }
 @media (prefers-reduced-motion: reduce) { [data-exclusive] .brand::before { animation: none; } }
 

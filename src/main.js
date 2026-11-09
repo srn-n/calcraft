@@ -14,7 +14,8 @@ import { $, $$, h, reducedMotion } from './ui/dom.js';
 import { mountKeypad, keyboardAction, idForAction, flash, nope, setBroken, isBroken, setSecond, isSecond, setAngleLabel } from './ui/keypad.js';
 import { createDisplay } from './ui/display.js';
 import { createHistory } from './ui/history.js';
-import { applyTheme, createThemeSheet, createMenuSheet } from './ui/themes-ui.js';
+import { applyTheme, createThemeSheet, createMenuSheet, onThemeLanded } from './ui/themes-ui.js';
+import { setupBuddy, react, arrive } from './ui/buddy.js';
 import { createPalette } from './ui/palette.js';
 import { createTools } from './ui/tools.js';
 import { closePicker, isPickerOpen } from './ui/picker.js';
@@ -76,7 +77,7 @@ function setCalc(next, { record = true } = {}) {
 }
 
 /* ---------------- fx helpers ---------------- */
-const feedback = (kind) => { buzz(kind); play(kind); };
+const feedback = (kind, detail) => { buzz(kind); play(kind, detail); react(kind); };
 const shake = (el) => { el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); };
 
 async function copy(text) {
@@ -182,13 +183,13 @@ function dispatch(a, meta = {}) {
     }
   }
   if (S().view === 'games' && games.wantsKeys()) {
-    if (kind !== 'eq') feedback(kind);
+    if (kind !== 'eq') feedback(kind, a.tok);
     games.action(a, meta);
     return;
   }
   if (S().view === 'tools') return;
   if (S().view === 'games') return; // on the games menu, keys do nothing
-  if (kind !== 'eq') feedback(kind);
+  if (kind !== 'eq') feedback(kind, a.tok);
   calcAction(a);
   if (isSecond() && a.type === 'ins' && meta.kind === 'fn') setSecond(false);
 }
@@ -267,12 +268,12 @@ const history = createHistory({
   onClear: () => { store.set({ history: [] }); toast('Tape cleared'); },
 });
 
-function setTheme(id) {
-  const t = applyTheme(id);
+function setTheme(id, from) {
+  const t = applyTheme(id, { from });
   setSoundProfile(t.id);
   store.set({ theme: t.id });
   save('theme', t.id, 0);
-  play('eq');
+  play('theme');
 }
 const themeSheet = createThemeSheet({ getState: S, onTheme: setTheme });
 const menuSheet = createMenuSheet({
@@ -319,7 +320,8 @@ const tools = createTools($('#tools'), {
 });
 
 const games = createGames($('#games'), {
-  buzz, play, burst, toast, setBroken, isBroken,
+  buzz, burst, toast, setBroken, isBroken,
+  play: (k, d) => { play(k, d); if (k === 'win') react('win'); }, // the character cheers a win too
   shake,
   // The keypad only shows while a game runs; on the menu and intro it would just eat the screen.
   onPlayingChange: (on) => { $('#app').toggleAttribute('data-playing', on); },
@@ -521,6 +523,16 @@ function returnIn(instant = false) {
 
 /* ---------------- boot ---------------- */
 setupTyping();
+setupBuddy({ view: () => S().view });
+// The character makes its entrance where you can see it: right away, or as the theme sheet closes.
+let arrivePending = false;
+onThemeLanded(() => {
+  const open = document.querySelector('dialog[open]');
+  if (!open) { arrive(); return; }
+  if (arrivePending) return;
+  arrivePending = true;
+  open.addEventListener('close', () => { arrivePending = false; setTimeout(arrive, 120); }, { once: true });
+});
 const t = applyTheme(S().theme, { animate: false });
 setSoundProfile(t.id);
 render(S());

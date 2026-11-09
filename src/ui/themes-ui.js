@@ -12,13 +12,80 @@ export function isDarkColor(hex) {
 }
 
 // Theme switching must always land on the LAST theme picked, however fast someone taps.
-//  - `wanted` holds the latest choice; every pending swap applies that, never a stale one.
-//  - A running transition is skipped (not stacked), and rapid taps switch instantly without a
-//    transition at all, so nothing queues up, freezes, or swallows a tap.
+//  - `wanted` holds the latest choice; the swap always applies that, never a stale one.
+//  - A colour burst grows from the tap, the theme swaps underneath it while it covers the screen
+//    (so the expensive restyle is never seen), then the burst fades and the new theme bounces in.
+//    Only clip-path and opacity animate, never the whole page, so it stays smooth on slow phones.
+//  - Taps during the burst just retarget it; taps while it fades swap instantly.
 let wanted = null;
-let activeVT = null;
-let lastSwitch = -1e9;
-const RAPID_MS = 600;
+let wipe = null; // { el, swapped }
+const landers = new Set();
+
+/** Called after every animated theme change lands (the character, sound, etc. hook in here). */
+export const onThemeLanded = (fn) => landers.add(fn);
+
+/** Swap with every CSS transition suspended for that frame, so 40 keys don't each animate a colour. */
+// Lifting the class restyles the page once more, so after an animated switch it waits until the
+// burst has faded and nothing is moving.
+let restoreTimer = 0;
+function quickSwap(holdMs = 0) {
+  const d = document.documentElement;
+  d.classList.add('theme-swap');
+  swapTo(wanted);
+  clearTimeout(restoreTimer);
+  const lift = () => d.classList.remove('theme-swap');
+  if (holdMs) restoreTimer = setTimeout(lift, holdMs);
+  else requestAnimationFrame(() => requestAnimationFrame(lift));
+}
+
+const host = () => document.querySelector('dialog[open]') || document.body;
+
+function startWipe(from) {
+  const x = from?.x ?? innerWidth / 2, y = from?.y ?? innerHeight / 2;
+  const r = Math.ceil(Math.hypot(Math.max(x, innerWidth - x), Math.max(y, innerHeight - y))) + 2;
+  const el = document.createElement('div');
+  el.className = 'theme-wipe';
+  el.style.background = wanted.swatch.bg;
+  host().append(el);
+  const w = { el, swapped: false };
+  wipe = w;
+  const grow = el.animate(
+    [{ clipPath: `circle(0px at ${x}px ${y}px)` }, { clipPath: `circle(${r}px at ${x}px ${y}px)` }],
+    { duration: 340, easing: 'cubic-bezier(.3,.7,.2,1)', fill: 'forwards' });
+  grow.finished.catch(() => {}).then(() => {
+    quickSwap(900);
+    w.swapped = true;
+    // Two frames: let the restyle finish under the cover before anything moves again.
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      const fade = el.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 300, easing: 'ease-out', fill: 'forwards' });
+      land(from);
+      fade.finished.catch(() => {}).then(() => { el.remove(); if (wipe === w) wipe = null; });
+    }));
+  });
+}
+
+/** The bounce: the chosen card pops, and with no sheet open the keys ripple out from the tap. */
+function land(from) {
+  const card = document.querySelector(`.theme-card[data-theme-id="${wanted.id}"]`);
+  card?.animate([{ transform: 'scale(1)' }, { transform: 'scale(.9)' }, { transform: 'scale(1.06)' }, { transform: 'scale(.98)' }, { transform: 'scale(1)' }],
+    { duration: 560, easing: 'cubic-bezier(.3,.6,.3,1)' });
+  const sheet = document.querySelector('dialog[open]');
+  if (sheet) {
+    // The grid, not the sheet: transforming the sheet would re-anchor the fixed burst inside it.
+    sheet.querySelector('.theme-grid')?.animate([{ transform: 'none' }, { transform: 'translateY(6px) scaleY(.992)' }, { transform: 'translateY(-3px)' }, { transform: 'none' }],
+      { duration: 520, easing: 'ease-out' });
+  } else {
+    const ox = from?.x ?? innerWidth / 2, oy = from?.y ?? innerHeight / 2;
+    for (const k of document.querySelectorAll('#keypad .key')) {
+      const b = k.getBoundingClientRect();
+      if (!b.width) continue;
+      const delay = Math.min(260, Math.hypot(b.left + b.width / 2 - ox, b.top + b.height / 2 - oy) * 0.35);
+      k.animate([{ transform: 'scale(1)' }, { transform: 'scale(.86)' }, { transform: 'scale(1.05)' }, { transform: 'scale(1)' }],
+        { duration: 460, delay, easing: 'ease-out' });
+    }
+  }
+  for (const fn of landers) { try { fn(wanted); } catch { /* never break the switch */ } }
+}
 
 function swapTo(t) {
   const doc = document.documentElement;
@@ -47,26 +114,28 @@ function screenColour() {
   return '#' + [m[1], m[2], m[3]].map((n) => Number(n).toString(16).padStart(2, '0')).join('');
 }
 
-export function applyTheme(id, { animate = true } = {}) {
+export function applyTheme(id, { animate = true, from } = {}) {
   const t = themeById(id);
   wanted = t;
-  const now = performance.now();
-  const rapid = now - lastSwitch < RAPID_MS;
-  lastSwitch = now;
-
-  if (activeVT) {
-    try { activeVT.skipTransition(); } catch { /* already done */ }
+  if (!animate || reducedMotion()) {
+    if (wipe) { wipe.el.remove(); wipe = null; }
+    quickSwap();
+    if (animate) for (const fn of landers) { try { fn(t); } catch { /* ignore */ } }
+    return t;
   }
-  if (animate && !rapid && !activeVT && document.startViewTransition && !reducedMotion()) {
-    const vt = document.startViewTransition(() => swapTo(wanted));
-    activeVT = vt;
-    // Rapid switching skips transitions; their promises then reject with AbortError. Expected.
-    for (const p of [vt.ready, vt.updateCallbackDone]) p?.catch?.(() => {});
-    vt.finished.catch(() => {}).finally(() => { if (activeVT === vt) activeVT = null; });
-  } else {
-    swapTo(t);
-  }
+  if (wipe && !wipe.swapped) { wipe.el.style.background = t.swatch.bg; return t; } // still covering: lands on `wanted`
+  if (wipe) { quickSwap(900); land(from); return t; } // fading out: swap right away
+  startWipe(from);
   return t;
+}
+
+/** Load every theme font while the picker is open, so a switch never waits on a font. */
+let fontsWarm = false;
+function warmFonts() {
+  if (fontsWarm || !document.fonts) return;
+  fontsWarm = true;
+  const go = () => document.fonts.forEach((f) => { if (f.status === 'unloaded') f.load().catch(() => {}); });
+  if (window.requestIdleCallback) requestIdleCallback(go, { timeout: 1500 }); else setTimeout(go, 300);
 }
 
 function miniPreview(t) {
@@ -86,7 +155,10 @@ export function createThemeSheet({ getState, onTheme }) {
   const grid = $('#themeGrid');
 
   function card(t, cur) {
-    return h('button.theme-card', { 'aria-pressed': String(t.id === cur), 'data-theme-id': t.id, onclick: () => { onTheme(t.id); markPressed(); } },
+    return h('button.theme-card', { 'aria-pressed': String(t.id === cur), 'data-theme-id': t.id, onclick: (e) => {
+      const b = e.currentTarget.getBoundingClientRect();
+      onTheme(t.id, { x: b.left + b.width / 2, y: b.top + b.height / 2 }); markPressed();
+    } },
       miniPreview(t), h('span.theme-name', {}, t.name), h('span.theme-ref', {}, t.ref),
       t.exclusive ? h('span.theme-badge', {}, 'Exclusive') : null);
   }
@@ -108,7 +180,8 @@ export function createThemeSheet({ getState, onTheme }) {
   $('#themeShuffle').addEventListener('click', () => {
     const cur = getState().theme;
     const others = THEMES.filter((t) => t.id !== cur);
-    onTheme(others[Math.floor(Math.random() * others.length)].id);
+    const b = $('#themeShuffle').getBoundingClientRect();
+    onTheme(others[Math.floor(Math.random() * others.length)].id, { x: b.left + b.width / 2, y: b.top + b.height / 2 });
     markPressed();
   });
   dlg.addEventListener('click', (e) => {
@@ -116,7 +189,7 @@ export function createThemeSheet({ getState, onTheme }) {
   });
 
   return {
-    open() { renderGrid(); dlg.showModal(); grid.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true }); },
+    open() { renderGrid(); dlg.showModal(); warmFonts(); grid.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true }); },
     close() { dlg.close(); },
     isOpen: () => dlg.open,
   };

@@ -13,7 +13,7 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **9 = 1.0.4**).
+  **10 = 1.0.5**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
@@ -38,6 +38,11 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - 28 themes (`src/themes.js` + `src/styles/themes.css`), each with its own synthesised sound
   (`src/fx/sound.js`). Five are **Exclusive** (Nova, Kage, Weaver, Starla, Mochi), with original characters drawn as SVG in
   `src/ui/theme-art.js`. `tests/themes.test.js` keeps every theme complete.
+- Exclusive themes also have a full signature sound set (`src/fx/signature.js`: digits play notes,
+  plus op/AC/=/error sounds and a theme jingle) and a living character (`src/ui/buddy.js`: reacts
+  to keys, celebrates =, idles after 12 s). The = key character is a `::before` so it can move.
+- Theme switching (`applyTheme` in `src/ui/themes-ui.js`) uses a colour burst from the tap that hides
+  the restyle, then a bounce. No full-page View Transition.
 - Removed themes go in `RENAMED` (`src/themes.js`), so saved choices migrate instead of resetting.
 - The ☰ menu (`#menuSheet`) holds the settings, feedback and legal sections. The palette button
   (`#themeSheet`) holds only themes.
@@ -59,6 +64,9 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - Don't hide UI controls with container queries on short displays. Shrink them instead (the
   DEG/RAD and Paste chips vanished in scientific mode before 1.0.4).
 - Never fade the app fully out when leaving: Android snapshots that moment for recent apps.
+- A full-page View Transition plus 40 keys animating their colours made theme switching freeze for
+  300 to 600 ms on phones (1.0.4). Swap themes under a cover with transitions suspended, and
+  animate only transform, opacity and clip-path.
 
 ## Release log
 - 1.0.0 (code 5): first closed-test build.
@@ -71,3 +79,5 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - 1.0.4 (code 9): chips always visible (they were hidden on short displays); Exclusive badge moved
   to the card corner; Neon Tokyo replaced by Night Weaver (Exclusive); no blank recents snapshot;
   typing comfort (`src/ui/typing.js`). See `docs/releases/1.0.4.md`.
+- 1.0.5 (code 10): smooth, bouncy theme switching (burst + bounce, no view transition); Exclusive
+  signature sound sets; living characters that react, celebrate and idle. See `docs/releases/1.0.5.md`.

@@ -569,8 +569,6 @@ html.reduce-motion :is(.bill-row, .bill-row.is-enter, .bill-row.is-saved, .bill-
 .picker-list li[aria-selected="true"] { background: var(--accent); color: var(--on-accent); }
 .picker-list li[aria-selected="true"]::after { content: ''; width: 5px; height: 10px; border: solid currentColor; border-width: 0 2px 2px 0; transform: rotate(45deg) translate(-2px, -1px); }
 
-/* Taps go straight through to the page during a theme transition, so none are swallowed. */
-::view-transition { pointer-events: none; }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .row-3 { display: grid; grid-template-columns: 1fr auto 1fr; gap: 8px; align-items: end; }
 .range { width: 100%; accent-color: var(--accent); }
@@ -684,7 +682,14 @@ html.reduce-motion *, html.reduce-motion *::before, html.reduce-motion *::after 
 html.reduce-motion .caret, html.reduce-motion .fx-overlay { animation: none !important; }
 
 /* Smooth theme cross-fade (View Transitions API) */
-::view-transition-old(root), ::view-transition-new(root) { animation-duration: 380ms; }
+/* Theme switch: a colour burst from the tap covers the restyle (themes-ui.js). In the open picker it
+   sits above the backdrop but under the cards (z-index -1 inside the dialog's top layer). */
+.theme-wipe { position: fixed; inset: 0; z-index: 59; pointer-events: none; clip-path: circle(0px at 50% 50%); }
+dialog > .theme-wipe { z-index: -1; }
+/* Exclusive characters' effects (buddy.js): small, short-lived, never in the way of a tap. */
+.buddy-layer { position: fixed; inset: 0; z-index: 58; pointer-events: none; overflow: hidden; contain: strict; }
+.buddy-fx { position: absolute; background: center / contain no-repeat; font: 800 16px/1 var(--font-display); text-align: center; will-change: transform, opacity; }
+html.theme-swap *, html.theme-swap *::before, html.theme-swap *::after { transition: none !important; }
 
 /* ============ Phones ============ */
 html { overscroll-behavior: none; } /* no pull-to-refresh / rubber-band while swiping the keypad */
