@@ -19,17 +19,19 @@ describe('theme catalogue', () => {
       expect(sound, `${t.id} sound`).toMatch(new RegExp(`\\n\\s+${t.id}:\\s+\\{ num:`));
     }
   });
-  it('the four exclusive themes each have character, operator and AC art', () => {
+  it('the five exclusive themes each have character, operator and AC art', () => {
     const ex = THEMES.filter((t) => t.exclusive).map((t) => t.id);
-    expect(ex).toEqual(['astro', 'ronin', 'pinkpop', 'kitten']);
+    expect(ex).toEqual(['astro', 'ronin', 'weaver', 'pinkpop', 'kitten']);
     for (const id of ex) for (const k of ['char', 'op', 'ac']) expect(ART[id][k]).toMatch(/^<svg [^>]*viewBox="0 0 64 64">[\s\S]*<\/svg>$/);
     // art is static vector drawing only: nothing that could run or load anything
     for (const id of ex) for (const k of ['char', 'op', 'ac']) expect(ART[id][k]).not.toMatch(/script|href|on\w+=|url\(|foreignObject/i);
   });
-  it('Solar LCD is gone and anyone who had it lands on Neon Tokyo', () => {
-    expect(THEMES.find((t) => t.id === 'lcd')).toBeUndefined();
-    expect(css).not.toContain('[data-theme="lcd"]');
-    expect(themeById('lcd').id).toBe('neon');
+  it('Solar LCD and Neon Tokyo are gone; anyone who had them lands on Night Weaver', () => {
+    for (const old of ['lcd', 'neon']) {
+      expect(THEMES.find((t) => t.id === old)).toBeUndefined();
+      expect(css).not.toContain(`[data-theme="${old}"]`);
+      expect(themeById(old).id).toBe('weaver');
+    }
     expect(themeById('nope').id).toBe(THEMES[0].id);
   });
 });

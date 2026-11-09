@@ -12,7 +12,7 @@ Bouncy Calculator
 
 A calculator is a simple tool. Bouncy Calculator makes it a joy to use.
 
-Every key bounces. The answer appears while you type. Swipe the display to delete, pull it down to clear, and pull it up to see everything you've worked out today. Pick from 28 themes. 24 are modelled on real objects: a 1987 Braun pocket calculator, a Swiss railway clock, a green-screen terminal, an Apollo flight computer, a typewriter, the neon of night-time Tokyo and more. Four Exclusive themes put original characters right on the keys: Nova the little astronaut, Kage the neon ronin, Starla the pop star and Mochi the sleepy kitten.
+Every key bounces. The answer appears while you type. Swipe the display to delete, pull it down to clear, and pull it up to see everything you've worked out today. Pick from 28 themes. 23 are modelled on real objects: a 1987 Braun pocket calculator, a Swiss railway clock, a green-screen terminal, an Apollo flight computer, a typewriter and more. Five Exclusive themes put original characters right on the keys: Nova the little astronaut, Kage the ronin, Weaver the masked wall-climber, Starla the pop star and Mochi the sleepy kitten.
 
 **A calculator that understands you**
 • See the answer as you type, before you press =

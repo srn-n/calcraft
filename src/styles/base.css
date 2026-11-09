@@ -140,7 +140,9 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 }
 .display-meta { position: absolute; top: 12px; left: 14px; right: 14px; display: flex; gap: 6px; align-items: center; }
 .chip {
-  position: relative; border: 1px solid var(--display-border); background: transparent; color: var(--display-muted); cursor: pointer;
+  /* Mixed toward the display's text colour so the chips stay visible on very dark or very light displays. */
+  position: relative; border: 1px solid color-mix(in srgb, var(--display-border) 55%, var(--display-text) 25%);
+  background: transparent; color: color-mix(in srgb, var(--display-muted) 60%, var(--display-text) 40%); cursor: pointer;
   font: 700 10px/1 var(--font-mono); letter-spacing: .12em; padding: 5px 8px; border-radius: var(--r-chip);
 }
 #angleChip::after, #pasteChip::after { content: ''; position: absolute; inset: -12px -3px; } /* 21px chip → 45px touch target */
@@ -192,9 +194,18 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   .display.is-evaluated .result { font-size: calc(var(--fit, 1) * var(--fs-scale) * clamp(28px, 9vw, 40px)); }
   .meta-hint { display: none; }
 }
+@container display (max-height: 150px) {
+  /* Short display (scientific mode, smaller phones, Voyager): keep DEG/RAD and Paste, just smaller.
+     They used to disappear here, which made them look missing in scientific mode and in Voyager. */
+  .display-meta { top: 8px; left: 10px; gap: 5px; }
+  .chip { padding: 3px 6px; font-size: 9px; }
+  .chip-paste { padding: 2px 6px; }
+  .chip-paste svg { width: 11px; height: 11px; }
+}
 @container display (max-height: 96px) {
-  /* Tiny display: no room for the chip row. DEG/RAD is still on its own key in the fx panel. */
-  .display-meta { display: none; }
+  .display-meta { top: 5px; left: 8px; gap: 4px; }
+  .chip { padding: 2px 5px; font-size: 8px; }
+  .chip-paste svg { width: 10px; height: 10px; }
   .expr { font-size: min(calc(var(--fit, 1) * var(--fs-scale) * 24px), 26px); }
   .result { font-size: min(calc(var(--fs-scale) * 15px), 17px); }
 }
@@ -493,6 +504,8 @@ dialog.is-closing { pointer-events: none; }
   color: var(--display-text); border-radius: 12px; padding: 10px 12px; font: 500 14px/1.45 var(--font-ui);
 }
 .bill-notes { background: var(--surface); min-height: 96px; }
+.bill-editor textarea, .bill-notes { resize: none; overflow-y: hidden; transition: height 160ms ease-out; } /* grows with its text (typing.js) */
+.field input { transition: font-size 120ms ease-out; }
 .bill-history { display: grid; gap: 3px; font: 500 12px var(--font-mono); color: var(--display-muted); }
 .bill-history small { font: 700 9px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
 .bill-delete { margin-right: auto; }
@@ -505,9 +518,11 @@ html.reduce-motion :is(.bill-row, .bill-row.is-enter, .bill-row.is-saved, .bill-
 }
 .theme-section small { font: 500 11px var(--font-mono); letter-spacing: 0; text-transform: none; color: var(--muted); }
 .theme-section:first-child { margin-top: 0; }
+/* Exclusive badge pinned to the card's bottom-right corner, so every theme name lines up the same */
+.theme-card:has(.theme-badge) { position: relative; padding-bottom: 26px; }
 .theme-badge {
-  display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 99px; vertical-align: 2px;
-  background: var(--accent); color: var(--on-accent); font: 800 8px var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
+  position: absolute; right: 8px; bottom: 8px; padding: 3px 7px; border-radius: 99px;
+  background: var(--accent); color: var(--on-accent); font: 800 8px/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
 }
 /* ☰ Menu sheet */
 .menu-section { margin: 14px 2px 2px; font: 800 12px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }

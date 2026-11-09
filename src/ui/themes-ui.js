@@ -87,7 +87,8 @@ export function createThemeSheet({ getState, onTheme }) {
 
   function card(t, cur) {
     return h('button.theme-card', { 'aria-pressed': String(t.id === cur), 'data-theme-id': t.id, onclick: () => { onTheme(t.id); markPressed(); } },
-      miniPreview(t), h('span.theme-name', {}, t.name, t.exclusive ? h('span.theme-badge', {}, 'Exclusive') : null), h('span.theme-ref', {}, t.ref));
+      miniPreview(t), h('span.theme-name', {}, t.name), h('span.theme-ref', {}, t.ref),
+      t.exclusive ? h('span.theme-badge', {}, 'Exclusive') : null);
   }
   function renderGrid() {
     const cur = getState().theme;

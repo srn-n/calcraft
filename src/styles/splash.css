@@ -206,11 +206,16 @@ html.app-in .app { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 240ms bo
 @media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 300ms both; } }
 @keyframes app-in { from { transform: scale(.975) translateY(6px); opacity: 0; } }
 
-/* ---- Android app: leaving with Back, and coming back ---- */
+/* ---- Android app: leaving with Back ----
+   A short settle (slight shrink and dim) as the app goes to the background. It never fades fully
+   out: Android takes the recent-apps snapshot right then, and a blank snapshot flashed when you
+   reopened the app. The app snaps back to normal as soon as it's in the background (no return
+   animation), so the snapshot and the live app match. */
 html.app-out .app, html.app-out .side {
-  transition: transform 220ms cubic-bezier(.4, 0, 1, 1), opacity 200ms cubic-bezier(.4, 0, 1, 1);
-  transform: scale(.965); opacity: 0;
+  transition: transform 180ms cubic-bezier(.4, 0, 1, 1), opacity 180ms cubic-bezier(.4, 0, 1, 1);
+  transform: scale(.975); opacity: .7;
 }
+html.no-anim .app, html.no-anim .app > *, html.no-anim .side { transition: none !important; animation: none !important; }
 html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
 
 /* ---- Phones (the calculator body fills the screen) ----
@@ -224,8 +229,8 @@ html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both
   html.app-in .app > * { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 240ms both; }
   html.app-out .app { transition: none; transform: none; opacity: 1; }
   html.app-out .app > * {
-    transition: transform 220ms cubic-bezier(.4, 0, 1, 1), opacity 200ms cubic-bezier(.4, 0, 1, 1);
-    transform: scale(.97); opacity: 0;
+    transition: transform 180ms cubic-bezier(.4, 0, 1, 1), opacity 180ms cubic-bezier(.4, 0, 1, 1);
+    transform: scale(.975); opacity: .7;
   }
   html.app-return .app { animation: none; }
   html.app-return .app > * { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both; }

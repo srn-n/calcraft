@@ -18,6 +18,7 @@ import { applyTheme, createThemeSheet, createMenuSheet } from './ui/themes-ui.js
 import { createPalette } from './ui/palette.js';
 import { createTools } from './ui/tools.js';
 import { closePicker, isPickerOpen } from './ui/picker.js';
+import { setupTyping } from './ui/typing.js';
 import { createGames, GAMES } from './ui/games/index.js';
 import { toast } from './ui/toast.js';
 import { sendFeedback } from './ui/feedback.js';
@@ -499,17 +500,27 @@ function outro() {
   d.classList.add('app-out');
   return true;
 }
-function returnIn() {
+/** Back to normal after leaving. `instant` (used as soon as the app is in the background) skips
+ *  any animation, so the recent-apps snapshot and the reopened app look identical: no flash. */
+function returnIn(instant = false) {
   const d = document.documentElement;
   if (!d.classList.contains('app-out')) return false;
+  if (instant || reducedMotion()) {
+    d.classList.add('no-anim');
+    d.classList.remove('app-out', 'app-return');
+    void d.offsetWidth; // apply the reset now, without transitions
+    requestAnimationFrame(() => d.classList.remove('no-anim'));
+    setTimeout(() => d.classList.remove('no-anim'), 120); // rAF may not run in the background
+    return true;
+  }
   d.classList.remove('app-out');
-  if (reducedMotion()) return true;
   d.classList.add('app-return');
   setTimeout(() => d.classList.remove('app-return'), 600);
   return true;
 }
 
 /* ---------------- boot ---------------- */
+setupTyping();
 const t = applyTheme(S().theme, { animate: false });
 setSoundProfile(t.id);
 render(S());

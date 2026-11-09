@@ -57,6 +57,19 @@ export const ART = {
     ac: S(`<path d="M32 52S10 38 10 23.5C10 15 20 10 26.5 16.5L32 22l5.5-5.5C44 10 54 15 54 23.5 54 38 32 52 32 52z" fill="#fff0f6" stroke="#b0175e" stroke-width="3" stroke-linejoin="round"/>`),
   },
 
+  // Weaver, a masked wall-climber (original design: cowl, visor band, amber eyes, hex emblem)
+  weaver: {
+    char: S(`
+      <path d="M12 62q20-12 40 0v2H12z" fill="#13224a" stroke="#2ee6c5" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M14 30Q14 7 32 7Q50 7 50 30Q50 48 32 57Q14 48 14 30z" fill="#0d1830" stroke="#2ee6c5" stroke-width="2.5" stroke-linejoin="round"/>
+      <path d="M16 27h32l-3 10H19z" fill="#123b4a" stroke="#2ee6c5" stroke-width="2" stroke-linejoin="round"/>
+      <path d="M21 30l8 2.5-8 2.2zM43 30l-8 2.5 8 2.2z" fill="#ffb020"/>
+      <path d="M32 12.5l4 2.3v4.6L32 21.7l-4-2.3v-4.6z" fill="#2ee6c5"/>
+      <path d="M27 46q5 3 10 0" stroke="#2ee6c5" stroke-width="2" fill="none" stroke-linecap="round"/>`),
+    op: S(`<path d="M60 4H10M60 4L14 26M60 4L24 44M60 4L42 54M60 4v52" stroke="#2ee6c5" stroke-width="2.4" stroke-linecap="round"/><path d="M46 4q2 12 14 14M32 4q4 24 28 28M18 4q6 38 42 42" stroke="#2ee6c5" stroke-width="2" fill="none"/>`),
+    ac: S(`<path d="M32 2v22" stroke="#1a1000" stroke-width="2.4"/><ellipse cx="32" cy="36" rx="9" ry="10" fill="#0d1830" stroke="#1a1000" stroke-width="2.4"/><path d="M24 31l-10-6M23.5 37H11M25 43l-9 7M40 31l10-6M40.5 37H53M39 43l9 7" stroke="#1a1000" stroke-width="2.6" stroke-linecap="round"/><circle cx="29" cy="34" r="2" fill="#ffb020"/><circle cx="35" cy="34" r="2" fill="#ffb020"/>`),
+  },
+
   // Mochi, a sleepy kitten
   kitten: {
     char: S(`

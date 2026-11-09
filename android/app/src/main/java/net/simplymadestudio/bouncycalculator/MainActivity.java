@@ -530,17 +530,18 @@ public class MainActivity extends Activity {
 
     private void goHome() {
         leaving = false;
-        if (!moveTaskToBack(true)) {
-            returnIn();
-            finish();
-        }
+        boolean moved = moveTaskToBack(true);
+        // Snap the page back to normal straight away (no animation), so the recent-apps snapshot
+        // and the reopened app match and nothing flashes when it comes back.
+        returnIn();
+        if (!moved) finish();
     }
 
-    /** Fade the page back in after leaving with Back. */
+    /** Undo the leaving animation instantly. */
     private void returnIn() {
         if (!outroShown || web == null) return;
         outroShown = false;
-        web.evaluateJavascript("window.bouncy && window.bouncy.returnIn && window.bouncy.returnIn()", null);
+        web.evaluateJavascript("window.bouncy && window.bouncy.returnIn && window.bouncy.returnIn(true)", null);
     }
 
     /* ---------------------------------------------------------------- lifecycle */

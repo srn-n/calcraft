@@ -51,7 +51,7 @@ const VOICES = {
   clay:      { num: V('triangle', 520, 360, 42, 0.1, 0.25, 2500), op: V('triangle', 420, 290, 52, 0.1, 0.25, 2200), eq: V('triangle', 330, 520, 120, 0.1) },                // wood knock
   te:        { num: V('square', 988, 988, 34, 0.03, 0, 4000), op: V('square', 740, 740, 38, 0.03, 0, 4000), eq: V('square', 659, 1319, 120, 0.03, 0, 5000) },                 // synth chip
   voyager:   { num: V('triangle', 1800, 900, 22, 0.07, 0.7, 7000), op: V('triangle', 1400, 700, 26, 0.07, 0.7, 6000), eq: V('square', 1200, 1200, 70, 0.025, 0, 3000) },     // firm HP click
-  neon:      { num: V('sawtooth', 880, 1320, 30, 0.035, 0, 2600), op: V('sawtooth', 660, 990, 36, 0.035, 0, 2400), eq: V('sawtooth', 523, 1046, 150, 0.03, 0, 3200, 1568) }, // synth sign buzz
+  weaver:    { num: V('triangle', 1600, 700, 22, 0.06, 0.7, 6000), op: V('triangle', 1300, 560, 26, 0.06, 0.7, 5500), eq: V('sine', 900, 300, 180, 0.07, 0.5, 4000, 1800) }, // quick swish, deep swoop
   phosphor:  { num: V('sine', 1050, 1050, 28, 0.05, 0, 0, 2100), op: V('sine', 800, 800, 34, 0.05, 0, 0, 1600), eq: V('square', 523, 784, 140, 0.025, 0, 2500) },             // terminal blip
   brutal:    { num: V('triangle', 210, 110, 48, 0.17, 0.5, 1800), op: V('triangle', 170, 95, 58, 0.17, 0.5, 1600), eq: V('triangle', 130, 260, 120, 0.15, 0.2, 1500) },      // heavy thock
   bauhaus:   { num: V('triangle', 720, 520, 36, 0.09, 0.2, 3500), op: V('triangle', 560, 400, 44, 0.09, 0.2, 3000), eq: V('sine', 523, 784, 160, 0.08, 0, 0, 659) },          // wooden block
