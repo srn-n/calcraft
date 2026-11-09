@@ -13,7 +13,7 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **7 = 1.0.2**).
+  **8 = 1.0.3**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
@@ -35,8 +35,12 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - The strict CSP is in `vercel.json`. The inline theme script in `index.html` is allowed by its SHA-256
   hash: if you edit that script, update the hash (the tests print it).
 - All saved data is validated on load (`src/core/schema.js`). Keep that pattern for new features.
-- 24 themes (`src/themes.js` + `src/styles/themes.css`), each with its own synthesised sound
-  (`src/fx/sound.js`).
+- 28 themes (`src/themes.js` + `src/styles/themes.css`), each with its own synthesised sound
+  (`src/fx/sound.js`). Four are **Exclusive**, with original characters drawn as SVG in
+  `src/ui/theme-art.js`. `tests/themes.test.js` keeps every theme complete.
+- Removed themes go in `RENAMED` (`src/themes.js`), so saved choices migrate instead of resetting.
+- The ☰ menu (`#menuSheet`) holds the settings, feedback and legal sections. The palette button
+  (`#themeSheet`) holds only themes.
 
 ## Gotchas learned the hard way
 - On phones, `.app` (the device body) fills the screen. Never fade `.app` itself, and paint
@@ -49,9 +53,14 @@ Quick reference for anyone (or any AI session) picking this project up. Keep it 
 - In the Android app, clipboard, haptics and sound mode go through the bridge. Web APIs for these are
   no-ops in WebView.
 
+- Never use third-party characters or brands (Marvel, Disney, Mattel and so on) in themes or store
+  assets. Play rejects or pulls them; use original characters instead.
+
 ## Release log
 - 1.0.0 (code 5): first closed-test build.
 - 1.0.1 (code 6): theme sounds, vibration levels, themed dropdowns, in-app licences, splash, theme-switch
   and Tools-tab fixes.
 - 1.0.2 (code 7): theme blink fix, sound follows sound mode, paste button, Bills tracker. See
   `docs/releases/1.0.2.md`.
+- 1.0.3 (code 8): Solar LCD replaced by Neon Tokyo; 4 Exclusive character themes (28 total); ☰ menu
+  holds the settings; faster Bills taps. See `docs/releases/1.0.3.md`.

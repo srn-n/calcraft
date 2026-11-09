@@ -14,8 +14,8 @@ export const THEMES = [
     swatch: { bg: '#d9d9d6', key: '#f2f2f0', op: '#2a2a2a', accent: '#ff4f00', text: '#1b1b1b' } },
   { id: 'voyager', square: true, name: 'Voyager', ref: 'HP-12C, 1981', label: 'VOYAGER · 12C', scheme: 'dark', sound: 'click',
     swatch: { bg: '#2b241d', key: '#1a1714', op: '#1a1714', accent: '#c8a35a', text: '#e9e3d6' } },
-  { id: 'lcd', square: true, name: 'Solar LCD', ref: 'Casio desk calculators', label: 'SOLAR CELL · SL-300', scheme: 'light', sound: 'beep',
-    swatch: { bg: '#b9bcc0', key: '#3a3d42', op: '#55595f', accent: '#d9472b', text: '#c7cdb6' } },
+  { id: 'neon', name: 'Neon Tokyo', ref: 'Shibuya at night · glass, hot pink and cyan signs', label: 'SHIBUYA · 25:00', scheme: 'dark', sound: 'blip',
+    swatch: { bg: '#0a0612', key: '#1a1026', op: '#14233a', accent: '#ff2bd6', text: '#29f0ff' } },
   { id: 'phosphor', square: true, name: 'Phosphor', ref: 'VT100 green-screen terminals', label: 'TTY0 · 9600 BAUD', scheme: 'dark', sound: 'blip',
     swatch: { bg: '#030a05', key: '#06140a', op: '#06140a', accent: '#39ff7a', text: '#39ff7a' } },
   { id: 'brutal', name: 'Brutal', ref: 'Neo-brutalist web design', label: 'CALC™ NO.5', scheme: 'light', sound: 'thock',
@@ -51,6 +51,18 @@ export const THEMES = [
     swatch: { bg: '#4a4f52', key: '#d9dad3', op: '#c4c5bd', accent: '#ffb84d', text: '#6dff7a' } },
   { id: 'paperback', name: 'Paperback', ref: 'Classic 1935 paperback cover grid · orange bands', label: 'No. 1 · SIXPENCE', scheme: 'light', sound: 'click', square: true,
     swatch: { bg: '#fbf8f0', key: '#fbf8f0', op: '#ef7d00', accent: '#141414', text: '#141414' } },
+
+  // ── Exclusive: original characters by Simply Made Studio, drawn on the keys (src/ui/theme-art.js) ──
+  { id: 'astro', exclusive: true, name: 'Nova in Orbit', ref: 'Nova the little astronaut · stars on every key', label: 'NOVA · ORBIT 01', scheme: 'dark', sound: 'blip',
+    swatch: { bg: '#0b1030', key: '#1a2356', op: '#24307a', accent: '#ff7a3d', text: '#e8ecff' } },
+  { id: 'ronin', exclusive: true, name: 'Neon Ronin', ref: 'Kage the ronin · crescent helm, katana keys', label: '影 · KAGE', scheme: 'dark', sound: 'wood',
+    swatch: { bg: '#0e0612', key: '#1b0d24', op: '#2a1238', accent: '#ff2e63', text: '#3cf2ff' } },
+  { id: 'pinkpop', exclusive: true, name: 'Pink Pop', ref: 'Starla the pop star · heart shades, sparkles', label: 'STARLA ♡ POP', scheme: 'light', sound: 'tick',
+    swatch: { bg: '#ffe3ef', key: '#ffffff', op: '#ffc2dc', accent: '#ff4f9a', text: '#8a1f55' } },
+  { id: 'kitten', exclusive: true, name: 'Mochi Kitten', ref: 'Mochi the sleepy kitten · paw-print keys', label: 'MOCHI · NAP TIME', scheme: 'light', sound: 'wood',
+    swatch: { bg: '#fdf1e4', key: '#fffdf9', op: '#ffd9cf', accent: '#f29fb0', text: '#5b3a2a' } },
 ];
 
-export const themeById = (id) => THEMES.find((t) => t.id === id) || THEMES[0];
+// Removed themes map to their replacements, so a saved choice never falls back to the default.
+const RENAMED = { lcd: 'neon' };
+export const themeById = (id) => THEMES.find((t) => t.id === (RENAMED[id] || id)) || THEMES[0];

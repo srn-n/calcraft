@@ -234,8 +234,8 @@ html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both
 /* ---- Theme touches ---- */
 [data-theme="phosphor"] :is(.splash-display, .splash-word, .splash-intro-name) { text-shadow: 0 0 8px rgba(57,255,122,.7); }
 [data-theme="phosphor"] .splash-num::before { content: '> '; }
-[data-theme="lcd"] .splash-display::before, [data-theme="dsky"] .splash-display::before { content: '888'; position: absolute; right: 12px; bottom: 10px; opacity: .07; }
-[data-theme="lcd"] .splash-display small, [data-theme="dsky"] .splash-display small { display: none; }
+[data-theme="dsky"] .splash-display::before { content: '888'; position: absolute; right: 12px; bottom: 10px; opacity: .07; }
+[data-theme="dsky"] .splash-display small { display: none; }
 [data-theme="dsky"] .splash-display { text-shadow: 0 0 8px rgba(109,255,122,.45); }
 [data-theme="arcade"] .splash-word { font-size: 18px; }
 [data-theme="arcade"] .splash-intro-name { font-size: 16px; line-height: 1.6; }

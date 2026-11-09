@@ -14,7 +14,7 @@ import { $, $$, h, reducedMotion } from './ui/dom.js';
 import { mountKeypad, keyboardAction, idForAction, flash, nope, setBroken, isBroken, setSecond, isSecond, setAngleLabel } from './ui/keypad.js';
 import { createDisplay } from './ui/display.js';
 import { createHistory } from './ui/history.js';
-import { applyTheme, createThemeSheet } from './ui/themes-ui.js';
+import { applyTheme, createThemeSheet, createMenuSheet } from './ui/themes-ui.js';
 import { createPalette } from './ui/palette.js';
 import { createTools } from './ui/tools.js';
 import { closePicker, isPickerOpen } from './ui/picker.js';
@@ -273,9 +273,9 @@ function setTheme(id) {
   save('theme', t.id, 0);
   play('eq');
 }
-const themeSheet = createThemeSheet({
+const themeSheet = createThemeSheet({ getState: S, onTheme: setTheme });
+const menuSheet = createMenuSheet({
   getState: S,
-  onTheme: setTheme,
   onSetting: (key, val) => store.set({ settings: { ...S().settings, [key]: val } }),
   onSettings: (patch) => store.set({ settings: { ...S().settings, ...patch } }),
   preview: { sound: () => play('eq'), vibrate: () => buzz('eq') },
@@ -291,7 +291,8 @@ const palette = createPalette({
     { title: 'Toggle scientific panel', keys: 'F', run: () => store.set({ sci: !S().sci }) },
     { title: 'Toggle degrees / radians', keys: 'D', run: toggleAngle },
     { title: 'Open history tape', keys: 'H', run: () => history.open() },
-    { title: 'Open themes & settings', run: () => themeSheet.open() },
+    { title: 'Open themes', run: () => themeSheet.open() },
+    { title: 'Open settings', run: () => menuSheet.open() },
     { title: 'Copy result', keys: 'Ctrl C', run: () => { const v = currentValue(); if (v != null) copy(toExpr(v)); } },
     { title: 'Undo', keys: 'Ctrl Z', run: () => doUndo(-1) },
     { title: 'Redo', keys: 'Ctrl Y', run: () => doUndo(1) },
@@ -340,7 +341,7 @@ $('#feedbackBtn').addEventListener('click', openFeedback);
 $$('.tabs [role="tab"]').forEach((b) => b.addEventListener('click', () => { setView(b.dataset.view); buzz('fn'); }));
 $('#btnHistory').addEventListener('click', () => history.toggle());
 $('#btnTheme').addEventListener('click', () => themeSheet.open());
-$('#btnMenu').addEventListener('click', () => palette.open());
+$('#btnMenu').addEventListener('click', () => menuSheet.open()); // Ctrl+K still opens the command palette
 $('#angleChip').addEventListener('click', toggleAngle);
 
 /* ---------------- keyboard & paste ---------------- */

@@ -1,6 +1,7 @@
 // Theme picker sheet + settings toggles.
 import { $, h, reducedMotion } from './dom.js';
 import { THEMES, themeById } from '../themes.js';
+import { applyArt, charUrl } from './theme-art.js';
 
 /** Light status-bar icons only when they out-contrast dark ones (WCAG luminance below ~0.18). */
 export function isDarkColor(hex) {
@@ -22,6 +23,7 @@ const RAPID_MS = 600;
 function swapTo(t) {
   const doc = document.documentElement;
   doc.dataset.theme = t.id;
+  applyArt(t.id);
   $('#themeLabel').textContent = t.label;
   const meta = document.querySelector('meta[name="theme-color"]');
   const bg = screenColour() || getComputedStyle(doc).getPropertyValue('--bg').trim() || t.swatch.bg;
@@ -71,29 +73,61 @@ function miniPreview(t) {
   const s = t.swatch;
   const keys = Array.from({ length: 12 }, (_, i) => {
     const bg = i === 11 ? s.accent : i % 4 === 3 ? s.op : s.key;
-    return h('i', { style: { background: bg, borderRadius: t.square ? '3px' : '99px', border: s.key.startsWith('rgba') || s.key === s.bg ? `1px solid ${s.op}` : '0' } });
+    const art = i === 11 && t.exclusive ? { backgroundImage: charUrl(t.id), backgroundSize: 'contain', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' } : {};
+    return h('i', { style: { background: bg, ...art, borderRadius: t.square ? '3px' : '99px', border: s.key.startsWith('rgba') || s.key === s.bg ? `1px solid ${s.op}` : '0' } });
   });
   return h('div.mini', { style: { background: s.bg } },
     h('div.mini-display', { style: { background: t.scheme === 'dark' ? 'rgba(255,255,255,.06)' : 'rgba(0,0,0,.07)', color: s.text === s.bg ? s.key : (t.scheme === 'dark' ? s.text : '#222') } }, '1,337'),
     h('div.mini-keys', {}, keys));
 }
 
-export function createThemeSheet({ getState, onTheme, onSetting, onSettings, preview }) {
+export function createThemeSheet({ getState, onTheme }) {
   const dlg = $('#themeSheet');
   const grid = $('#themeGrid');
-  const settingsEl = $('#settings');
 
+  function card(t, cur) {
+    return h('button.theme-card', { 'aria-pressed': String(t.id === cur), 'data-theme-id': t.id, onclick: () => { onTheme(t.id); markPressed(); } },
+      miniPreview(t), h('span.theme-name', {}, t.name, t.exclusive ? h('span.theme-badge', {}, 'Exclusive') : null), h('span.theme-ref', {}, t.ref));
+  }
   function renderGrid() {
     const cur = getState().theme;
-    grid.replaceChildren(...THEMES.map((t) =>
-      h('button.theme-card', { 'aria-pressed': String(t.id === cur), 'data-theme-id': t.id, onclick: () => { onTheme(t.id); markPressed(); } },
-        miniPreview(t), h('span.theme-name', {}, t.name), h('span.theme-ref', {}, t.ref))));
+    const ex = THEMES.filter((t) => t.exclusive), std = THEMES.filter((t) => !t.exclusive);
+    grid.replaceChildren(
+      h('h3.theme-section', {}, 'Exclusive', h('small', {}, 'Original characters on the keys')),
+      ...ex.map((t) => card(t, cur)),
+      h('h3.theme-section', {}, 'Classic', h('small', {}, `${std.length} themes inspired by real objects`)),
+      ...std.map((t) => card(t, cur)));
   }
 
   function markPressed() {
     const cur = getState().theme;
     for (const b of grid.querySelectorAll('.theme-card')) b.setAttribute('aria-pressed', String(b.dataset.themeId === cur));
   }
+
+  $('#themeShuffle').addEventListener('click', () => {
+    const cur = getState().theme;
+    const others = THEMES.filter((t) => t.id !== cur);
+    onTheme(others[Math.floor(Math.random() * others.length)].id);
+    markPressed();
+  });
+  dlg.addEventListener('click', (e) => {
+    if (e.target === dlg || e.target.closest('[data-close]')) dlg.close();
+  });
+
+  return {
+    open() { renderGrid(); dlg.showModal(); grid.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true }); },
+    close() { dlg.close(); },
+    isOpen: () => dlg.open,
+  };
+}
+
+/**
+ * The ☰ menu: settings (sound, vibration, display options), feedback, legal and credits.
+ * The theme sheet now holds only the themes.
+ */
+export function createMenuSheet({ getState, onSetting, onSettings, preview }) {
+  const dlg = $('#menuSheet');
+  const settingsEl = $('#settings');
 
   // Sound and vibration: Off + three levels, with a preview when you pick one.
   const LEVELS = [
@@ -128,18 +162,12 @@ export function createThemeSheet({ getState, onTheme, onSetting, onSettings, pre
         h('input', { type: 'checkbox', checked: !!st[key], onchange: (e) => onSetting(key, e.target.checked) }))));
   }
 
-  $('#themeShuffle').addEventListener('click', () => {
-    const cur = getState().theme;
-    const others = THEMES.filter((t) => t.id !== cur);
-    onTheme(others[Math.floor(Math.random() * others.length)].id);
-    markPressed();
-  });
   dlg.addEventListener('click', (e) => {
     if (e.target === dlg || e.target.closest('[data-close]')) dlg.close();
   });
 
   return {
-    open() { renderGrid(); renderSettings(); dlg.showModal(); grid.querySelector('[aria-pressed="true"]')?.focus({ preventScroll: true }); },
+    open() { renderSettings(); dlg.showModal(); },
     close() { dlg.close(); },
     isOpen: () => dlg.open,
   };

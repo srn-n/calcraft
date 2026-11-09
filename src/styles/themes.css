@@ -145,35 +145,31 @@
 }
 [data-theme="voyager"] .display { margin: 6px; }
 
-/* 7 ── Solar LCD · Casio SL-300: grey plastic, solar strip, seven-segment LCD with ghost segments */
-[data-theme="lcd"] {
-  --chrome-extra: 16px; /* display margins / extra row gaps this theme adds */
-  --bg: #9fa3a8; --device: linear-gradient(180deg, #b9bcc0, #a9adb2); --device-solid: #b3b6ba; --device-border: #8d9197;
-  --device-shadow: 0 30px 60px -24px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.5);
-  --text: #1e2125; --muted: #42474d; --surface: rgba(0,0,0,.06); --surface-2: rgba(0,0,0,.1); --border: rgba(0,0,0,.18);
-  --display-bg: linear-gradient(180deg, #c3cab0, #b5bc9f); --display-text: #1d2219; --display-muted: #494f40; --display-border: #6e736a;
-  --key: #3a3d42; --key-text: #f1f1f1; --key-op: #55595f; --key-op-text: #fff; --key-fn: #6d7177; --key-fn-text: #fff;
-  --key-eq: #2f3236; --key-eq-text: #fff; --key-ac: #d9472b; --key-ac-text: #fff;
-  --accent: #d9472b; --on-accent: #fff; --danger: #8e1c0a;
-  --tok-num: #1d2219; --tok-op: #1d2219; --tok-fn: #1d2219; --tok-paren: #1d2219; --tok-const: #1d2219;
-  --r-key: 10px; --r-card: 6px; --r-chip: 4px;
-  --shadow-key: 0 3px 0 #1d1f22, 0 6px 10px rgba(0,0,0,.25); --shadow-key-down: 0 0 0 #1d1f22; --press-y: 3px; --press-scale: .98;
-  --shadow-card: inset 0 3px 6px rgba(0,0,0,.25), 0 0 0 6px #7e8288, 0 0 0 7px #5e6268;
-  --font-ui: 'Archivo', sans-serif; --font-display: 'DSEG7', 'JetBrains Mono', monospace; --font-key: 'Archivo', sans-serif;
-  --fs-scale: .9; --ls-display: .02em;
+/* 7 ── Neon Tokyo · Shibuya at night: smoked glass keys, hot-pink and cyan sign glow */
+[data-theme="neon"] {
+  color-scheme: dark;
+  --bg: #0a0612; --device: transparent; --device-solid: #120a1e; --device-border: rgba(255,43,214,.28);
+  --text: #fbe9ff; --muted: #a58cb8; --surface: rgba(255,255,255,.05); --surface-2: rgba(255,255,255,.09); --border: rgba(255,43,214,.25);
+  --display-bg: rgba(18,8,30,.72); --display-text: #fdf2ff; --display-muted: #b08fc8; --display-border: rgba(41,240,255,.35);
+  --key: rgba(255,255,255,.045); --key-text: #fbe9ff; --key-op: rgba(41,240,255,.08); --key-op-text: #29f0ff;
+  --key-fn: rgba(255,255,255,.03); --key-fn-text: #c9b3dd;
+  --key-eq: linear-gradient(135deg, #ff2bd6, #8b2cff); --key-eq-text: #fff; --key-ac: rgba(255,43,120,.12); --key-ac-text: #ff4d8d;
+  --key-border: rgba(255,43,214,.32); --bw: 1px;
+  --accent: #ff2bd6; --on-accent: #fff; --danger: #ff4d8d;
+  --tok-num: #fdf2ff; --tok-op: #ff2bd6; --tok-fn: #29f0ff; --tok-paren: #ffb547; --tok-const: #29f0ff;
+  --r-key: 16px; --r-card: 18px; --r-chip: 999px;
+  --shadow-key: 0 0 0 rgba(0,0,0,0), inset 0 1px 0 rgba(255,255,255,.06); --shadow-key-down: 0 0 16px rgba(255,43,214,.45);
+  --shadow-card: inset 0 0 0 1px rgba(41,240,255,.12), 0 0 30px rgba(255,43,214,.08);
+  --font-ui: 'Space Grotesk', sans-serif; --font-display: 'Space Grotesk', sans-serif; --font-key: 'Space Grotesk', sans-serif;
+  --fw-key: 500; --ls-display: -0.01em;
+  --bg-art: radial-gradient(60% 40% at 0% 0%, rgba(255,43,214,.22), transparent 70%), radial-gradient(60% 45% at 100% 100%, rgba(41,240,255,.18), transparent 70%), radial-gradient(40% 30% at 85% 15%, rgba(139,44,255,.16), transparent 70%);
 }
-[data-theme="lcd"] .display { margin: 8px 7px; font-style: italic; }
-[data-theme="lcd"] .lcd-ghost {
-  display: block; position: absolute; right: 18px; bottom: 12px; font: 700 calc(.9 * clamp(40px, 13vw, 64px)) / 1.2 'DSEG7', monospace;
-  color: #1d2219; opacity: .06; pointer-events: none; white-space: nowrap; overflow: hidden; max-width: calc(100% - 36px); direction: rtl;
-}
-[data-theme="lcd"] .display:not(.is-evaluated) .lcd-ghost { opacity: 0; }
-[data-theme="lcd"] .topbar::after {
-  content: ''; position: absolute; top: calc(var(--sa-t) + 14px); left: 50%; transform: translateX(-50%); width: 92px; height: 22px;
-  border-radius: 3px; background: repeating-linear-gradient(90deg, #3d2a22 0 22px, #2a1c17 22px 23px); box-shadow: inset 0 1px 3px rgba(0,0,0,.6);
-}
-@media (min-width: 560px) { [data-theme="lcd"] .topbar::after { top: 22px; } }
-[data-theme="lcd"] .topbar { position: relative; }
+[data-theme="neon"] .key { -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
+[data-theme="neon"] .key[data-kind="eq"] { background: var(--key-eq); box-shadow: 0 0 22px rgba(255,43,214,.45); border-color: transparent; }
+[data-theme="neon"] .key[data-kind="op"] { text-shadow: 0 0 10px rgba(41,240,255,.7); }
+[data-theme="neon"] .key[data-kind="ac"] { text-shadow: 0 0 10px rgba(255,77,141,.7); }
+[data-theme="neon"] .result { text-shadow: 0 0 18px rgba(255,43,214,.45); }
+[data-theme="neon"] .expr { text-shadow: 0 0 10px rgba(41,240,255,.25); }
 
 /* 8 ── Phosphor · VT100: green glow, CRT scanlines, no fills */
 [data-theme="phosphor"] {
@@ -575,3 +571,98 @@
 [data-theme="paperback"] .brand-name, [data-theme="paperback"] .tabs [role="tab"] { text-transform: uppercase; letter-spacing: .14em; }
 [data-theme="paperback"] .tab-ink { background: #ef7d00; }
 [data-theme="paperback"] .tabs [role="tab"][aria-selected="true"] { color: #141414; }
+
+
+/* ═════════ Exclusive themes: original characters drawn on the keys (art: src/ui/theme-art.js) ═════════ */
+/* Shared: the character sits on the left of the = key (the sign moves right), a motif marks each
+   operator key, an accessory sits on AC, and the character waves from the header. */
+[data-exclusive] .key[data-id="eq"] {
+  background-image: var(--art-char); background-repeat: no-repeat; background-size: auto 82%; background-position: 10% 60%;
+  padding-left: 46%;
+}
+[data-exclusive] .key[data-kind="op"] {
+  background-image: var(--art-op); background-repeat: no-repeat; background-size: 15px 15px; background-position: right 7px top 6px;
+}
+[data-exclusive] .key[data-id="ac"] {
+  background-image: var(--art-ac); background-repeat: no-repeat; background-size: 20px 20px; background-position: right 7px top 6px;
+}
+[data-exclusive] .key[data-id="eq"].is-down { background-size: auto 88%; }
+[data-exclusive] .brand { display: grid; grid-template-columns: auto 1fr; column-gap: 8px; align-items: center; }
+[data-exclusive] .brand::before {
+  content: ''; grid-row: 1 / span 2; width: 36px; height: 36px; background: var(--art-char) center / contain no-repeat;
+  animation: char-wave 2.6s var(--out) infinite;
+}
+@keyframes char-wave { 0%, 70%, 100% { transform: none; } 78% { transform: rotate(-8deg) translateY(-2px); } 86% { transform: rotate(6deg); } 94% { transform: rotate(-3deg); } }
+html.reduce-motion [data-exclusive] .brand::before, html.reduce-motion[data-exclusive] .brand::before { animation: none; }
+@media (prefers-reduced-motion: reduce) { [data-exclusive] .brand::before { animation: none; } }
+
+/* Ex 1 ── Nova in Orbit: deep-space navy, starfield, orange suit accents */
+[data-theme="astro"] {
+  color-scheme: dark;
+  --bg: #0b1030; --device: transparent; --device-solid: #121a45; --device-border: #2a3576;
+  --text: #e8ecff; --muted: #9aa5d8; --surface: rgba(255,255,255,.06); --surface-2: rgba(255,255,255,.1); --border: rgba(160,175,255,.22);
+  --display-bg: #0f1640; --display-text: #f2f4ff; --display-muted: #8f9ad0; --display-border: #2e3a80;
+  --key: #1a2356; --key-text: #e8ecff; --key-op: #24307a; --key-op-text: #ffd34d; --key-fn: #161e4a; --key-fn-text: #b7c0f0;
+  --key-eq: #ff7a3d; --key-eq-text: #fff; --key-ac: #ff4d6d; --key-ac-text: #fff;
+  --key-border: transparent; --bw: 0px;
+  --accent: #ff7a3d; --on-accent: #fff; --danger: #ff4d6d;
+  --tok-num: #f2f4ff; --tok-op: #ffd34d; --tok-fn: #7fd4ff; --tok-paren: #ff9a6b; --tok-const: #7fd4ff;
+  --r-key: 20px; --r-card: 20px;
+  --shadow-key: 0 3px 0 #0a0f2e, 0 8px 16px rgba(0,0,0,.35); --shadow-key-down: 0 0 0 #0a0f2e; --press-y: 3px;
+  --font-ui: 'Space Grotesk', sans-serif; --font-display: 'Space Grotesk', sans-serif; --font-key: 'Space Grotesk', sans-serif;
+  --bg-art: radial-gradient(1.2px 1.2px at 20% 30%, #fff 50%, transparent 51%) 0 0 / 120px 120px, radial-gradient(1px 1px at 70% 80%, #cfd8ff 50%, transparent 51%) 0 0 / 90px 90px, radial-gradient(1.6px 1.6px at 50% 10%, #ffd34d 50%, transparent 51%) 0 0 / 160px 160px, radial-gradient(70% 50% at 100% 0%, rgba(127,212,255,.16), transparent 70%);
+}
+
+/* Ex 2 ── Neon Ronin: midnight plum, crimson edges, cyan eyes */
+[data-theme="ronin"] {
+  color-scheme: dark;
+  --bg: #0e0612; --device: transparent; --device-solid: #160a1d; --device-border: rgba(255,46,99,.35);
+  --text: #f3e6ff; --muted: #a88cb3; --surface: rgba(255,255,255,.05); --surface-2: rgba(255,255,255,.09); --border: rgba(255,46,99,.28);
+  --display-bg: #140819; --display-text: #fbefff; --display-muted: #a07fae; --display-border: rgba(255,46,99,.4);
+  --key: #1b0d24; --key-text: #f3e6ff; --key-op: #2a1238; --key-op-text: #ff2e63; --key-fn: #170b1f; --key-fn-text: #c9a9d6;
+  --key-eq: #ff2e63; --key-eq-text: #fff; --key-ac: #3cf2ff; --key-ac-text: #0e0612;
+  --key-border: rgba(255,46,99,.3); --bw: 1px;
+  --accent: #ff2e63; --on-accent: #fff; --danger: #ff2e63;
+  --tok-num: #fbefff; --tok-op: #ff2e63; --tok-fn: #3cf2ff; --tok-paren: #ffcc33; --tok-const: #3cf2ff;
+  --r-key: 6px; --r-card: 8px; --r-chip: 4px;
+  --shadow-key: 0 2px 0 #07030a; --shadow-key-down: 0 0 14px rgba(255,46,99,.5);
+  --font-ui: 'Rajdhani', sans-serif; --font-display: 'Rajdhani', sans-serif; --font-key: 'Rajdhani', sans-serif;
+  --fw-key: 700; --fs-key: 27px;
+  --bg-art: radial-gradient(60% 40% at 50% 0%, rgba(255,46,99,.18), transparent 70%), radial-gradient(50% 35% at 0% 100%, rgba(60,242,255,.12), transparent 70%);
+}
+[data-theme="ronin"] .key[data-kind="eq"] { box-shadow: 0 0 20px rgba(255,46,99,.4); }
+[data-theme="ronin"] .result { text-shadow: 0 0 14px rgba(255,46,99,.35); }
+
+/* Ex 3 ── Pink Pop: candy pink, glossy pillow keys, sparkles */
+[data-theme="pinkpop"] {
+  --bg: #ffe3ef; --device: transparent; --device-solid: #fff0f6; --device-border: #ffc2dc;
+  --text: #5c1238; --muted: #a0577c; --surface: rgba(255,79,154,.08); --surface-2: rgba(255,79,154,.14); --border: rgba(176,23,94,.18);
+  --display-bg: #fff6fa; --display-text: #5c1238; --display-muted: #b06a90; --display-border: #ffc2dc;
+  --key: #ffffff; --key-text: #8a1f55; --key-op: #ffc2dc; --key-op-text: #b0175e; --key-fn: #ffe9f2; --key-fn-text: #a0336b;
+  --key-eq: #ff4f9a; --key-eq-text: #fff; --key-ac: #ff7aa8; --key-ac-text: #fff;
+  --key-border: transparent; --bw: 0px;
+  --accent: #ff4f9a; --on-accent: #fff; --danger: #e0245e;
+  --tok-num: #5c1238; --tok-op: #ff4f9a; --tok-fn: #b0175e; --tok-paren: #c76b98; --tok-const: #b0175e;
+  --r-key: 999px; --r-card: 26px;
+  --shadow-key: 0 4px 0 #f7a8c9, 0 10px 18px rgba(255,79,154,.18); --shadow-key-down: 0 1px 0 #f7a8c9; --press-y: 3px;
+  --font-ui: 'Josefin Sans', sans-serif; --font-display: 'Manrope', sans-serif; --font-key: 'Manrope', sans-serif;
+  --fw-key: 700;
+  --bg-art: radial-gradient(50% 35% at 10% 10%, rgba(255,255,255,.8), transparent 70%), radial-gradient(45% 35% at 90% 85%, rgba(255,140,192,.35), transparent 70%), radial-gradient(1.5px 1.5px at 30% 40%, #ff8cc0 50%, transparent 51%) 0 0 / 70px 70px;
+}
+
+/* Ex 4 ── Mochi Kitten: warm cream, peach and blush, soft round keys */
+[data-theme="kitten"] {
+  --bg: #fdf1e4; --device: transparent; --device-solid: #fff8ef; --device-border: #f3d9c3;
+  --text: #4a3226; --muted: #8c6a57; --surface: rgba(74,50,38,.05); --surface-2: rgba(74,50,38,.09); --border: rgba(74,50,38,.15);
+  --display-bg: #fffaf3; --display-text: #4a3226; --display-muted: #9b7a66; --display-border: #f0d6c0;
+  --key: #fffdf9; --key-text: #5b3a2a; --key-op: #ffd9cf; --key-op-text: #a84f3b; --key-fn: #fbeee2; --key-fn-text: #8c5a45;
+  --key-eq: #f29fb0; --key-eq-text: #fff; --key-ac: #ffb38a; --key-ac-text: #fff;
+  --key-border: #f3dfcd; --bw: 1px;
+  --accent: #f29fb0; --on-accent: #fff; --danger: #d9664c;
+  --tok-num: #4a3226; --tok-op: #e07a8f; --tok-fn: #a84f3b; --tok-paren: #c08a6b; --tok-const: #a84f3b;
+  --r-key: 22px; --r-card: 24px;
+  --shadow-key: 0 3px 0 #ecd3bf, 0 8px 14px rgba(74,50,38,.08); --shadow-key-down: 0 1px 0 #ecd3bf; --press-y: 2px;
+  --font-ui: 'Manrope', sans-serif; --font-display: 'Manrope', sans-serif; --font-key: 'Manrope', sans-serif;
+  --fw-key: 700;
+  --bg-art: radial-gradient(50% 35% at 100% 0%, rgba(247,179,194,.35), transparent 70%), radial-gradient(45% 35% at 0% 100%, rgba(255,179,138,.25), transparent 70%);
+}

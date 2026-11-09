@@ -115,21 +115,41 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
 
   const uid = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 
+  // Taps only touch the part that changes: opening or closing the editor swaps one row in place,
+  // instead of rebuilding the whole list (which replayed every row's entry animation and could
+  // jump the scroll position).
+  function dropEditor() {
+    const ed = root.querySelector('.bill-editor');
+    if (!ed) return;
+    if (editing && editing !== 'new') {
+      const b = B.items.find((x) => x.id === editing);
+      if (b) { ed.replaceWith(row(b, 0, false)); return; }
+    }
+    ed.remove();
+  }
   function startNew(preset) {
+    dropEditor();
     const t = today(); t.setDate(t.getDate() + 7);
     draft = { id: uid(), kind: preset.kind, name: preset.kind === 'other' ? '' : preset.name, amount: '', freq: preset.freq, due: toISO(t), note: '', paid: [] };
     editing = 'new';
-    render();
-    root.querySelector('.bill-editor input')?.focus({ preventScroll: true });
-    root.querySelector('.bill-editor')?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    armedDelete = null;
+    const ed = editor();
+    root.querySelector('.bill-summary').after(ed);
+    ed.querySelector('input')?.focus({ preventScroll: true });
+    ed.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
   function startEdit(b) {
+    dropEditor();
     draft = { ...b, paid: b.paid.slice() };
     editing = b.id;
     armedDelete = null;
-    render();
+    const r = root.querySelector(`.bill-row[data-bill="${b.id}"]`);
+    if (!r) { render(); return; }
+    const ed = editor();
+    r.replaceWith(ed);
+    ed.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
   }
-  function closeEditor() { editing = null; draft = null; armedDelete = null; render(); }
+  function closeEditor() { dropEditor(); editing = null; draft = null; armedDelete = null; }
   function saveDraft() {
     if (!draft.name.trim()) draft.name = BILL_PRESETS.find((p) => p.kind === draft.kind)?.name || 'Bill';
     const clean = { ...draft, name: draft.name.trim().slice(0, 30), note: draft.note.slice(0, 200) };
@@ -137,7 +157,8 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
     else B.items = B.items.map((b) => (b.id === clean.id ? clean : b));
     persist();
     feedback('eq');
-    closeEditor();
+    editing = null; draft = null; armedDelete = null;
+    render(clean.id); // totals and order changed; the saved bill gets a little pop
   }
   function markPaid(b, row) {
     const amt = parseNumberStrict(b.amount);
@@ -147,7 +168,7 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
     persist();
     feedback('win');
     row?.classList.add('is-paying');
-    setTimeout(render, 380);
+    setTimeout(() => render(), 380);
   }
 
   function editor() {
@@ -191,10 +212,10 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
       h('div.btn-row', {}, del, h('button.pill-btn.ghost', { type: 'button', onclick: closeEditor }, 'Cancel'), h('button.pill-btn', { type: 'button', onclick: saveDraft }, 'Save')));
   }
 
-  function row(b, i) {
+  function row(b, i, enter) {
     const lab = dueLabel(b);
     const amt = parseNumberStrict(b.amount);
-    const r = h('div.bill-row', { class: `bill-row ${lab.cls}`, style: { animationDelay: `${Math.min(i, 8) * 40}ms` } });
+    const r = h('div.bill-row', { class: `bill-row ${lab.cls}${enter ? ' is-enter' : ''}`, 'data-bill': b.id, style: enter ? { animationDelay: `${Math.min(i, 8) * 40}ms` } : {} });
     const main = h('button.bill-main', { type: 'button', 'aria-label': `Edit ${b.name}`, onclick: () => startEdit(b) },
       icon(b.kind),
       h('span.bill-text', {}, h('b', {}, b.name), h('small.bill-due', {}, lab.text + (b.freq !== 'once' && !b.done ? ` · ${FREQS[b.freq].toLowerCase()}` : ''))),
@@ -207,7 +228,10 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
     return r;
   }
 
-  function render() {
+  let firstRender = true;
+  function render(savedId) {
+    const enter = firstRender; // rows bounce in only when Bills opens, not on every tap
+    firstRender = false;
     const items = B.items.slice().sort((a, b) => ((a.done ? 1 : 0) - (b.done ? 1 : 0)) || (a.due < b.due ? -1 : a.due > b.due ? 1 : 0));
     const overdue = items.filter((b) => !b.done && fromISO(b.due) < today()).length;
     const cur = createPicker({ label: 'Currency', onchange: (v) => { B.cur = v; persist(); render(); } });
@@ -220,7 +244,7 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
       h('div.stat', { class: `stat${overdue ? ' is-overdue' : ''}` }, h('small', {}, 'Overdue'), h('b', {}, String(overdue))));
 
     const list = items.length
-      ? h('div.bill-list', {}, items.map((b, i) => (editing === b.id ? editor() : row(b, i))))
+      ? h('div.bill-list', {}, items.map((b, i) => (editing === b.id ? editor() : row(b, i, enter))))
       : h('p.bill-empty', {}, 'No bills yet. Pick one below to start tracking it: you’ll see what’s due, what’s overdue and your monthly total.');
 
     const presets = h('div.bill-presets', {}, BILL_PRESETS.map((p) =>
@@ -240,6 +264,7 @@ export function createBills(state, persist, { sendToCalc, feedback }) {
       notes,
       items.length ? h('div.btn-row', {}, h('button.pill-btn.ghost', { type: 'button', onclick: () => sendToCalc(String(Math.round(dueThisMonth(items) * 100) / 100)) }, 'Send this month’s total to calc')) : null,
     ].filter(Boolean)); // (replaceChildren would print a literal "null")
+    if (savedId) root.querySelector(`.bill-row[data-bill="${savedId}"]`)?.classList.add('is-saved');
   }
 
   render();

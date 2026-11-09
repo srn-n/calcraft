@@ -432,8 +432,11 @@ dialog.is-closing { pointer-events: none; }
 .bill-list { display: flex; flex-direction: column; gap: 8px; }
 .bill-row {
   display: flex; align-items: stretch; gap: 6px; border-radius: 14px; background: var(--surface);
-  border: 1px solid transparent; animation: bill-in 460ms cubic-bezier(.34, 1.56, .64, 1) both;
+  border: 1px solid transparent;
 }
+.bill-row.is-enter { animation: bill-in 460ms cubic-bezier(.34, 1.56, .64, 1) both; }
+.bill-row.is-saved { animation: bill-saved 520ms cubic-bezier(.34, 1.56, .64, 1); }
+@keyframes bill-saved { 0% { transform: scale(.96); } 45% { transform: scale(1.02); box-shadow: 0 0 0 2px var(--accent); } 100% { transform: none; } }
 @keyframes bill-in { from { opacity: 0; transform: translateY(10px) scale(.97); } }
 .bill-row.is-overdue { border-color: #e5484d; }
 .bill-row.is-paid { opacity: .6; }
@@ -493,7 +496,22 @@ dialog.is-closing { pointer-events: none; }
 .bill-history { display: grid; gap: 3px; font: 500 12px var(--font-mono); color: var(--display-muted); }
 .bill-history small { font: 700 9px var(--font-mono); letter-spacing: .12em; text-transform: uppercase; }
 .bill-delete { margin-right: auto; }
-html.reduce-motion :is(.bill-row, .bill-editor, .panel.tool-in-left, .panel.tool-in-right, .subtabs button) { animation: none !important; }
+html.reduce-motion :is(.bill-row, .bill-row.is-enter, .bill-row.is-saved, .bill-editor, .panel.tool-in-left, .panel.tool-in-right, .subtabs button) { animation: none !important; }
+
+/* Theme sheet sections + Exclusive badge */
+.theme-section {
+  grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px; margin: 6px 2px 0;
+  font: 800 13px var(--font-display); letter-spacing: .04em; text-transform: uppercase;
+}
+.theme-section small { font: 500 11px var(--font-mono); letter-spacing: 0; text-transform: none; color: var(--muted); }
+.theme-section:first-child { margin-top: 0; }
+.theme-badge {
+  display: inline-block; margin-left: 6px; padding: 2px 6px; border-radius: 99px; vertical-align: 2px;
+  background: var(--accent); color: var(--on-accent); font: 800 8px var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
+}
+/* ☰ Menu sheet */
+.menu-section { margin: 14px 2px 2px; font: 800 12px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.menu-sheet .side-head + .menu-section { margin-top: 6px; }
 
 /* Font licences sheet */
 .licences-text {

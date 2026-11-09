@@ -51,7 +51,7 @@ const VOICES = {
   clay:      { num: V('triangle', 520, 360, 42, 0.1, 0.25, 2500), op: V('triangle', 420, 290, 52, 0.1, 0.25, 2200), eq: V('triangle', 330, 520, 120, 0.1) },                // wood knock
   te:        { num: V('square', 988, 988, 34, 0.03, 0, 4000), op: V('square', 740, 740, 38, 0.03, 0, 4000), eq: V('square', 659, 1319, 120, 0.03, 0, 5000) },                 // synth chip
   voyager:   { num: V('triangle', 1800, 900, 22, 0.07, 0.7, 7000), op: V('triangle', 1400, 700, 26, 0.07, 0.7, 6000), eq: V('square', 1200, 1200, 70, 0.025, 0, 3000) },     // firm HP click
-  lcd:       { num: V('square', 4000, 4000, 26, 0.018), op: V('square', 3600, 3600, 28, 0.018), eq: V('square', 4000, 4000, 90, 0.022) },                                     // pocket-calc beep
+  neon:      { num: V('sawtooth', 880, 1320, 30, 0.035, 0, 2600), op: V('sawtooth', 660, 990, 36, 0.035, 0, 2400), eq: V('sawtooth', 523, 1046, 150, 0.03, 0, 3200, 1568) }, // synth sign buzz
   phosphor:  { num: V('sine', 1050, 1050, 28, 0.05, 0, 0, 2100), op: V('sine', 800, 800, 34, 0.05, 0, 0, 1600), eq: V('square', 523, 784, 140, 0.025, 0, 2500) },             // terminal blip
   brutal:    { num: V('triangle', 210, 110, 48, 0.17, 0.5, 1800), op: V('triangle', 170, 95, 58, 0.17, 0.5, 1600), eq: V('triangle', 130, 260, 120, 0.15, 0.2, 1500) },      // heavy thock
   bauhaus:   { num: V('triangle', 720, 520, 36, 0.09, 0.2, 3500), op: V('triangle', 560, 400, 44, 0.09, 0.2, 3000), eq: V('sine', 523, 784, 160, 0.08, 0, 0, 659) },          // wooden block
@@ -68,10 +68,14 @@ const VOICES = {
   concrete:  { num: V('triangle', 160, 90, 50, 0.18, 0.6, 1400), op: V('triangle', 130, 80, 60, 0.18, 0.6, 1200), eq: V('triangle', 110, 70, 160, 0.17, 0.5, 1000) },         // stone thud
   washi:     { num: V('triangle', 900, 680, 34, 0.09, 0.15, 4000), op: V('triangle', 760, 560, 40, 0.09, 0.15, 3500), eq: V('sine', 587, 880, 280, 0.06, 0, 0, 1175) },       // bamboo knock, chime
   dsky:      { num: V('square', 2000, 2000, 14, 0.035, 0.7, 6000), op: V('square', 1700, 1700, 16, 0.035, 0.7, 6000), eq: V('square', 1000, 1000, 120, 0.025, 0, 3000) },    // relay click, beep
+  astro:     { num: V('sine', 1200, 1700, 34, 0.06), op: V('sine', 900, 1350, 40, 0.06), eq: V('sine', 660, 1320, 220, 0.06, 0, 0, 1980) },                          // radio boop, launch chime
+  ronin:     { num: V('triangle', 950, 700, 26, 0.08, 0.6, 5000), op: V('triangle', 760, 560, 30, 0.08, 0.6, 4500), eq: V('sine', 2400, 2600, 300, 0.04, 0.4, 0, 3600) },// wood clack, blade ring
+  pinkpop:   { num: V('sine', 1800, 2300, 26, 0.05), op: V('sine', 1400, 1900, 30, 0.05), eq: V('sine', 1047, 1568, 260, 0.05, 0, 0, 2093) },                          // sparkle, pop chime
+  kitten:    { num: V('sine', 760, 920, 40, 0.07, 0.05, 2600), op: V('sine', 640, 800, 46, 0.07, 0.05, 2400), eq: V('sine', 620, 900, 240, 0.06, 0, 2000, 1240) },     // soft boop, little mew
   paperback: { num: V('sine', 520, 360, 34, 0.08, 0.4, 2400), op: V('sine', 440, 300, 40, 0.08, 0.4, 2200), eq: V('sine', 392, 523, 160, 0.07) },                             // soft page tap
 };
 // Older profile names (still accepted, e.g. from tests or saved data).
-const ALIASES = { click: 'braun', blip: 'cyber', tick: 'glass', wood: 'clay', chip: 'te', beep: 'lcd', thock: 'brutal' };
+const ALIASES = { click: 'braun', blip: 'cyber', tick: 'glass', wood: 'clay', chip: 'te', beep: 'dsky', thock: 'brutal' };
 
 function voice(a, v, t) {
   const dur = v.ms / 1000;

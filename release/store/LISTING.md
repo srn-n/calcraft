@@ -6,13 +6,13 @@
 Bouncy Calculator
 
 **Short description** (80 max)
-A calculator that feels great to use: 24 themes, smart tools and maths games.
+28 themes, cute characters on the keys, smart tools, bills and maths games.
 
 **Full description** (4,000 max)
 
 A calculator is a simple tool. Bouncy Calculator makes it a joy to use.
 
-Every key bounces. The answer appears while you type. Swipe the display to delete, pull it down to clear, and pull it up to see everything you've worked out today. Pick from 24 themes, each modelled on a real object: a 1987 Braun pocket calculator, a Swiss railway clock, a green-screen terminal, an Apollo flight computer, a typewriter and more.
+Every key bounces. The answer appears while you type. Swipe the display to delete, pull it down to clear, and pull it up to see everything you've worked out today. Pick from 28 themes. 24 are modelled on real objects: a 1987 Braun pocket calculator, a Swiss railway clock, a green-screen terminal, an Apollo flight computer, a typewriter, the neon of night-time Tokyo and more. Four Exclusive themes put original characters right on the keys: Nova the little astronaut, Kage the neon ronin, Starla the pop star and Mochi the sleepy kitten.
 
 **A calculator that understands you**
 • See the answer as you type, before you press =
@@ -27,6 +27,7 @@ Every key bounces. The answer appears while you type. Swipe the display to delet
 • Tip & Split: tip slider, number of people, round up
 • Unit converter: length, mass, temperature, area, volume, speed, data and time
 • Percent helper: X% of Y, % change and discounts
+• Bills: track electricity, water, rent and more, with due dates, overdue alerts and monthly totals
 
 **Maths games, played on the calculator's own keypad**
 • Sprint: 60 seconds of mental maths, with combos
