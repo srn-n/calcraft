@@ -1,6 +1,12 @@
 # Project notes (long-term memory)
 
 Quick reference for anyone (or any AI session) picking this project up. Keep it current.
+The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude both read it).
+
+**Rule:** every update ships with a Markdown record:
+- App releases get `docs/releases/<version>.md`, written from `docs/releases/_TEMPLATE.md`.
+- Anything else gets `docs/changes/YYYY-MM-DD-<topic>.md`.
+- Each update also refreshes `AGENTS.md` §9 and §10.
 
 ## Identity
 - App: **Bouncy Calculator**, by **Simply Made Studio**. No personal credits in the app.
