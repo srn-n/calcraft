@@ -58,3 +58,15 @@ describe('exclusive signature sounds and characters', async () => {
     expect(ui).not.toMatch(/startViewTransition/);
   });
 });
+
+describe('scientific panel layout on phones (1.0.7)', () => {
+  const base = readFileSync(new URL('../src/styles/base.css', import.meta.url), 'utf8');
+  it('the keypad can shrink, so keys never run past the bottom edge', () => {
+    expect(base).toMatch(/\.app\.is-sci \.keypad \{[^}]*grid-template-rows: repeat\(5, minmax\(30px, var\(--key-h\)\)\)/);
+    expect(base).toMatch(/\.app\.is-sci \.pad-wrap \{[^}]*flex-shrink: 1/);
+  });
+  it('the display keeps its share instead of being squeezed', () => {
+    expect(base).toMatch(/\.app\.is-sci \{ --disp-min: clamp\(96px, 18dvh, 210px\)/);
+    expect(base).toMatch(/\.app\.is-sci \.stage \{ min-height: var\(--disp-min\); \}/);
+  });
+});

@@ -19,7 +19,7 @@ The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude bot
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **11 = 1.0.6**).
+  **12 = 1.0.7**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
@@ -91,3 +91,6 @@ The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude bot
   signature sound sets; living characters that react, celebrate and idle. See `docs/releases/1.0.5.md`.
 - 1.0.6 (code 11): Units conversion cards fit their values (compact numbers plus measured fit),
   with no overlap and no sideways scroll; tool tabs fit on 360 px phones. See `docs/releases/1.0.6.md`.
+- 1.0.7 (code 12): scientific mode on phones keeps the display (about 18% of the screen) and shrinks the
+  number keys instead; the keypad can shrink so it never overlaps the bottom edge. This was a Notion
+  task. See `docs/releases/1.0.7.md`.

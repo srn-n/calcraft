@@ -716,6 +716,19 @@ html { overscroll-behavior: none; } /* no pull-to-refresh / rubber-band while sw
   }
 }
 
+/* Scientific panel on phones: the 3 extra rows of function keys are paid for by the number keys,
+   not the display. The display keeps about a fifth of the screen, and the keypad may shrink if the
+   real header is taller than the formula expects (Android font size, status bar), so the keys can
+   never run past the bottom edge. Shorter phones tighten this further below. */
+@media (max-width: 559px) and (orientation: portrait) {
+  .app.is-sci { --disp-min: clamp(96px, 18dvh, 210px); --key-min: 38px; }
+  .app.is-sci .stage { min-height: var(--disp-min); }
+  .app.is-sci .pad-wrap { flex-shrink: 1; min-height: 0; }
+  .app.is-sci .keypad { flex: 1 1 auto; min-height: 0; grid-template-rows: repeat(5, minmax(30px, var(--key-h))); }
+  .app.is-sci .keypad .key { height: auto; }
+}
+@media (max-width: 559px) and (orientation: portrait) and (max-height: 680px) { .app.is-sci { --disp-min: 92px; } }
+
 @media (max-height: 640px) { .meta-hint { display: none; } }
 @media (max-width: 359px) { .tabs [role="tab"] { letter-spacing: .04em; font-size: 11px; } } /* 320px phones */
 @media (max-height: 600px) { .app.is-sci { --key-min: 36px; } }
@@ -738,6 +751,7 @@ html { overscroll-behavior: none; } /* no pull-to-refresh / rubber-band while sw
   .app.is-sci, .app[data-view="games"] { display: grid; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto minmax(0, 1fr) auto; column-gap: 8px; --tabs-h: 0px; --chrome: calc(var(--head-h) + 24px + var(--sa-t) + var(--sa-b) + 2 * var(--gap) + var(--chrome-extra, 0px)); }
   :is(.app.is-sci, .app[data-view="games"]) .topbar { display: contents; }
   :is(.app.is-sci, .app[data-view="games"]) .brand, :is(.app.is-sci, .app[data-view="games"]) .topbar::after { display: none !important; }
+  .app.is-sci { grid-template-rows: auto minmax(var(--disp-min), 1fr) minmax(0, auto); }
   :is(.app.is-sci, .app[data-view="games"]) .tabs { grid-column: 1; grid-row: 1; align-self: center; }
   :is(.app.is-sci, .app[data-view="games"]) .top-actions { grid-column: 2; grid-row: 1; }
   :is(.app.is-sci, .app[data-view="games"]) :is(.stage, .pad-wrap) { grid-column: 1 / -1; }
