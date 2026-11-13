@@ -406,6 +406,8 @@ dialog.is-closing { pointer-events: none; }
   flex: none; border: 1px solid var(--border); background: var(--surface); color: var(--text); cursor: pointer;
   padding: 8px 12px; border-radius: var(--r-chip); font: 700 11px var(--font-mono); letter-spacing: .1em; text-transform: uppercase;
 }
+/* Narrow phones (360 px): all four tool tabs fit without scrolling. */
+@media (max-width: 390px) { .subtabs { gap: 4px; } .subtabs button { padding: 8px 9px; letter-spacing: .06em; } }
 .subtabs button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); border-color: transparent; }
 .tool { display: flex; flex-direction: column; gap: 12px; }
 .field { display: grid; gap: 6px; }
@@ -574,7 +576,17 @@ html.reduce-motion :is(.bill-row, .bill-row.is-enter, .bill-row.is-saved, .bill-
 .range { width: 100%; accent-color: var(--accent); }
 .big-out { font: 800 calc(var(--fs-scale) * 38px)/1.05 var(--font-display); letter-spacing: var(--ls-display); text-align: right; word-break: break-all; }
 .out-label { font: 700 10px var(--font-mono); letter-spacing: .14em; text-transform: uppercase; color: var(--display-muted); text-align: right; }
-.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.stat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(120px, 100%), 1fr)); gap: 8px; }
+/* Grid items default to min-width:auto, so one long number would stretch its column past the card. */
+.stat-grid > * { min-width: 0; }
+/* Units conversion cards (buttons): a value never leaves its card. Long ones shrink, then wrap. */
+.stat.conv { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1fr); gap: 3px; min-width: 0; overflow: hidden; cursor: pointer;
+  background: var(--surface); border-radius: 12px; padding: 10px 12px; }
+.stat.conv:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.stat.conv > * { min-width: 0; }
+.stat.conv b { overflow-wrap: anywhere; line-height: 1.15; }
+.stat.conv b.long { font-size: calc(var(--fs-scale) * 16px); }
+.stat.conv b.xlong { font-size: calc(var(--fs-scale) * 13px); }
 .stat { background: var(--surface); border-radius: 12px; padding: 10px 12px; }
 .stat b { display: block; font: 800 calc(var(--fs-scale) * 20px) var(--font-display); }
 .stat small { font: 600 10px var(--font-mono); letter-spacing: .12em; color: var(--display-muted); text-transform: uppercase; }

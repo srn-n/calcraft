@@ -25,6 +25,19 @@ export const UNITS = {
   Data: { base: 'B', u: { bit: 0.125, B: 1, KB: 1e3, MB: 1e6, GB: 1e9, TB: 1e12, KiB: 1024, MiB: 1048576, GiB: 1073741824 } },
   Time: { base: 's', u: { ms: 0.001, s: 1, min: 60, h: 3600, day: 86400, week: 604800, year: 31557600 } },
 };
+/** A conversion card's value, kept short enough for a small card (the To field and the card's
+ *  tooltip keep full precision): 9 significant digits normally, 7 below 1, and compact
+ *  scientific notation (6 digits, e.g. 1.65344E−8) for very small or very large values. */
+export function cardNumber(x) {
+  if (!Number.isFinite(x)) return '—';
+  if (x === 0) return '0';
+  const a = Math.abs(x);
+  if (a >= 1e9 || a < 1e-4) {
+    const [m, e] = x.toExponential(5).split('e');
+    return `${m.replace(/\.?0+$/, '')}E${Number(e)}`.replaceAll('-', '−');
+  }
+  return formatNumber(Number(x.toPrecision(a < 1 ? 7 : 9)));
+}
 export function convert(cat, v, from, to) {
   const c = UNITS[cat];
   if (cat === 'Temperature') {
@@ -94,6 +107,17 @@ export function createTools(host, { getAns, sendToCalc, feedback = () => {} }) {
   }
 
   /* Units */
+  /** Shrink each card's value until it fits on one line (down to 11px; below that it wraps). */
+  const fitCards = (grid) => requestAnimationFrame(() => {
+    for (const b of grid.querySelectorAll('b')) {
+      b.style.fontSize = '';
+      b.style.whiteSpace = 'nowrap';
+      let size = parseFloat(getComputedStyle(b).fontSize);
+      while (b.scrollWidth > b.clientWidth && size > 11) { size -= 1; b.style.fontSize = `${size}px`; }
+      if (b.scrollWidth > b.clientWidth) b.style.whiteSpace = ''; // still too wide at 11px: let it wrap
+    }
+  });
+
   function units() {
     const u = st.units;
     const fromIn = numInput(u.v, () => { u.v = fromIn.value; calc('ltr'); });
@@ -119,9 +143,14 @@ export function createTools(host, { getAns, sendToCalc, feedback = () => {} }) {
         if (Number.isFinite(v)) { fromIn.value = String(clean(convert(u.cat, v, u.to, u.from))); u.v = fromIn.value; }
       }
       const v = num(fromIn.value);
-      all.replaceChildren(...Object.keys(UNITS[u.cat].u).filter((k) => k !== u.from).map((k) =>
-        h('button.stat', { style: { all: 'unset', cursor: 'pointer', background: 'var(--surface)', borderRadius: '12px', padding: '10px 12px' }, onclick: () => { u.to = k; toSel.value = k; calc('ltr'); } },
-          h('small', {}, k), h('b', {}, Number.isFinite(v) ? formatNumber(clean(convert(u.cat, v, u.from, k))) : '—'))));
+      all.replaceChildren(...Object.keys(UNITS[u.cat].u).filter((k) => k !== u.from).map((k) => {
+        const x = Number.isFinite(v) ? clean(convert(u.cat, v, u.from, k)) : NaN;
+        const text = Number.isFinite(x) ? cardNumber(x) : '—';
+        const b = h('b', { title: Number.isFinite(x) ? formatNumber(x) : '' }, text);
+        if (text.length > 13) b.classList.add('xlong'); else if (text.length > 9) b.classList.add('long');
+        return h('button.stat.conv', { onclick: () => { u.to = k; toSel.value = k; calc('ltr'); } }, h('small', {}, k), b);
+      }));
+      fitCards(all);
       persist();
     };
     const swap = h('button.swap-btn', { 'aria-label': 'Swap units', onclick: () => { [u.from, u.to] = [u.to, u.from]; fromIn.value = toIn.value || fromIn.value; u.v = fromIn.value; fill(); calc('ltr'); } }, '⇄');
@@ -132,6 +161,12 @@ export function createTools(host, { getAns, sendToCalc, feedback = () => {} }) {
       h('div.btn-row', {}, h('button.pill-btn.ghost', { onclick: () => { if (getAns()) { fromIn.value = String(getAns()); u.v = fromIn.value; calc('ltr'); } } }, 'Use last answer'),
         h('button.pill-btn', { onclick: () => toIn.value && sendToCalc(toIn.value) }, 'Send to calc')));
     calc('ltr');
+    // Refit when the theme's font arrives or the cards change size (rotation, window resize).
+    document.fonts?.ready.then(() => fitCards(all));
+    if (window.ResizeObserver) {
+      let w = 0;
+      new ResizeObserver(([e]) => { const nw = Math.round(e.contentRect.width); if (nw !== w) { w = nw; fitCards(all); } }).observe(all);
+    }
     return node;
   }
 

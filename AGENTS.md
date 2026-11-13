@@ -5,8 +5,8 @@ any person picking up the project. It says what the project is, how it is built 
 house rules. **Keep it current: every change that alters something below updates this file in the
 same change.**
 
-- Last updated: **2026-11-10**
-- App version: **1.0.5**, Android versionCode **10**, commit `2bb9a91`
+- Last updated: **2026-11-13**
+- App version: **1.0.6**, Android versionCode **11**. Changes are in the working tree; the last pushed commit is `23a92c2`.
 
 ---
 
@@ -62,7 +62,7 @@ the app.
 
 - **Vite** with vanilla ES modules: no framework, no runtime dependencies. Fonts are bundled from
   `@fontsource` (`src/fonts/*.woff2`).
-- **vitest** for tests (143 tests at 1.0.5). Node 22 in CI.
+- **vitest** for tests (145 tests at 1.0.6). Node 22 in CI.
 - **Android:** a thin Java WebView wrapper (Gradle 8.13, compile/target SDK 36, min SDK 24).
 
 ```bash
@@ -265,12 +265,17 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
     `ui/picker.js`.
   - Key presses hold for ripple and long-press. The AC and ⌫ keys use `::after` for their hold ring,
     and the Broken Keys game uses `::before` for cracks. The = key character skips `.is-broken`.
+- **Grid cards:** a grid item defaults to `min-width: auto`, so one long unbreakable number stretches
+  its column past the card. Give the items `min-width: 0` and a `minmax(0, 1fr)` inner column, and fit
+  the text by measuring it (Units: `fitCards` in `tools.js`). Check with real long values
+  (123456789, 0.000123) at 360 px and at desktop size.
 - **CSP:** inline `style=""` or `<script>` blocks are rejected by the CSP build check. Use CSSOM or
   CSS classes.
 
 ## 9. Current state (update every change)
 
-- **Version:** 1.0.5 (code 10) is pushed and signed. It's waiting for Play review in closed testing.
+- **Version:** 1.0.6 (code 11) fixes the Units conversion cards overflowing (from the 2026-11-13
+  visual audit). It's ready to push, then sign. 1.0.5 (code 10) is signed and in Play review.
 - **28 themes:** 23 Classic and 5 Exclusive. The Exclusive themes have signature sounds and living
   characters.
 - **Store listing:**
@@ -280,7 +285,7 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
 - **Next likely steps:**
   - Finish the closed test (12+ testers, 14 days), then go to Production.
   - The Windows app (PWA install or a packaged wrapper) is a stated goal and not started.
-  - Refresh `README.md` numbers (themes 28, tests 143).
+  - Refresh `README.md` numbers (themes 28, tests 145).
 
 ## 10. Release history
 
@@ -292,5 +297,6 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
 | 1.0.3 | 8 | 4 Exclusive character themes, ☰ menu reorganised, faster Bills | `docs/releases/1.0.3.md` |
 | 1.0.4 | 9 | Chips always visible, Night Weaver, badge in corner, no recents flash, typing comfort | `docs/releases/1.0.4.md` |
 | 1.0.5 | 10 | Burst-and-bounce theme switching, Exclusive signature sounds, living characters | `docs/releases/1.0.5.md` |
+| 1.0.6 | 11 | Units conversion cards fit their values (no overlap, no sideways scroll); tool tabs fit 360 px phones | `docs/releases/1.0.6.md` |
 
 Non-release changes are recorded in `docs/changes/`.
