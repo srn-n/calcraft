@@ -214,7 +214,11 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
 .pad-wrap { display: flex; flex-direction: column; gap: var(--gap); flex-shrink: 0; }
 /* Rows are sized in CSS before the JS builds the keys, so nothing jumps when they appear (CLS was 0.26). */
 .sci { display: grid; grid-template-rows: 0fr; transition: grid-template-rows 380ms var(--out); }
-.sci > div { overflow: hidden; display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; }
+.sci > div { overflow: hidden; display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px;
+  /* The panel clips while it slides open, which also sliced the keys' 3D bottom edge and side shadows
+     (a hard line under π e n! 1/x EE). Extra room inside, cancelled by negative margins: the shadows
+     show, the layout doesn't move. */
+  padding: 3px 8px 10px; margin: -3px -8px -10px; }
 .app.is-sci .sci { grid-template-rows: 1fr; }
 .mem-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; min-height: var(--fn-h); }
 .keypad { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, var(--key-h)); gap: var(--gap); }

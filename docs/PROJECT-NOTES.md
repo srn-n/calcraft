@@ -19,7 +19,7 @@ The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude bot
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **12 = 1.0.7**).
+  **13 = 1.0.8**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
@@ -94,3 +94,5 @@ The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude bot
 - 1.0.7 (code 12): scientific mode on phones keeps the display (about 18% of the screen) and shrinks the
   number keys instead; the keypad can shrink so it never overlaps the bottom edge. This was a Notion
   task. See `docs/releases/1.0.7.md`.
+- 1.0.8 (code 13): the bottom scientific row (π e n! 1/x EE) shows its full 3D edge. The panel's
+  clipping used to slice it, leaving a hard line above the MC row. See `docs/releases/1.0.8.md`.

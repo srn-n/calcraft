@@ -5,8 +5,8 @@ any person picking up the project. It says what the project is, how it is built 
 house rules. **Keep it current: every change that alters something below updates this file in the
 same change.**
 
-- Last updated: **2026-11-13**
-- App version: **1.0.7**, Android versionCode **12**. Changes are in the working tree; the last pushed commit is `6d971af` (1.0.6).
+- Last updated: **2026-11-14**
+- App version: **1.0.8**, Android versionCode **13**. Changes are in the working tree; the last pushed commit is `5eb880c` (1.0.7).
 
 ---
 
@@ -62,7 +62,7 @@ the app.
 
 - **Vite** with vanilla ES modules: no framework, no runtime dependencies. Fonts are bundled from
   `@fontsource` (`src/fonts/*.woff2`).
-- **vitest** for tests (147 tests at 1.0.7). Node 22 in CI.
+- **vitest** for tests (148 tests at 1.0.8). Node 22 in CI.
 - **Android:** a thin Java WebView wrapper (Gradle 8.13, compile/target SDK 36, min SDK 24).
 
 ```bash
@@ -261,6 +261,9 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
   the header height. Android font scaling or status bars can make the real header taller, so the
   keypad must be able to shrink (`minmax` rows, a shrinkable `.pad-wrap`) rather than trusting the
   formula, or the bottom row runs off the screen. Test by adding header padding.
+- **Clipped animations cut shadows:** anything that animates open with `overflow: hidden` (like the
+  `.sci` panel's `0fr → 1fr` rows) also slices the children's box-shadows and 3D edges. Give the
+  clipping box padding and cancel it with the same negative margin.
 - **Performance:** theme switches must not animate dozens of colour transitions, and must not use a
   page-wide View Transition. Swap under a cover, and animate only transform, opacity and clip-path.
 - **DOM and controls:**
@@ -278,9 +281,9 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
 
 ## 9. Current state (update every change)
 
-- **Version:** 1.0.7 (code 12) rebalances scientific mode on phones: the keys shrink instead of the
-  display, and the keypad can never run past the bottom. This was the Notion "Up next" task. It's ready
-  to push, then sign. 1.0.6 (code 11, the Units card fix) is signed in `CalculatorApp`.
+- **Version:** 1.0.8 (code 13) fixes the bottom scientific row (π e n! 1/x EE), which had its 3D
+  edge sliced off by the panel's clipping. It's ready to push, then sign. 1.0.7 (code 12, scientific
+  mode keeps the display) is signed in `CalculatorApp`.
 - **Task source:** Samiur's Notion has a Projects database (page "Bouncy Calculator") and a Tasks
   database (Status: Not started / Up next / In progress / Done). Tasks linked to the Bouncy Calculator
   project are this app's backlog. Other tasks in that database may belong to other apps, so check the
@@ -294,7 +297,7 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
 - **Next likely steps:**
   - Finish the closed test (12+ testers, 14 days), then go to Production.
   - The Windows app (PWA install or a packaged wrapper) is a stated goal and not started.
-  - Refresh `README.md` numbers (themes 28, tests 147).
+  - Refresh `README.md` numbers (themes 28, tests 148).
 
 ## 10. Release history
 
@@ -308,5 +311,6 @@ Use the key in `CalculatorWeb\.signing\`: `upload.jks`, plus `keystore.propertie
 | 1.0.5 | 10 | Burst-and-bounce theme switching, Exclusive signature sounds, living characters | `docs/releases/1.0.5.md` |
 | 1.0.6 | 11 | Units conversion cards fit their values (no overlap, no sideways scroll); tool tabs fit 360 px phones | `docs/releases/1.0.6.md` |
 | 1.0.7 | 12 | Scientific mode on phones: keys shrink instead of the display; keypad can't overflow the bottom | `docs/releases/1.0.7.md` |
+| 1.0.8 | 13 | Bottom scientific row no longer clipped (3D edge and shadows show; no hard line above MC row) | `docs/releases/1.0.8.md` |
 
 Non-release changes are recorded in `docs/changes/`.

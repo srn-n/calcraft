@@ -70,3 +70,12 @@ describe('scientific panel layout on phones (1.0.7)', () => {
     expect(base).toMatch(/\.app\.is-sci \.stage \{ min-height: var\(--disp-min\); \}/);
   });
 });
+
+describe('scientific panel keeps the bottom row whole (1.0.8)', () => {
+  const base = readFileSync(new URL('../src/styles/base.css', import.meta.url), 'utf8');
+  it('the clipping panel has room for the keys\' 3D edge and shadows, without moving the layout', () => {
+    const rule = base.match(/\.sci > div \{[^}]*\}/)[0];
+    expect(rule).toMatch(/overflow: hidden/);
+    expect(rule).toMatch(/padding: 3px 8px 10px; margin: -3px -8px -10px;/);
+  });
+});
