@@ -22,7 +22,7 @@
 ## Files touched
 - ...
 - `android/app/build.gradle` (X.Y.Z, code N)
-- `docs/releases/X.Y.Z.md`, `docs/PROJECT-NOTES.md`, `AGENTS.md` (§9 Current state, §10 history)
+- `docs/releases/X.Y.Z.md`, `docs/PROJECT-NOTES.md`, `AGENTS.md` (local only, not committed: §9 Current state, §10 history)
 
 ## Play Console release notes
 ```

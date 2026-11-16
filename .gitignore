@@ -20,3 +20,7 @@ release/*.apk
 release/*.idsig
 release/*.jar
 release/ci-build/
+
+# Agent hand-off files: kept up to date on the local machine only, never in the repo (Notion task, 1.0.9)
+AGENTS.md
+CLAUDE.md

@@ -79,3 +79,11 @@ describe('scientific panel keeps the bottom row whole (1.0.8)', () => {
     expect(rule).toMatch(/padding: 3px 8px 10px; margin: -3px -8px -10px;/);
   });
 });
+
+describe('closed scientific panel shows nothing (1.0.9)', () => {
+  const base = readFileSync(new URL('../src/styles/base.css', import.meta.url), 'utf8');
+  it('hidden when closed, visible as soon as it opens', () => {
+    expect(base.match(/\.sci > div \{[^}]*\}/)[0]).toMatch(/visibility: hidden; transition: visibility 0s linear 380ms;/);
+    expect(base).toMatch(/\.app\.is-sci \.sci > div \{ visibility: visible; transition-delay: 0s; \}/);
+  });
+});

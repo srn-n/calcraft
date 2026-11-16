@@ -1,7 +1,9 @@
 # Project notes (long-term memory)
 
 Quick reference for anyone (or any AI session) picking this project up. Keep it current.
-The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude both read it).
+The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude both read it). Since 1.0.9 it
+and `CLAUDE.md` are **local-only** (git-ignored): they exist in `C:\Working Projects\CalculatorWeb`
+and are kept up to date there, but they're not on GitHub.
 
 **Rule:** every update ships with a Markdown record:
 - App releases get `docs/releases/<version>.md`, written from `docs/releases/_TEMPLATE.md`.
@@ -19,7 +21,7 @@ The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude bot
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **13 = 1.0.8**).
+  **14 = 1.0.9**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
@@ -96,3 +98,6 @@ The full hand-off file is **`AGENTS.md`** at the repo root (Codex and Claude bot
   task. See `docs/releases/1.0.7.md`.
 - 1.0.8 (code 13): the bottom scientific row (π e n! 1/x EE) shows its full 3D edge. The panel's
   clipping used to slice it, leaving a hard line above the MC row. See `docs/releases/1.0.8.md`.
+- 1.0.9 (code 14): a closed scientific panel shows nothing; the 1.0.8 shadow room made the hidden keys'
+  tops peek out above the MC row. `AGENTS.md` and `CLAUDE.md` are now local-only. See
+  `docs/releases/1.0.9.md`.

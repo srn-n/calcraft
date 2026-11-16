@@ -218,8 +218,13 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   /* The panel clips while it slides open, which also sliced the keys' 3D bottom edge and side shadows
      (a hard line under π e n! 1/x EE). Extra room inside, cancelled by negative margins: the shadows
      show, the layout doesn't move. */
-  padding: 3px 8px 10px; margin: -3px -8px -10px; }
+  padding: 3px 8px 10px; margin: -3px -8px -10px;
+  /* That room is still a 13px box when the panel is closed, so the tops of the hidden keys peeked out
+     between the display and the MC row (1.0.8). Fully closed = invisible (and not focusable); it shows
+     the moment it starts opening and hides only after the close animation ends. */
+  visibility: hidden; transition: visibility 0s linear 380ms; }
 .app.is-sci .sci { grid-template-rows: 1fr; }
+.app.is-sci .sci > div { visibility: visible; transition-delay: 0s; }
 .mem-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; min-height: var(--fn-h); }
 .keypad { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, var(--key-h)); gap: var(--gap); }
 
