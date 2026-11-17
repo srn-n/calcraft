@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Bouncy Calculator</string>
     <string name="no_app">No app found to open this</string>
+    <string name="share_title">Share Bouncy Calculator</string>
+    <string name="share_text">Bouncy Calculator: a calculator that\u2019s actually fun. Bouncy keys, 28 themes, handy tools and maths games. Free on Google Play: https://play.google.com/store/apps/details?id=com.simplymadestudio.bouncycalculator</string>
 </resources>

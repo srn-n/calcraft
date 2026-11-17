@@ -21,7 +21,7 @@ and are kept up to date there, but they're not on GitHub.
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **14 = 1.0.9**).
+  **15 = 1.1.0**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
@@ -101,3 +101,5 @@ and are kept up to date there, but they're not on GitHub.
 - 1.0.9 (code 14): a closed scientific panel shows nothing; the 1.0.8 shadow room made the hidden keys'
   tops peek out above the MC row. `AGENTS.md` and `CLAUDE.md` are now local-only. See
   `docs/releases/1.0.9.md`.
+- 1.1.0 (code 15): the fx close no longer snaps at the end (the keys fade out early), and there's a new
+  ☰ → Share app row with the Play link (native share sheet on Android). See `docs/releases/1.1.0.md`.

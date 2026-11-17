@@ -23,6 +23,7 @@ import { setupTyping } from './ui/typing.js';
 import { createGames, GAMES } from './ui/games/index.js';
 import { toast } from './ui/toast.js';
 import { sendFeedback } from './ui/feedback.js';
+import { shareApp } from './ui/share.js';
 import { buzz, setHaptics, setHapticLevel } from './fx/haptics.js';
 import { play, setSound, setSoundProfile, setSoundLevel } from './fx/sound.js';
 import { burst } from './fx/confetti.js';
@@ -339,6 +340,7 @@ function openFeedback() {
   });
 }
 $('#feedbackBtn').addEventListener('click', openFeedback);
+$('#shareAppBtn').addEventListener('click', () => { buzz('fn'); shareApp(copy); });
 
 /* ---------------- chrome: tabs, buttons ---------------- */
 $$('.tabs [role="tab"]').forEach((b) => b.addEventListener('click', () => { setView(b.dataset.view); buzz('fn'); }));

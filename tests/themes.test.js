@@ -80,10 +80,11 @@ describe('scientific panel keeps the bottom row whole (1.0.8)', () => {
   });
 });
 
-describe('closed scientific panel shows nothing (1.0.9)', () => {
+describe('closed scientific panel shows nothing, and fades out before it can snap (1.0.9, 1.1.0)', () => {
   const base = readFileSync(new URL('../src/styles/base.css', import.meta.url), 'utf8');
   it('hidden when closed, visible as soon as it opens', () => {
-    expect(base.match(/\.sci > div \{[^}]*\}/)[0]).toMatch(/visibility: hidden; transition: visibility 0s linear 380ms;/);
-    expect(base).toMatch(/\.app\.is-sci \.sci > div \{ visibility: visible; transition-delay: 0s; \}/);
+    expect(base.match(/\.sci > div \{[^}]*\}/)[0]).toMatch(/visibility: hidden; opacity: 0;/);
+    expect(base.match(/\.sci > div \{[^}]*\}/)[0]).toMatch(/transition: opacity 150ms ease-out, visibility 0s linear 380ms;/);
+    expect(base).toMatch(/\.app\.is-sci \.sci > div \{ visibility: visible; opacity: 1;/);
   });
 });

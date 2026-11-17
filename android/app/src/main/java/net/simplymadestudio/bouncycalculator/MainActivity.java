@@ -358,6 +358,25 @@ public class MainActivity extends Activity {
             return am == null || am.getRingerMode() == AudioManager.RINGER_MODE_NORMAL;
         }
 
+        /**
+         * ☰ → Share app: the system share sheet with the Play Store link. The text is fixed here (a
+         * string resource), not passed from the page, so the bridge can't be used to share anything else.
+         */
+        @JavascriptInterface
+        public void shareApp() {
+            runOnUiThread(() -> {
+                Intent send = new Intent(Intent.ACTION_SEND)
+                        .setType("text/plain")
+                        .putExtra(Intent.EXTRA_SUBJECT, getString(R.string.app_name))
+                        .putExtra(Intent.EXTRA_TEXT, getString(R.string.share_text));
+                try {
+                    startActivity(Intent.createChooser(send, getString(R.string.share_title)));
+                } catch (ActivityNotFoundException e) {
+                    Toast.makeText(MainActivity.this, R.string.no_app, Toast.LENGTH_SHORT).show();
+                }
+            });
+        }
+
         /** The page has rendered its first frame: let the system splash screen go. */
         @JavascriptInterface
         public void ready() {

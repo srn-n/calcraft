@@ -222,9 +222,13 @@ svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width:
   /* That room is still a 13px box when the panel is closed, so the tops of the hidden keys peeked out
      between the display and the MC row (1.0.8). Fully closed = invisible (and not focusable); it shows
      the moment it starts opening and hides only after the close animation ends. */
-  visibility: hidden; transition: visibility 0s linear 380ms; }
+  visibility: hidden; opacity: 0;
+  /* Closing: the keys fade out in the first 150ms, before the shrinking box reaches its 13px minimum.
+     Without the fade, a strip of key tops sat above the MC row for the last ~230ms and then vanished
+     in one frame (the "snap" at the end of the close, 1.0.9). */
+  transition: opacity 150ms ease-out, visibility 0s linear 380ms; }
 .app.is-sci .sci { grid-template-rows: 1fr; }
-.app.is-sci .sci > div { visibility: visible; transition-delay: 0s; }
+.app.is-sci .sci > div { visibility: visible; opacity: 1; transition: opacity 220ms ease-out 60ms, visibility 0s; }
 .mem-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 7px; min-height: var(--fn-h); }
 .keypad { display: grid; grid-template-columns: repeat(4, 1fr); grid-template-rows: repeat(5, var(--key-h)); gap: var(--gap); }
 
