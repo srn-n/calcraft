@@ -215,6 +215,7 @@ that time.
 | 1.0.8 | 13 | Bottom scientific row no longer clipped |
 | 1.0.9 | 14 | Closed scientific panel shows nothing; agent files local-only |
 | 1.1.0 | 15 | fx close no longer snaps; ☰ → Share app |
+| 1.1.1 | 16 | Seamless opening: first-frame colour, mini calculator grows into the app, faster repeat launch |
 
 ## 8. Where projects usually get stuck (and the fix)
 

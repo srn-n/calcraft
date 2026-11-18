@@ -21,11 +21,11 @@ and are kept up to date there, but they're not on GitHub.
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **15 = 1.1.0**).
+  **16 = 1.1.1**).
 - WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
-    `setCanGoBack`, `ready`, `insets`, `soundAllowed`.
+    `setCanGoBack`, `ready`, `insets`, `soundAllowed`, `shareApp`.
 - Build: GitHub Actions `.github/workflows/android.yml` builds an unsigned AAB and APK on every push.
   Artifact "bouncy-calculator-android".
 - Signing: the upload key is `CalculatorWeb\.signing\upload.jks` plus `keystore.properties`
@@ -103,3 +103,6 @@ and are kept up to date there, but they're not on GitHub.
   `docs/releases/1.0.9.md`.
 - 1.1.0 (code 15): the fx close no longer snaps at the end (the keys fade out early), and there's a new
   ☰ → Share app row with the Play link (native share sheet on Android). See `docs/releases/1.1.0.md`.
+- 1.1.1 (code 16): a seamless opening. The splash is the right colour from the first frame, the mini
+  calculator grows into the real one (no empty dip), and repeat launches on Android are faster.
+  See `docs/releases/1.1.1.md`.

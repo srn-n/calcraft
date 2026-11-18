@@ -23,6 +23,17 @@
   animation: splash-failsafe 400ms ease 8s forwards; /* never trap anyone if the script fails */
 }
 @keyframes splash-failsafe { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+
+/* Phones: the calculator body fills the screen, so the splash is painted with that same body
+   (--device: a solid colour, a gradient, or a translucent layer over the backdrop) from the very
+   first frame (only where it really fills the screen; from 560 px wide it's a card on the backdrop,
+   which the splash's own background already matches). It used to start on the backdrop colour and get repainted by script ~80 ms later,
+   which blinked on every launch (twice on Android, whose window is already the body colour).
+   A layer under the content: the splash is its own stacking context (z-index 55). */
+@media (max-width: 559px), (max-height: 599px) {
+  .splash::after { content: ''; position: absolute; inset: 0; z-index: -1; background: var(--device); pointer-events: none; }
+}
+@media (max-width: 559px) { [data-theme="glass"] .splash::after { background: rgba(255,255,255,.18); } }
 @keyframes splash-fade-up { from { transform: translateY(8px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 /* Smoothness: nothing animates until the app has finished booting (JS adds .is-go on the next frame),
@@ -169,42 +180,68 @@
 .splash-skip { opacity: 0; font-size: 12px; letter-spacing: .14em; text-transform: uppercase; animation: splash-skip-in 500ms ease 1700ms forwards; }
 @keyframes splash-skip-in { to { opacity: .6; } }
 
-/* ---- Leaving, in sequence so text never overlaps:
-   0-200 ms    the splash text fades out (backdrop still solid, app still hidden)
-   140-640 ms  the backdrop dissolves
-   240-860 ms  the app eases in, only after the splash text has completely gone ---- */
-.splash.is-leaving { animation: splash-out 500ms cubic-bezier(.4, 0, .2, 1) 140ms forwards; pointer-events: none; }
+/* ---- Leaving ----
+   Hand-off (full intro, splash.js morphIntoApp): there is never an empty frame.
+     0-160 ms    the splash text and the mini calculator's keys fade out; the backdrop drops away
+                 (on phones it's the same colour as the app body underneath, so nothing changes)
+     0-350 ms    the mini calculator's body grows into the real calculator's shape, thinning out
+                 as it goes (on phones it's the app body's own colour, so only its edge shows)
+     160-580 ms  the real keys settle in, showing through it, and it's gone by 560 ms
+   Crossfade (quick launch, or skipped before the calculator appeared): the studio card leaves
+   while the app arrives, overlapping, instead of fading to an empty screen first. */
+/* The backdrop drops away at once: it's the same colour as what's behind it (the app body where
+   that fills the screen, the page backdrop where the app is a card), so this changes nothing on
+   screen, but the app can arrive while the splash text is still leaving. */
+.splash.is-leaving { background: none; pointer-events: none; }
+.splash.is-leaving::after { display: none; }
+.splash.is-leaving::before { animation: splash-glow-out 260ms ease-out forwards; }
 @keyframes splash-out { from { opacity: 1; } to { opacity: 0; visibility: hidden; } }
-.splash.is-leaving .splash-device { animation: splash-zoom 220ms cubic-bezier(.4, 0, 1, 1) forwards; }
+.splash.is-leaving:not(.is-morph) .splash-device { animation: splash-zoom 220ms cubic-bezier(.4, 0, 1, 1) forwards; }
 @keyframes splash-zoom { to { transform: scale(1.08); opacity: 0; } }
 .splash.is-leaving :is(.splash-presents, .splash-word, .splash-legal, .splash-intro) {
-  transition: opacity 200ms cubic-bezier(.4, 0, 1, 1), transform 260ms cubic-bezier(.4, 0, 1, 1);
+  transition: opacity 110ms cubic-bezier(.4, 0, 1, 1), transform 200ms cubic-bezier(.4, 0, 1, 1);
   opacity: 0; transform: translateY(-6px) scale(.985);
 }
+.splash.is-leaving .splash-stage::after { animation: none; opacity: 0; }
+
+@keyframes splash-glow-out { from { opacity: .75; } to { opacity: 0; } }
+.splash.is-morph .splash-device > * { transition: opacity 140ms cubic-bezier(.4, 0, 1, 1); opacity: 0; }
+/* Liquid Glass: a backdrop blur can't follow a stretching box cleanly (it smeared over the keys), so
+   the growing body is plain frosted white for that half second. */
+.splash.is-morph .splash-device { -webkit-backdrop-filter: none; backdrop-filter: none; }
 
 @keyframes splash-legal-in { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: none; } }
 /* These two hold their entrance animation's end state, so a transition can't fade them; give them
    their own quick exit (the footer drops back down, the header lifts away). */
-.splash.is-leaving .splash-legal { animation: splash-legal-out 200ms cubic-bezier(.4, 0, 1, 1) forwards; }
+.splash.is-leaving .splash-legal { animation: splash-legal-out 110ms cubic-bezier(.4, 0, 1, 1) forwards; }
 @keyframes splash-legal-out { from { opacity: 1; } to { opacity: 0; transform: translateY(12px); } }
-.splash.is-leaving .splash-presents { animation: splash-presents-out 200ms cubic-bezier(.4, 0, 1, 1) forwards; }
+.splash.is-leaving .splash-presents { animation: splash-presents-out 110ms cubic-bezier(.4, 0, 1, 1) forwards; }
 @keyframes splash-presents-out { from { opacity: 1; } to { opacity: 0; transform: translateY(-6px); } }
 
-/* Quick launch (Android app, after the first run): just the studio card, compressed to ~1.5 s. */
-.splash.is-quick .splash-legal { animation-delay: 260ms; }
+/* Quick launch (Android app, after the first run): just the studio card, ~1 s. Everything lands by
+   ~700 ms, holds briefly, then hands over. */
+.splash.is-quick .splash-legal { animation-duration: 420ms; animation-delay: 160ms; }
 .splash.is-quick .splash-intro { animation: none; }
 .splash.is-quick :is(.splash-presents, .splash-stage) { display: none; }
-.splash.is-quick .splash-intro-name { animation-duration: 650ms; animation-delay: 120ms; }
-.splash.is-quick .splash-intro-sub { animation-duration: 450ms; animation-delay: 450ms; }
-.splash.is-quick .splash-intro-name::after { animation-duration: 500ms; animation-delay: 380ms; }
+.splash.is-quick .splash-intro-name { animation-duration: 520ms; animation-delay: 90ms; }
+.splash.is-quick .splash-intro-sub { animation-duration: 380ms; animation-delay: 320ms; }
+.splash.is-quick .splash-intro-name::after { animation-duration: 420ms; animation-delay: 260ms; }
+.splash.is-quick .splash-intro .splash-mark i { animation-duration: 600ms; }
 .splash.is-quick .splash-intro .splash-mark i:first-child { animation-delay: 0ms; }
-.splash.is-quick .splash-intro .splash-mark i:last-child { animation-delay: 60ms; }
-.splash.is-quick .splash-intro .splash-mark { animation-delay: 620ms; }
-.splash.is-quick::before { animation-delay: 0ms, 900ms; }
+.splash.is-quick .splash-intro .splash-mark i:last-child { animation-delay: 40ms; }
+.splash.is-quick .splash-intro .splash-mark { animation-delay: 470ms; }
+.splash.is-quick::before { animation-delay: 0ms, 600ms; }
+.splash.is-quick .splash-skip { animation-delay: 600ms; }
+.splash.is-quick.is-leaving .splash-legal { animation-duration: 110ms; animation-delay: 0ms; }
 
-html.app-in .app { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 240ms both; }
-@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 300ms both; } }
+/* The app arrives. Crossfade: starts while the splash text is still leaving (overlap, no gap).
+   Hand-off: starts as the grown body is about to dissolve, so the keys appear in its place. */
+html.app-in .app { animation: app-in 460ms cubic-bezier(.22, 1, .36, 1) 90ms both; }
+@media (min-width: 920px) and (min-height: 600px) { html.app-in .side { animation: app-in 460ms cubic-bezier(.22, 1, .36, 1) 120ms both; } }
+html.app-in-morph .app { animation: app-in 420ms cubic-bezier(.22, 1, .36, 1) 160ms both; }
+@media (min-width: 920px) and (min-height: 600px) { html.app-in-morph .side { animation: app-in 420ms cubic-bezier(.22, 1, .36, 1) 230ms both; } }
 @keyframes app-in { from { transform: scale(.975) translateY(6px); opacity: 0; } }
+
 
 /* ---- Android app: leaving with Back ----
    A short settle (slight shrink and dim) as the app goes to the background. It never fades fully
@@ -226,7 +263,7 @@ html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both
    the fades move the app's CONTENT, never its background. */
 @media (max-width: 919px), (max-height: 599px) {
   html.app-in .app { animation: none; }
-  html.app-in .app > * { animation: app-in 620ms cubic-bezier(.22, 1, .36, 1) 240ms both; }
+  html.app-in .app > * { animation: app-in 460ms cubic-bezier(.22, 1, .36, 1) 90ms both; }
   html.app-out .app { transition: none; transform: none; opacity: 1; }
   html.app-out .app > * {
     transition: transform 180ms cubic-bezier(.4, 0, 1, 1), opacity 180ms cubic-bezier(.4, 0, 1, 1);
@@ -234,6 +271,18 @@ html.app-return .app { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both
   }
   html.app-return .app { animation: none; }
   html.app-return .app > * { animation: app-in 520ms cubic-bezier(.22, 1, .36, 1) both; }
+}
+
+/* Hand-off: where the app fills the screen, its body is already the splash's colour, so only the
+   content arrives. Where it's a card on the backdrop (560 px and up), the card itself arrives, inside
+   the grown body. */
+@media (max-width: 559px), (max-height: 599px) {
+  html.app-in-morph .app { animation: none; }
+  html.app-in-morph .app > * { animation: app-in 420ms cubic-bezier(.22, 1, .36, 1) 160ms both; }
+}
+@media (min-width: 560px) and (min-height: 600px) {
+  html.app-in-morph .app { animation: app-in 420ms cubic-bezier(.22, 1, .36, 1) 160ms both; }
+  html.app-in-morph .app > * { animation: none; }
 }
 
 /* ---- Theme touches ---- */

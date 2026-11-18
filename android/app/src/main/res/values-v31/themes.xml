@@ -7,7 +7,7 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="android:windowLightNavigationBar">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
-        <item name="android:windowSplashScreenBackground">@color/paper</item>
+        <item name="android:windowSplashScreenBackground">@color/icon_bg</item>
         <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
     </style>
     <!-- Used for the system splash on the next launch when the last theme was dark (Android 13+). -->
