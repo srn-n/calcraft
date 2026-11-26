@@ -6,7 +6,7 @@
 Bouncy Calculator
 
 **Short description** (80 max)
-28 themes, cute characters on the keys, smart tools, bills and maths games.
+Maths, but make it bouncy. 28 themes, live answers and games on the keypad.
 
 **Full description** (4,000 max)
 

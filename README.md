@@ -79,7 +79,7 @@ To change the length, edit `FULL_MS` in `src/ui/splash.js` and `--c` in `splash.
 
 ## Phones
 
-- Keys size themselves to the screen: the bottom row is never pushed under Safari's or Chrome's toolbar, from a 320×480 phone up to a Pro Max, in all 24 themes, with the fx panel open or closed.
+- Keys size themselves to the screen: the bottom row is never pushed under Safari's or Chrome's toolbar, from a 320×480 phone up to a Pro Max, in all 28 themes, with the fx panel open or closed.
 - Short screens (and the fx panel or games on mid-size phones) fold the tabs into the icon row to give the keys more room.
 - Landscape phones get a two-column layout: display and fx keys on the left, keypad on the right.
 - No zoom-on-focus (all inputs ≥ 16px), no pull-to-refresh while swiping, no iOS long-press callout on keys, 44px+ touch targets, and no layout shift on load.
