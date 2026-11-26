@@ -3,7 +3,7 @@
 By **[Simply Made Studio](https://www.simplymadestudio.net)**, Sydney. Small software that asks for nothing and works beautifully.
 
 A fast, offline, deeply interactive calculator. The maths is simple, so the UI is the product.
-It has 24 themes based on real objects, focused tools, and four games you play on the calculator's own keypad.
+It has 28 themes (23 based on real objects and 5 Exclusive character themes), focused tools, and four games you play on the calculator's own keypad.
 
 - **No framework**: vanilla ES modules plus Vite. About 23 KB of JS and 12 KB of CSS gzipped (the old v4 shipped 180 KB of React).
 - **Safe engine**: tokeniser → Pratt parser → evaluator. No `eval` and no `Function()`, so pasted text can never run code.
@@ -14,7 +14,7 @@ It has 24 themes based on real objects, focused tools, and four games you play o
 ```bash
 npm install
 npm run dev          # http://localhost:5173 with hot reload
-npm test             # 112 unit tests (engine, editing, games, units, security)
+npm test             # 161 unit tests (engine, editing, games, units, bills, security)
 npm run build        # dist/ — host anywhere; installable PWA, works offline
 npm run build:single # dist-single/index.html — one file, double-click to open (file://)
 ```
