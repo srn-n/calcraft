@@ -33,8 +33,10 @@ and are kept up to date there, but they're not on GitHub.
   artifact.
 - Signed outputs go to **`C:\Working Projects\CalculatorApp`** (AAB for Play, APK for phones, store
   assets, `PLAY-STORE-UPLOAD.md`).
-- Play Console: personal account, so a closed test is needed (12+ testers for 14 days) before
-  Production. Tester Google Group: `testingteamsms@googlegroups.com`. Data safety: no data collected
+- Play Console: personal account. The closed test (12+ testers, 14 days) is done, and **production
+  access was granted (2026-11-26)**. 1.1.1 was submitted to Production for review (178 countries).
+  The listing's default language is en-US, so release notes need an `<en-US>` block. See
+  `docs/changes/2026-11-26-production-launch.md`. Tester Google Group: `testingteamsms@googlegroups.com`. Data safety: no data collected
   or shared.
 
 ## Web app essentials
