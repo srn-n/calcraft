@@ -105,7 +105,7 @@ that time.
 ## 4. One-time setup (done once, at 1.0.0)
 
 1. **Wrap the web app.** In `android/`, a single `MainActivity`:
-   - **Serving the files:** `WebViewAssetLoader` serves the built site from
+   - **Serving the files:** a small loader in `MainActivity` (`AssetPaths`; `WebViewAssetLoader` until 1.1.1) serves the built site from
      `https://appassets.androidplatform.net/assets/www/`, with **no `file://` access**
      (`setAllowFileAccess(false)`, `setAllowContentAccess(false)`).
    - **Links:** links that leave the app open in the browser (`shouldOverrideUrlLoading`).
@@ -130,7 +130,7 @@ that time.
    ```
    Then write `.signing\keystore.properties` (format above) and **back both files up**.
 5. **Set up CI:** `.github/workflows/android.yml` (Node 22 → tests → `build:android` → JDK 21 →
-   Android SDK 36 → Gradle 8.13 → `bundleRelease assembleRelease` → artifact). It signs in CI only
+   Android SDK 36 → Gradle 9.9 (AGP 9.5, since 1.1.2) → `bundleRelease assembleRelease` → artifact). It signs in CI only
    if repository secrets exist, and we deliberately don't set them, so **the key never touches
    GitHub**.
 6. **Set up the Play Console account and app:**
@@ -215,7 +215,8 @@ that time.
 | 1.0.8 | 13 | Bottom scientific row no longer clipped |
 | 1.0.9 | 14 | Closed scientific panel shows nothing; agent files local-only |
 | 1.1.0 | 15 | fx close no longer snaps; ☰ → Share app |
-| 1.1.1 | 16 | Seamless opening: first-frame colour, mini calculator grows into the app, faster repeat launch |
+| 1.1.1 | 16 | Seamless opening: first-frame colour, mini calculator grows into the app, faster repeat launch (first Production release) |
+| 1.1.2 | 17 | Play suggestions: EdgeToEdge.enable(), R8 obfuscation 36% → 88% (own asset loader), AGP 9.5 |
 
 ## 8. Where projects usually get stuck (and the fix)
 

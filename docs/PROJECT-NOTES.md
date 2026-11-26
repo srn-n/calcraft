@@ -21,8 +21,10 @@ and are kept up to date there, but they're not on GitHub.
 - Play package (permanent): **`com.simplymadestudio.bouncycalculator`**. The Java namespace stays
   `net.simplymadestudio.bouncycalculator` (internal only).
 - Version lives in `android/app/build.gradle`. Raise `versionCode` on every Play upload (currently
-  **16 = 1.1.1**).
-- WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/`.
+  **17 = 1.1.2**).
+- WebView wrapper, assets served from `https://appassets.androidplatform.net/assets/www/` by a small
+  in-app loader (`AssetPaths`, since 1.1.2; `androidx.webkit`'s `WebViewAssetLoader` before).
+  `MainActivity` is a `ComponentActivity` using `EdgeToEdge.enable()`. Build: AGP 9.5 / Gradle 9.9.
   - Only permission: **VIBRATE**. No INTERNET permission.
   - JS bridge `window.BouncyNative`: `haptic("kind:level")`, `copy`, `paste`, `setBars`,
     `setCanGoBack`, `ready`, `insets`, `soundAllowed`, `shareApp`.
@@ -108,3 +110,6 @@ and are kept up to date there, but they're not on GitHub.
 - 1.1.1 (code 16): a seamless opening. The splash is the right colour from the first frame, the mini
   calculator grows into the real one (no empty dip), and repeat launches on Android are faster.
   See `docs/releases/1.1.1.md`.
+- 1.1.2 (code 17): Play's two Production suggestions. Edge-to-edge now uses `EdgeToEdge.enable()`.
+  R8: obfuscation is 88% (was 36%) after dropping `androidx.webkit`, optimised resource shrinking is
+  on, and the build uses AGP 9.5.3 / Gradle 9.9.2. See `docs/releases/1.1.2.md`.

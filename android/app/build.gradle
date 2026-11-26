@@ -16,8 +16,8 @@ android {
         applicationId 'com.simplymadestudio.bouncycalculator'  // Play package name (permanent). Code namespace stays net.* — that's fine
         minSdk 24
         targetSdk 36
-        versionCode 16
-        versionName '1.1.1'
+        versionCode 17
+        versionName '1.1.2'
     }
 
     signingConfigs {
@@ -53,5 +53,7 @@ android {
 }
 
 dependencies {
-    implementation 'androidx.webkit:webkit:1.14.0'
+    // EdgeToEdge.enable() (edge-to-edge on every Android version, as Play asks for SDK 35+).
+    // androidx.webkit was dropped in 1.1.2: MainActivity serves the bundled files itself.
+    implementation 'androidx.activity:activity:1.13.0'
 }

@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
     <!-- No INTERNET permission: the app is fully offline and cannot send anything anywhere.
          VIBRATE is the only permission (key-press vibration); it involves no user data. -->
     <uses-permission android:name="android.permission.VIBRATE" />
+    <!-- androidx.core declares this for ContextCompat.registerReceiver on old Android versions. The app
+         registers no receivers, so it's removed to keep VIBRATE as the only permission (1.1.2). -->
+    <permission android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
+    <uses-permission android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION" tools:node="remove" />
 
     <application
         android:allowBackup="true"

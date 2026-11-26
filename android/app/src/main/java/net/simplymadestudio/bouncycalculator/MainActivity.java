@@ -1,13 +1,13 @@
 package net.simplymadestudio.bouncycalculator;
 
 import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
+import android.content.res.AssetManager;
 import android.graphics.Color;
 import android.graphics.Insets;
 import android.media.AudioManager;
@@ -36,21 +36,26 @@ import android.widget.Toast;
 import android.window.OnBackInvokedCallback;
 import android.window.OnBackInvokedDispatcher;
 
-import androidx.webkit.WebViewAssetLoader;
+import androidx.activity.ComponentActivity;
+import androidx.activity.EdgeToEdge;
+import androidx.activity.SystemBarStyle;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.regex.Pattern;
 
 /**
  * Bouncy Calculator: the web app (assets/www) in a locked-down WebView.
  *
  * Security model:
- *  - Content is served from https://appassets.androidplatform.net via WebViewAssetLoader (no file:// access).
+ *  - Content is served from https://appassets.androidplatform.net/assets/ by a small in-app asset loader
+ *    (no file:// access, no path traversal, nothing outside the bundled web app).
  *  - Only that origin may load inside the WebView; every other link opens outside the app.
  *  - The app has no INTERNET permission, so it cannot send anything anywhere. Its only permission is VIBRATE.
  *  - The JS bridge exposes small, validated methods: haptic, copy, setBars, setCanGoBack, ready.
  */
-public class MainActivity extends Activity {
+public class MainActivity extends ComponentActivity {
 
     private static final String HOST = "appassets.androidplatform.net";
     private static final String START_URL = "https://" + HOST + "/assets/www/index.html";
@@ -58,7 +63,6 @@ public class MainActivity extends Activity {
 
     private FrameLayout root;
     private WebView web;
-    private WebViewAssetLoader assetLoader;
     private OnBackInvokedCallback backCallback;
     private boolean darkBars = false;
     private boolean backRegistered = false;
@@ -90,11 +94,6 @@ public class MainActivity extends Activity {
         applyInsets();
         applyBarIcons();
         holdSplashUntilReady();
-
-        assetLoader = new WebViewAssetLoader.Builder()
-                .setDomain(HOST)
-                .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
-                .build();
 
         createWebView();
         web.loadUrl(START_URL);
@@ -174,11 +173,36 @@ public class MainActivity extends Activity {
         return uri != null && "https".equals(uri.getScheme()) && HOST.equals(uri.getHost());
     }
 
+    /* ---------------------------------------------------------------- bundled files */
+
+    /**
+     * Serves https://appassets.androidplatform.net/assets/<path> from the APK's assets folder.
+     * Replaces androidx.webkit's WebViewAssetLoader (1.1.2): that library ships ~50 classes that must
+     * keep their names for the system WebView, which held R8's obfuscation rate at 36%.
+     * Path and type rules live in AssetPaths. A rejected path or a missing file is a 404, never a
+     * network fetch.
+     */
+    private WebResourceResponse loadAsset(Uri uri) {
+        String rel = AssetPaths.relative(uri.getPath());
+        if (rel == null) return notFound();
+        try {
+            InputStream in = getAssets().open(rel, AssetManager.ACCESS_STREAMING);
+            String mime = AssetPaths.mimeType(rel);
+            return new WebResourceResponse(mime, AssetPaths.encoding(mime), in);
+        } catch (IOException e) {
+            return notFound();
+        }
+    }
+
+    private static WebResourceResponse notFound() {
+        return new WebResourceResponse("text/plain", "utf-8", 404, "Not Found", null, new ByteArrayInputStream(new byte[0]));
+    }
+
     private class Client extends WebViewClient {
         @Override
         public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
             Uri uri = request.getUrl();
-            if (isAppOrigin(uri)) return assetLoader.shouldInterceptRequest(uri);
+            if (isAppOrigin(uri)) return loadAsset(uri);
             // Nothing outside the bundle may be fetched (the CSP already forbids it; this is belt and braces).
             return new WebResourceResponse("text/plain", "utf-8", 403, "Forbidden", null,
                     new ByteArrayInputStream(new byte[0]));
@@ -401,20 +425,18 @@ public class MainActivity extends Activity {
 
     /* ---------------------------------------------------------------- edge-to-edge */
 
-    @SuppressWarnings("deprecation")
+    /**
+     * Edge-to-edge the standard way (androidx EdgeToEdge, as Play asks for apps targeting SDK 35+):
+     * transparent status and navigation bars on every Android version, drawn behind by the page.
+     * Bar icon colours follow the app theme, not the system's light/dark mode (applyBarIcons).
+     */
     private void setupEdgeToEdge() {
+        EdgeToEdge.enable(this,
+                SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT),
+                SystemBarStyle.auto(Color.TRANSPARENT, Color.TRANSPARENT));
         Window w = getWindow();
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            w.setDecorFitsSystemWindows(false);
-        } else {
-            w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                    | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION);
-        }
-        if (Build.VERSION.SDK_INT < 35) {
-            w.setStatusBarColor(Color.TRANSPARENT);
-            w.setNavigationBarColor(Color.TRANSPARENT);
-        }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // No grey scrim behind 3-button navigation: each theme paints its own background there.
             w.setNavigationBarContrastEnforced(false);
             w.setStatusBarContrastEnforced(false);
         }

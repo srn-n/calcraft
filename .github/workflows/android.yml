@@ -49,13 +49,18 @@ jobs:
           distribution: temurin
           java-version: 21
 
+      - name: Check the asset loader rules (1.1.2)
+        run: |
+          javac -d build/assetcheck android/app/src/main/java/net/simplymadestudio/bouncycalculator/AssetPaths.java android/checks/AssetPathsCheck.java
+          java -cp build/assetcheck net.simplymadestudio.bouncycalculator.AssetPathsCheck android/app/src/main/assets
+
       - uses: android-actions/setup-android@v3
         with:
           packages: 'platforms;android-36 build-tools;36.0.0'
 
       - uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: '8.13'
+          gradle-version: '9.9.2'   # AGP 9.5 needs Gradle 9.6+ (1.1.2)
 
       # Optional: sign in CI when the upload key is stored as repository secrets.
       # Without them the build is unsigned and you sign locally (see android/README.md).

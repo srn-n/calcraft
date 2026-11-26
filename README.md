@@ -109,4 +109,4 @@ To change the length, edit `FULL_MS` in `src/ui/splash.js` and `--c` in `splash.
 ## Next steps (Windows / Android)
 
 - **Windows app**: wrap `dist/` with Tauri 2 (`npm create tauri-app`, set `frontendDist` to `../dist`). Expect an installer of about 3–5 MB.
-- **Android**: copy `dist/` into the app's `assets/`, load it with `WebViewAssetLoader` (an `https://appassets.androidplatform.net/` URL), use an AppCompat theme, remove the INTERNET permission, and target SDK 36. Haptics can call `window.BouncyNative.vibrate(ms)` if you expose a JS bridge.
+- **Android**: copy `dist/` into the app's `assets/`, serve it from an `https://appassets.androidplatform.net/` URL (this app uses a small loader in `MainActivity`; `WebViewAssetLoader` also works), use an AppCompat theme, remove the INTERNET permission, and target SDK 36. Haptics can call `window.BouncyNative.vibrate(ms)` if you expose a JS bridge.
