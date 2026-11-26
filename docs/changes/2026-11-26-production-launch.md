@@ -1,4 +1,4 @@
-# 2026-11-26: Submitted to Production
+# 2026-11-26: Submitted to Production, and live
 
 No code change and no version bump. This records the move from closed testing to Production.
 
@@ -24,6 +24,12 @@ No code change and no version bump. This records the move from closed testing to
   as `<en-AU>` if you want it.
 - **Submitted for review** on 2026-11-26. Managed publishing is off, so the app goes live
   automatically once Google approves it.
+
+## Result
+- **Approved and published the same day (2026-11-26).** Production is Active with 16 (1.1.1) in 178
+  countries/regions, and the public store page shows an Install button with no testing label.
+- **Play's suggestions on the Production dashboard:** edge-to-edge display, and R8
+  optimisation. These are optional, for a later update.
 
 ## How it was done
 - Claude prepared the release in Play Console: promoted it, wrote the notes, set the countries, and
